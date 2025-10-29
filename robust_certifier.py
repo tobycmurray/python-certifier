@@ -12,7 +12,7 @@ from typing import List, Tuple, Dict
 import sys
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file
-from arithmetic import Q, qstr, sqrt_upper_bound
+from arithmetic import Q, qstr, sqrt_upper_bound, round_up
 from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_upper_bound, matrix_div_scalar, \
     truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, \
     dims, vecqstr
@@ -134,7 +134,9 @@ def certify_mode_b_theorem4(
         E_ctr  = E_for_pair(comp_ctr,  xstar, j)
         E_ball = E_for_pair(comp_ball, xstar, j)
 
-        float_conservatism = E_ctr + E_ball
+        # round this up so we can print out the results without having to cast to float
+        float_conservatism = round_up(E_ctr + E_ball)
+
         rhs_real = epsilon * L_real[xstar][j]
         rhs = rhs_real + float_conservatism
         ok_real = lhs > rhs_real
@@ -367,7 +369,7 @@ def main():
     # check input compatibility with the neural network
     first_cols = len(net[0][0])
     if len(x) != first_cols:
-        print(f"Error: input length {len(x)} does not match first layer row count {first_rows}.")
+        print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
         sys.exit(1)        
     print(f"Loaded input with length {len(x)}")
     
@@ -430,14 +432,14 @@ def main():
     )
     print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
     for r in modeb.pairs:
-        print(f"  j={r.j}: margin={float(r.margin_center)}  "
-              f"bound={float(r.rhs_bound)}  ok_real={bool(r.ok_real)}   -> {'PASS' if r.ok else 'FAIL'}")
+        print(f"  j={r.j}: margin={qstr(r.margin_center)}  "
+              f"bound={qstr(r.rhs_bound)}  ok_real={bool(r.ok_real)}   -> {'PASS' if r.ok else 'FAIL'}")
 
     if modeb.ok:
         print("Mode B: PASS")
     else:
         j, lhs, rhs = modeb.first_failure or (-1, Q(0), Q(0))
-        print(f"Mode B: FAIL at j={j}: margin={float(lhs)} ≤ bound={float(rhs)}")
+        print(f"Mode B: FAIL at j={j}: margin={qstr(lhs)} ≤ bound={qstr(rhs)}")
 
 if __name__ == "__main__":
     main()
