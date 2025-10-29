@@ -103,3 +103,10 @@ def load_network_from_file(path: str, validate: bool = True):
     if validate:
         check_chain_dimensions(net)
     return [transpose(M) for M in net]
+
+def load_vector_from_file(path: str):
+    s = load_text_strict(path)
+    vec, i = parse_vector(s, 0)
+    if i != len(s):
+        raise ParseError(f"Unexpected trailing content at position {i}: {s[i:]}")
+    return vec    
