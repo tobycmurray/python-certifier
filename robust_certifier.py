@@ -13,9 +13,9 @@ import sys
 from parsing import load_network_from_file, ParseError
 from arithmetic import Q, qstr, sqrt_upper_bound
 from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_upper_bound, matrix_div_scalar, \
-    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound
+    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix
 
-def margin_lipschitz_bounds(network: List[Matrix], gram_iters: int) -> List[List[Q]]:
+def margin_lipschitz_bounds(network: List[Matrix], op2_norms: List[Q]) -> List[List[Q]]:
     """
     Compute L[i][j] margin bounds per the paper:
     - product of operator-norm upper bounds for layers 1..n-1
@@ -23,11 +23,11 @@ def margin_lipschitz_bounds(network: List[Matrix], gram_iters: int) -> List[List
     """
     assert len(network) >= 1
     *hidden, last = network
+    *hidden_norms, _ = op2_norms
     # product of op-norm bounds for hidden layers
     prod = Q(1)
-    for i, W in enumerate(hidden):
-        print(f"[DBG] Computing operator norm for hidden layer {i}...")
-        prod *= layer_opnorm_upper_bound(W, gram_iters)
+    for i, norm in enumerate(hidden_norms):
+        prod *= norm
     # compute per-pair margins using last layer's row differences
     rows = last  # last is matrix, rows = classes
     num_classes = len(rows)
@@ -80,7 +80,25 @@ def main():
 
     print(f"Loaded network with {len(net)} layers; running {gram_iters} Gram iterations per layer...")
 
-    L = margin_lipschitz_bounds(net, gram_iters)
+    inf_norms = []
+    op2_norms = []
+    op2_abs_norms = []
+
+    for i, W in enumerate(net):
+        print(f"Computing norms for layer {i}, ...")
+        print(f"  infinity norm...")
+        inf_norm = layer_infinity_norm(W)
+        print(f"  operator norm...") 
+        op2_norm = layer_opnorm_upper_bound(W, gram_iters)
+        print(f"  operator norm of abs...")
+        op2_abs_norm = layer_opnorm_upper_bound(abs_matrix(W), gram_iters)
+
+        inf_norms.append(inf_norm)
+        op2_norms.append(op2_norm)
+        op2_abs_norms.append(op2_abs_norm)
+
+    
+    L = margin_lipschitz_bounds(net, op2_norms)
 
     print("\nMargin Lipschitz Bounds (L[i][j]):")
     for i, row in enumerate(L):

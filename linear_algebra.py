@@ -141,3 +141,15 @@ def gram_iteration(M: Matrix, n: int) -> Q:
 
 def layer_opnorm_upper_bound(W: Matrix, gram_iters: int) -> Q:
     return gram_iteration(W, gram_iters)
+
+def layer_infinity_norm(W: Matrix) -> Q:
+    """Compute ||W||_∞ = max_r sum_k |W[r,k]| (rational exact)."""
+    max_sum = Q(0)
+    for row in W:
+        s = sum(abs(x) for x in row)
+        if s > max_sum:
+            max_sum = s
+    return max_sum
+
+def abs_matrix(W: Matrix) -> Matrix:
+    return [[abs(x) for x in row] for row in W]
