@@ -14,10 +14,11 @@ import sys
 from parsing import load_network_from_file, ParseError, load_vector_from_file
 from arithmetic import Q, qstr, sqrt_upper_bound
 from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_upper_bound, matrix_div_scalar, \
-    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, dims
+    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, \
+    dims, vecqstr
 from overflow import certify_no_overflow_normwise, OverflowReport
 from formats import get_float_format, FloatFormat
-from nn import forward_numpy_float32
+from nn import forward_numpy_float32, forward
 
 # ---- Mode B components builder ---------------------------------------------
 from dataclasses import dataclass
@@ -81,7 +82,9 @@ class ModeBPairResult:
     j: int
     margin_center: Q       # y[i*] - y[j] as Q
     rhs_bound: Q           # ε·L_real[i*,j] + E_ctr(i*,j) + E_ball(i*,j)
+    rhs_real: Q            # ε·L_real[i*,j]
     float_conservatism: Q  # E_ctr(i*,j) + E_ball(i*,j)
+    ok_real: bool
     ok: bool
 
 @dataclass(frozen=True)
@@ -132,10 +135,11 @@ def certify_mode_b_theorem4(
         E_ball = E_for_pair(comp_ball, xstar, j)
 
         float_conservatism = E_ctr + E_ball
-        rhs = epsilon * L_real[xstar][j] + float_conservatism
-
+        rhs_real = epsilon * L_real[xstar][j]
+        rhs = rhs_real + float_conservatism
+        ok_real = lhs > rhs_real
         ok = lhs > rhs
-        results.append(ModeBPairResult(j=j, margin_center=lhs, rhs_bound=rhs, float_conservatism=float_conservatism, ok=ok))
+        results.append(ModeBPairResult(j=j, margin_center=lhs, rhs_bound=rhs, rhs_real=rhs_real, float_conservatism=float_conservatism, ok_real=ok_real, ok=ok))
         if (not ok) and (first_fail is None):
             first_fail = (j, lhs, rhs)
 
@@ -348,6 +352,8 @@ def main():
         sys.exit(1)
 
     print(f"Loaded network with {len(net)} layers; running {gram_iters} Gram iterations per layer...")
+    for i, W in enumerate(net):
+        print(f"  Layer {i} has dims: {dims(W)}")
 
     try:
         x = load_vector_from_file(input_file)
@@ -359,8 +365,8 @@ def main():
         sys.exit(1)
 
     # check input compatibility with the neural network
-    first_rows = len(net[0])            # number of rows of first layer
-    if len(x) != first_rows:
+    first_cols = len(net[0][0])
+    if len(x) != first_cols:
         print(f"Error: input length {len(x)} does not match first layer row count {first_rows}.")
         sys.exit(1)        
     print(f"Loaded input with length {len(x)}")
@@ -400,6 +406,12 @@ def main():
     print("Simulating neural network forward pass...")
     y_f32 = forward_numpy_float32(net, x)
 
+    print("Simulating real-valued neural network forward pass...")
+    y_real = forward(net, x)
+
+    print("f32  logits: ", y_f32)
+    print("real logits: ", vecqstr(y_real))
+
     print("Computing Mode B ball components...")
     comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt32)
     print("Computing Mode B centre components...")
@@ -419,7 +431,7 @@ def main():
     print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
     for r in modeb.pairs:
         print(f"  j={r.j}: margin={float(r.margin_center)}  "
-              f"bound={float(r.rhs_bound)}  conserv={float(r.float_conservatism)}   -> {'PASS' if r.ok else 'FAIL'}")
+              f"bound={float(r.rhs_bound)}  ok_real={bool(r.ok_real)}   -> {'PASS' if r.ok else 'FAIL'}")
 
     if modeb.ok:
         print("Mode B: PASS")

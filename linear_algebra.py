@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from arithmetic import Q, sqrt_upper_bound, round_up, round_down
+from arithmetic import Q, sqrt_upper_bound, round_up, round_down, qstr
 
 Matrix = List[List[Q]]
 Vector = List[Q]
@@ -153,3 +153,7 @@ def layer_infinity_norm(W: Matrix) -> Q:
 
 def abs_matrix(W: Matrix) -> Matrix:
     return [[abs(x) for x in row] for row in W]
+
+def vecqstr(V: Vector) -> str:
+    r = [qstr(q) for q in V]
+    return "[" + ",".join(r) + "]"

@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 
 from arithmetic import Q
-from linear_algebra import Vector, Matrix
+from linear_algebra import Vector, Matrix, mv_product
 
 
 def relu_vec(v: Vector) -> Vector:
@@ -15,7 +15,7 @@ def forward(network: List[Matrix], x: Vector) -> Vector:
     v = x[:]
     L = len(network)
     for idx, W in enumerate(network):
-        v = mv_product(transpose(W), v)
+        v = mv_product(W, v)
         if idx < L - 1:
             v = relu_vec(v)
     return v
@@ -42,7 +42,7 @@ def forward_numpy_float32(network: List[Matrix], x: Vector) -> List[float]:
     v = np.array([np.float32(float(q)) for q in x], dtype=np.float32)
     L = len(nets_np)
     for ell, W in enumerate(nets_np):
-        z = W.T @ v  # (n,) = (n,m) @ (m,)
+        z = W @ v  # (n,) = (n,m) @ (m,)
         if ell < L - 1:
             # ReLU in float32
             v = np.maximum(z, np.float32(0.0), dtype=np.float32)
