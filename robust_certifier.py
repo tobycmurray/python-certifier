@@ -6,16 +6,116 @@
 #
 # NOTE: This mirrors the algorithmic structure; it is not a formally verified artifact.
 
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import sys
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file
 from arithmetic import Q, qstr, sqrt_upper_bound
 from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_upper_bound, matrix_div_scalar, \
-    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix
+    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, dims
 from overflow import certify_no_overflow_normwise, OverflowReport
-from formats import get_float_format
+from formats import get_float_format, FloatFormat
+
+def _q(v: float) -> Q:
+    return Q(str(v))
+
+def _gamma(n: int, u: Q) -> Q:
+    # γ_n = (n u) / (1 - n u)
+    nu = u * n
+    return nu / (Q(1) - nu)
+
+def _adot(n: int, amul: Q, u: Q) -> Q:
+    # adot(n) = (1 + γ_{n-1}) * n * amul   (with γ_{n-1} defined for n-1 >= 1; else take γ_0 = 0)
+    gamma_nm1 = _gamma(n-1, u) if n > 1 else Q(0)
+    return (Q(1) + gamma_nm1) * n * amul
+
+def compute_linear_recursion_hidden(
+    op2_norms: List[Q],        # [‖W_1‖₂, …, ‖W_{L-1}‖₂]
+    op2_abs_norms: List[Q],    # [‖|W_1|‖₂, …, ‖|W_{L-1}|‖₂]
+    radii_prev: List[Q],       # [r_0, …, r_{L-2}]   (length L-1; one per hidden layer input)
+    network: List[Matrix],     # to read m_ℓ, n_ℓ
+    fmt: FloatFormat,          # to get u, denorm_min
+) -> Tuple[List[Q], List[Q], List[Q]]:
+    """
+    Returns (alphas, betas, kappas) for layers ℓ = 1..L-1 (hidden stack).
+    All values are Q and follow the Mode B linear recursion definitions.
+    """
+    L = len(network)
+    if L == 0:
+        return [], [], []
+    if not (len(op2_norms) == L and len(op2_abs_norms) == L and len(radii_prev) == L-1):
+        raise ValueError("length mismatch between norms/radii/network")
+
+    u = _q(fmt.u)                  # unit roundoff as Q
+    amul = _q(fmt.denorm_min) / 2  # amul = denorm_min / 2
+
+    alphas: List[Q] = []
+    betas:  List[Q] = []
+    kappas: List[Q] = []
+
+    # hidden layers are indices 0..L-2
+    for ell in range(L-1):
+        W = network[ell]
+        m_ell, n_ell = dims(W)     # m rows, n cols
+        kappa = _gamma(n_ell, u) + u * (Q(1) + _gamma(n_ell, u))
+        kappas.append(kappa)
+
+        alpha = op2_norms[ell] + kappa * op2_abs_norms[ell]
+        # βℓ = κ_nℓ |||Wℓ|||_2 r_{ℓ-1} + (1+u) adot(nℓ) sqrt(mℓ)
+        beta_noise = (Q(1) + u) * _adot(n_ell, amul, u) * sqrt_upper_bound(Q(m_ell))
+        beta = kappa * op2_abs_norms[ell] * radii_prev[ell] + beta_noise
+
+        alphas.append(alpha)
+        betas.append(beta)
+
+    return alphas, betas, kappas
+
+
+def compute_final_pair_params(
+    W_last: Matrix,
+    r_last_minus1: Q,
+    fmt: FloatFormat,
+) -> Dict[Tuple[int,int], Tuple[Q, Q]]:
+    """
+    For identity final activation (logits) with no bias:
+      α_L^(i,j) = L_{i,j} + κ_{n_L} S_{i,j}
+      β_L^(i,j) = κ_{n_L} S_{i,j} r_{L-1} + 2(1+u) adot(n_L)
+
+    Returns a dict mapping (i,j) with i!=j to (alpha_L_ij, beta_L_ij).
+    """
+    m, n = dims(W_last)
+    u = _q(fmt.u)
+    amul = _q(fmt.denorm_min) / 2
+    kappa = _gamma(n, u) + u * (Q(1) + _gamma(n, u))
+    ad = _adot(n, amul, u)
+
+    # helper to get rows
+    def row(idx: int) -> List[Q]:
+        return W_last[idx]
+
+    out: Dict[Tuple[int,int], Tuple[Q,Q]] = {}
+    for i in range(m):
+        Wi = row(i)
+        absWi = [abs(x) for x in Wi]
+        for j in range(m):
+            if i == j:
+                continue
+            Wj = row(j)
+            # L_{i,j} = || Wi - Wj ||_2
+            diff = [Wj[k] - Wi[k] for k in range(n)]
+            Lij = l2_norm_upper_bound_vec(diff)
+            # S_{i,j} = || |Wi| + |Wj| ||_2
+            absWj = [abs(x) for x in Wj]
+            sumabs = [absWi[k] + absWj[k] for k in range(n)]
+            Sij = l2_norm_upper_bound_vec(sumabs)
+
+            # be conservative and do not take advantage of the "Variant" remark atm
+            alpha_ij = Lij + (1 + kappa) * Sij
+            beta_ij  = kappa * Sij * r_last_minus1 + Q(2) * (Q(1) + u) * ad
+            out[(i, j)] = (alpha_ij, beta_ij)
+
+    return out
 
 def radii(op2_norms: List[Q], x: Vector, epsilon: Q) -> List[Q]:
     L = len(op2_norms)
@@ -155,9 +255,39 @@ def main():
         print("Overflow certification failed: ")
         print(report)
         sys.exit(1)
-    
+
+
+
+    print("Computing linear recursion for hidden layers...")
+    # Hidden stack α/β (linear recursion)
+    alphas, betas, kappas = compute_linear_recursion_hidden(
+        op2_norms=op2_norms,
+        op2_abs_norms=op2_abs_norms,
+        radii_prev=rs[:-1],          # r_0..r_{L-2}
+        network=net,
+        fmt=fmt32,
+    )
+
+    print("Computing D_{L-1}(x,ε)...")
+    # Unroll to get D_{L-1}(x,ε)
+    DLm1 = Q(0)
+    prod = Q(1)
+    # We need sums of beta_s * (alpha_{s+1} ... alpha_{L-1})
+    # Build from the right for numerical neatness (though all exact-Q).
+    right_products = [Q(1)] * len(alphas)
+    for t in range(len(alphas)-2, -1, -1):
+        right_products[t] = right_products[t+1] * alphas[t+1] if t+1 < len(alphas) else Q(1)
+    DLm1 = sum(betas[s] * right_products[s] for s in range(len(alphas)))
+
+    print("Computing final layer margin degradation parameters...")
+    # Final layer pairwise params
+    pairs = compute_final_pair_params(W_last=net[-1], r_last_minus1=rs[-1], fmt=fmt32)
+    # pairs[(i,j)] -> (alpha_L_ij, beta_L_ij)
+
+
     print("\nComputing real margin Lipschitz bounds...")
     L = margin_lipschitz_bounds(net, op2_norms)
+        
 
     print("\nMargin Lipschitz Bounds (L[i][j]):")
     for i, row in enumerate(L):
