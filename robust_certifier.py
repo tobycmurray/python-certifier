@@ -6,6 +6,7 @@
 #
 # NOTE: This mirrors the algorithmic structure; it is not a formally verified artifact.
 
+from __future__ import annotations
 from typing import List, Tuple, Dict
 
 import sys
@@ -16,6 +17,129 @@ from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_u
     truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, dims
 from overflow import certify_no_overflow_normwise, OverflowReport
 from formats import get_float_format, FloatFormat
+from nn import forward_numpy_float32
+
+# ---- Mode B components builder ---------------------------------------------
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ModeBComponents:
+    # Everything you need to plug into Theorem 4 for a fixed (x, ε)
+    r_prev: List[Q]                                 # [r0, ..., r_{L-1}]
+    alphas: List[Q]                                 # hidden layers 0..L-2
+    betas: List[Q]                                  # hidden layers 0..L-2
+    DLm1: Q                                         # hidden stack degradation
+    final_pairs: Dict[Tuple[int,int], Tuple[Q, Q]]  # (i,j) -> (alpha_L_ij, beta_L_ij)
+
+def build_modeb_components(
+    network: List[Matrix],
+    op2_norms: List[Q],         # [‖W_0‖₂, ..., ‖W_{L-1}‖₂]
+    op2_abs_norms: List[Q],     # [‖|W_0|‖₂, ..., ‖|W_{L-1}|‖₂]
+    x: Vector,
+    epsilon: Q,
+    fmt: FloatFormat,
+) -> ModeBComponents:
+    """
+    Compute all Mode B ingredients for the given (x, ε):
+      - r_prev(x,ε)
+      - hidden {alpha_l, beta_l}
+      - D_{L-1}(x,ε)
+      - final layer pair params {alpha_L^(i,j), beta_L^(i,j)}
+    """
+    # 1) radii r_{-1..} but we return per-layer inputs [r0..r_{L-1}]
+    r_prev = radii(op2_norms, x, epsilon)              # length L
+
+    # 2) hidden recursion (uses r_prev[:-1])
+    alphas, betas, _kappas = compute_linear_recursion_hidden(
+        op2_norms=op2_norms,
+        op2_abs_norms=op2_abs_norms,
+        radii_prev=r_prev[:-1],     # r_0..r_{L-2}
+        network=network,
+        fmt=fmt,
+    )
+
+    # 3) D_{L-1}(x,ε)
+    DLm1 = hidden_stack_degradation(alphas, betas)
+
+    # 4) final-layer pair params (needs r_{L-1})
+    final_pairs = compute_final_pair_params(
+        W_last=network[-1],
+        r_last_minus1=r_prev[-1],
+        fmt=fmt,
+    )
+
+    return ModeBComponents(
+        r_prev=r_prev,
+        alphas=alphas,
+        betas=betas,
+        DLm1=DLm1,
+        final_pairs=final_pairs,
+    )
+
+@dataclass(frozen=True)
+class ModeBPairResult:
+    j: int
+    margin_center: Q       # y[i*] - y[j] as Q
+    rhs_bound: Q           # ε·L_real[i*,j] + E_ctr(i*,j) + E_ball(i*,j)
+    float_conservatism: Q  # E_ctr(i*,j) + E_ball(i*,j)
+    ok: bool
+
+@dataclass(frozen=True)
+class ModeBReport:
+    ok: bool
+    xstar: int
+    pairs: List[ModeBPairResult]
+    first_failure: Tuple[int, Q, Q] | None  # (j, lhs, rhs)
+
+def E_for_pair(components: ModeBComponents, i: int, j: int) -> Q:
+    """E^{(i,j)} = α_L^(i,j) * D_{L-1} + β_L^(i,j)."""
+    alpha_L_ij, beta_L_ij = components.final_pairs[(i, j)]
+    return alpha_L_ij * components.DLm1 + beta_L_ij
+
+def certify_mode_b_theorem4(
+    y_f32: List[float],                       # center logits (NumPy float32 forward is fine)
+    epsilon: Q,                               
+    L_real: List[List[Q]],                    # real-arithmetic margin Lipschitz matrix
+    comp_ctr: ModeBComponents,                # built with ε = 0
+    comp_ball: ModeBComponents,               # built with ε (target)
+) -> ModeBReport:
+    """
+    Mode B certification per Theorem 4:
+      For i* = argmax y, check ∀ j≠i*:
+          (y[i*] - y[j])  >  ε·L_real[i*,j] + E_ctr(i*,j) + E_ball(i*,j).
+    """
+    if not y_f32:
+        return ModeBReport(ok=False, xstar=-1, pairs=[], first_failure=None)
+
+    # top class at the center (float32)
+    xstar = max(range(len(y_f32)), key=lambda k: y_f32[k])
+    # exact Q versions of logits for precise comparisons
+    yQ = [Q(str(v)) for v in y_f32]
+
+    results: List[ModeBPairResult] = []
+    first_fail: Tuple[int, Q, Q] | None = None
+    ncls = len(y_f32)
+
+    for j in range(ncls):
+        if j == xstar:
+            continue
+
+        # left-hand side: center margin
+        lhs = yQ[xstar] - yQ[j]
+
+        # error budgets and Lipschitz term
+        E_ctr  = E_for_pair(comp_ctr,  xstar, j)
+        E_ball = E_for_pair(comp_ball, xstar, j)
+
+        float_conservatism = E_ctr + E_ball
+        rhs = epsilon * L_real[xstar][j] + float_conservatism
+
+        ok = lhs > rhs
+        results.append(ModeBPairResult(j=j, margin_center=lhs, rhs_bound=rhs, float_conservatism=float_conservatism, ok=ok))
+        if (not ok) and (first_fail is None):
+            first_fail = (j, lhs, rhs)
+
+    return ModeBReport(ok=all(r.ok for r in results), xstar=xstar, pairs=results, first_failure=first_fail)
 
 def _q(v: float) -> Q:
     return Q(str(v))
@@ -29,6 +153,23 @@ def _adot(n: int, amul: Q, u: Q) -> Q:
     # adot(n) = (1 + γ_{n-1}) * n * amul   (with γ_{n-1} defined for n-1 >= 1; else take γ_0 = 0)
     gamma_nm1 = _gamma(n-1, u) if n > 1 else Q(0)
     return (Q(1) + gamma_nm1) * n * amul
+
+
+
+def hidden_stack_degradation(alphas: List[Q], betas: List[Q]) -> Q:
+    """
+    D_{L-1}(x, ε) = sum_{s=1}^{L-1} beta_s * (alpha_{s+1} ... alpha_{L-1})
+    Here 'alphas' and 'betas' are indexed 0..L-2 (hidden layers).
+    """
+    Lh = len(alphas)  # number of hidden layers
+    if Lh == 0:
+        return Q(0)
+    # right_products[t] = prod_{u=t+1}^{L-1} alpha_u
+    right_products = [Q(1)] * Lh
+    right_products[-1] = Q(1)
+    for t in range(len(alphas) - 2, -1, -1):
+        right_products[t] = right_products[t + 1] * alphas[t + 1]    
+    return sum(betas[s] * right_products[s] for s in range(Lh))
 
 def compute_linear_recursion_hidden(
     op2_norms: List[Q],        # [‖W_1‖₂, …, ‖W_{L-1}‖₂]
@@ -256,43 +397,35 @@ def main():
         print(report)
         sys.exit(1)
 
+    print("Simulating neural network forward pass...")
+    y_f32 = forward_numpy_float32(net, x)
 
+    print("Computing Mode B ball components...")
+    comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt32)
+    print("Computing Mode B centre components...")
+    comp_ctr  = build_modeb_components(net, op2_norms, op2_abs_norms, x, Q(0),   fmt32)
 
-    print("Computing linear recursion for hidden layers...")
-    # Hidden stack α/β (linear recursion)
-    alphas, betas, kappas = compute_linear_recursion_hidden(
-        op2_norms=op2_norms,
-        op2_abs_norms=op2_abs_norms,
-        radii_prev=rs[:-1],          # r_0..r_{L-2}
-        network=net,
-        fmt=fmt32,
-    )
-
-    print("Computing D_{L-1}(x,ε)...")
-    # Unroll to get D_{L-1}(x,ε)
-    DLm1 = Q(0)
-    prod = Q(1)
-    # We need sums of beta_s * (alpha_{s+1} ... alpha_{L-1})
-    # Build from the right for numerical neatness (though all exact-Q).
-    right_products = [Q(1)] * len(alphas)
-    for t in range(len(alphas)-2, -1, -1):
-        right_products[t] = right_products[t+1] * alphas[t+1] if t+1 < len(alphas) else Q(1)
-    DLm1 = sum(betas[s] * right_products[s] for s in range(len(alphas)))
-
-    print("Computing final layer margin degradation parameters...")
-    # Final layer pairwise params
-    pairs = compute_final_pair_params(W_last=net[-1], r_last_minus1=rs[-1], fmt=fmt32)
-    # pairs[(i,j)] -> (alpha_L_ij, beta_L_ij)
-
-
-    print("\nComputing real margin Lipschitz bounds...")
+    print("Computing margin Lipschitz bounds...")
     L = margin_lipschitz_bounds(net, op2_norms)
-        
+    
+    print("\nRunning Mode B (Theorem 4) certification...")
+    modeb = certify_mode_b_theorem4(
+        y_f32=y_f32,
+        epsilon=epsilon,
+        L_real=L,
+        comp_ctr=comp_ctr,
+        comp_ball=comp_ball,
+    )
+    print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
+    for r in modeb.pairs:
+        print(f"  j={r.j}: margin={float(r.margin_center)}  "
+              f"bound={float(r.rhs_bound)}  conserv={float(r.float_conservatism)}   -> {'PASS' if r.ok else 'FAIL'}")
 
-    print("\nMargin Lipschitz Bounds (L[i][j]):")
-    for i, row in enumerate(L):
-        formatted = [f"{qstr(v)}" for v in row]
-        print(f"{i}: [{', '.join(formatted)}]")
+    if modeb.ok:
+        print("Mode B: PASS")
+    else:
+        j, lhs, rhs = modeb.first_failure or (-1, Q(0), Q(0))
+        print(f"Mode B: FAIL at j={j}: margin={float(lhs)} ≤ bound={float(rhs)}")
 
 if __name__ == "__main__":
     main()
