@@ -328,7 +328,7 @@ def certify(v_prime: Vector, epsilon: Q, L: List[List[Q]]) -> bool:
 
 def main():
     if len(sys.argv) != 5:
-        print("Usage: main <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
+        print(f"Usage: {sys.argv[0]} <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
         sys.exit(1)
 
     network_file = sys.argv[1]
@@ -381,11 +381,12 @@ def main():
     print(f"Loaded input with length {len(x)}")
 
     hsh = hash_file_contents(network_file)
+    norms_file = hsh+f".{gram_iters}.norms.json" # self-authenticating file name
     try:
-        norms = load_norms(hsh, gram_iters, "norms.json")
+        norms = load_norms(hsh, gram_iters, norms_file)
     except Exception:
         norms = compute_norms(net, gram_iters)
-        save_norms(hsh, gram_iters, norms, "norms.json")
+        save_norms(hsh, gram_iters, norms, norms_file)
 
     inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
 
