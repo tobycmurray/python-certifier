@@ -10,6 +10,8 @@ from __future__ import annotations
 from typing import List, Tuple, Dict
 
 import sys
+import os
+import json
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up
@@ -91,6 +93,7 @@ class ModeBPairResult:
 @dataclass(frozen=True)
 class ModeBReport:
     ok: bool
+    ok_real: bool
     xstar: int
     pairs: List[ModeBPairResult]
     first_failure: Tuple[int, Q, Q] | None  # (j, lhs, rhs)
@@ -146,7 +149,7 @@ def certify_mode_b_theorem4(
         if (not ok) and (first_fail is None):
             first_fail = (j, lhs, rhs)
 
-    return ModeBReport(ok=all(r.ok for r in results), xstar=xstar, pairs=results, first_failure=first_fail)
+    return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results), xstar=xstar, pairs=results, first_failure=first_fail)
 
 def _q(v: float) -> Q:
     return Q(str(v))
@@ -328,23 +331,29 @@ def certify(v_prime: Vector, epsilon: Q, L: List[List[Q]]) -> bool:
 
 def main():
     if len(sys.argv) != 5:
+        print(f"Usage: {sys.argv[0]} <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json>")
         print(f"Usage: {sys.argv[0]} <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
         sys.exit(1)
 
     network_file = sys.argv[1]
-    input_file = sys.argv[3]
     try:
         gram_iters = int(sys.argv[2])
     except ValueError:
         print("Error: <GRAM_ITERATIONS> must be an integer.")
         sys.exit(1)
 
-    try:
-        epsilon = Q(sys.argv[4])
-    except ValueError:
-        print("Error: <epsilon> must be a float.")
-        sys.exit(1)
-        
+    cex_file, input_file = None, None
+    if sys.argv[3] == "--cex":
+        cex_file = sys.argv[4]
+    else:
+        input_file = sys.argv[3]
+        try:
+            epsilon = Q(sys.argv[4])
+        except ValueError:
+            print("Error: <epsilon> must be a float.")
+            sys.exit(1)
+
+    # load network, get norms
     try:
         net = load_network_from_file(network_file, validate=True)
     except ParseError as e:
@@ -358,28 +367,6 @@ def main():
     for i, W in enumerate(net):
         print(f"  Layer {i} has dims: {dims(W)}")
 
-    try:
-        if input_file.endswith(".npy"):
-            x = load_vector_from_npy_file(input_file)
-        else:
-            x = load_vector_from_file(input_file)
-    except ParseError as e:
-        print(f"Error parsing input file: {e}")
-        sys.exit(1)
-    except FileNotFoundError:
-        print(f"Error: file not found: {input_file}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error loading input file: {input_file}")
-        raise e
-
-    # check input compatibility with the neural network
-    first_cols = len(net[0][0])
-    if len(x) != first_cols:
-        print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
-        sys.exit(1)        
-    print(f"Loaded input with length {len(x)}")
-
     hsh = hash_file_contents(network_file)
     norms_file = hsh+f".{gram_iters}.norms.json" # self-authenticating file name
     try:
@@ -390,61 +377,111 @@ def main():
 
     inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
 
-    print("Computing radii...")
-    rs = radii(op2_norms, x, epsilon)
-    print("\nRadii:")
-    for i, r in enumerate(rs):
-        print(f"{i}: {qstr(r)}")
-
+    print("Computing margin Lipschitz bounds...")
+    L = margin_lipschitz_bounds(net, op2_norms)        
+    
+    # floating-point format: for now, float32 only
     fmt32 = get_float_format("float32")
 
-    print("Certifying absence of overflow...")
-    report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt32)
-    if not report.ok:
-        print("Overflow certification failed: ")
-        print(report)
-        sys.exit(1)
-
-    print("Simulating neural network forward pass...")
-    y_f32 = forward_numpy_float32(net, x)
-
-    print("Simulating real-valued neural network forward pass...")
-    y_real = forward(net, x)
-
-    print("f32  logits: ", y_f32)
-    print("real logits: ", vecqstr(y_real))
-
-    print("Computing Mode B ball components...")
-    comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt32)
-    print("Computing Mode B centre components...")
-    comp_ctr  = build_modeb_components(net, op2_norms, op2_abs_norms, x, Q(0),   fmt32)
-
-    print("Computing margin Lipschitz bounds...")
-    L = margin_lipschitz_bounds(net, op2_norms)
+    # build a list of (x,epsilon,y_f32) triples to certify
+    to_certify = []        
+    if cex_file is not None:
+        with open(cex_file, "r") as f:
+            cexs = json.load(f)
+        for cex in cexs:
+            # ignore the absolute paths in the JSON file and assume inputs are in the same directory as the cex file
+            d = os.path.dirname(cex_file)
+            x1_file = cex["x1_file"]
+            x1_file = os.path.basename(x1_file)
+            x1_file = os.path.join(d,x1_file)
+            print(f"Loading input from npy file: {x1_file}")
+            x = load_vector_from_npy_file(x1_file)
+            epsilon = Q(cex["max_eps"])
+            # FIXME: Load this from the file
+            print("Simulating neural network forward pass...")
+            y_f32 = forward_numpy_float32(net, x)            
+            to_certify.append((x,epsilon,y_f32))
     
-    print("\nRunning Mode B (Theorem 4) certification...")
-    modeb = certify_mode_b_theorem4(
-        y_f32=y_f32,
-        epsilon=epsilon,
-        L_real=L,
-        comp_ctr=comp_ctr,
-        comp_ball=comp_ball,
-    )
-    print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
-    for r in modeb.pairs:
-        print(f"  j={r.j}:\n"
-              f"           margin={qstr(r.margin_center)}\n"
-              f"           bound={float(r.rhs_bound):.20f}\n"
-              f"           ok_real={bool(r.ok_real)}\n"
-              f"           bound_real={float(r.rhs_real):.20f}\n"
-              f"           conserv={qstr(r.float_conservatism)}\n"
-              f"   -> {'PASS' if r.ok else 'FAIL'}")
+    if input_file is not None:
+        if input_file.endswith(".npy"):
+            x = load_vector_from_npy_file(input_file)
+        else:
+            x = load_vector_from_file(input_file)
+        print("Simulating neural network forward pass...")
+        y_f32 = forward_numpy_float32(net, x)            
+        to_certify.append((x,epsilon,y_f32))
 
-    if modeb.ok:
-        print("Mode B: PASS")
-    else:
-        j, lhs, rhs = modeb.first_failure or (-1, Q(0), Q(0))
-        print(f"Mode B: FAIL at j={j}: margin={qstr(lhs)} ≤ bound={qstr(rhs)}")
+
+    print(f"Got {len(to_certify)} instances to certify...")
+    results = []
+    for i, (x,epsilon,y_f32) in enumerate(to_certify):
+        if i % 10 == 0:
+            print(f"Certifying {i} of {len(to_certify)}")
+        # check input compatibility with the neural network
+        first_cols = len(net[0][0])
+        if len(x) != first_cols:
+            print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
+            sys.exit(1)        
+        #print(f"Certifying input with length {len(x)}")
+
+
+        #print("Computing radii...")
+        rs = radii(op2_norms, x, epsilon)
+        #print("\nRadii:")
+        #for i, r in enumerate(rs):
+        #    print(f"{i}: {qstr(r)}")
+
+        #print("Certifying absence of overflow...")
+        report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt32)
+        if not report.ok:
+            print("Overflow certification failed: ")
+            print(report)
+            sys.exit(1)
+
+        #print("Simulating real-valued neural network forward pass...")
+        y_real = forward(net, x)
+
+        #print("f32  logits: ", y_f32)
+        #print("real logits: ", vecqstr(y_real))
+
+        #print("Computing Mode B ball components...")
+        comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt32)
+        #print("Computing Mode B centre components...")
+        comp_ctr  = build_modeb_components(net, op2_norms, op2_abs_norms, x, Q(0),   fmt32)
+
+        #print("\nRunning Mode B (Theorem 4) certification...")
+        modeb = certify_mode_b_theorem4(
+            y_f32=y_f32,
+            epsilon=epsilon,
+            L_real=L,
+            comp_ctr=comp_ctr,
+            comp_ball=comp_ball,
+        )
+        #print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
+        #for r in modeb.pairs:
+        #    print(f"  j={r.j}:\n"
+        #          f"           margin={qstr(r.margin_center)}\n"
+        #          f"           bound={float(r.rhs_bound):.20f}\n"
+        #          f"           ok_real={bool(r.ok_real)}\n"
+        #          f"           bound_real={float(r.rhs_real):.20f}\n"
+        #          f"           conserv={qstr(r.float_conservatism)}\n"
+        #          f"   -> {'PASS' if r.ok else 'FAIL'}")
+
+        #if modeb.ok:
+        #    print("Mode B: PASS")
+        #else:
+        #    j, lhs, rhs = modeb.first_failure or (-1, Q(0), Q(0))
+        #    print(f"Mode B: FAIL at j={j}: margin={qstr(lhs)} ≤ bound={qstr(rhs)}")
+        results.append(modeb)
+
+    results_ok = [r for r in results if r.ok]
+    results_fail = [r for r in results if not r.ok]
+    results_ok_real = [r for r in results if r.ok_real]
+    
+    print(f"Of {len(results)} instances we attempted to certify: ")
+    print(f"Certified {len(results_ok)} instances as robust")
+    print(f"Failed to certify {len(results_fail)} instances as robust")
+    print(f"Real certifier would have certified {len(results_ok_real)} instances as robust")    
 
 if __name__ == "__main__":
     main()
