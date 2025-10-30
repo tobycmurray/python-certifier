@@ -1,3 +1,5 @@
+import numpy as np
+
 from arithmetic import Q
 from linear_algebra import transpose
 
@@ -110,3 +112,9 @@ def load_vector_from_file(path: str):
     if i != len(s):
         raise ParseError(f"Unexpected trailing content at position {i}: {s[i:]}")
     return vec    
+
+def load_vector_from_npy_file(path: str):
+    arr = np.load(path)
+    arr = arr.flatten()
+    # Use repr(element) to preserve all available digits — unlike str() which can round
+    return [Q(repr(x.item())) for x in arr]    

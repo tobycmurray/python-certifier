@@ -11,7 +11,7 @@ from typing import List, Tuple, Dict
 
 import sys
 
-from parsing import load_network_from_file, ParseError, load_vector_from_file
+from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up
 from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_upper_bound, matrix_div_scalar, \
     truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, \
@@ -328,7 +328,7 @@ def certify(v_prime: Vector, epsilon: Q, L: List[List[Q]]) -> bool:
 
 def main():
     if len(sys.argv) != 5:
-        print("Usage: main <neural_network_input.txt> <GRAM_ITERATIONS> <input_x.txt> <epsilon>")
+        print("Usage: main <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
         sys.exit(1)
 
     network_file = sys.argv[1]
@@ -359,13 +359,19 @@ def main():
         print(f"  Layer {i} has dims: {dims(W)}")
 
     try:
-        x = load_vector_from_file(input_file)
+        if input_file.endswith(".npy"):
+            x = load_vector_from_npy_file(input_file)
+        else:
+            x = load_vector_from_file(input_file)
     except ParseError as e:
         print(f"Error parsing input file: {e}")
         sys.exit(1)
     except FileNotFoundError:
         print(f"Error: file not found: {input_file}")
         sys.exit(1)
+    except Exception as e:
+        print(f"Error loading input file: {input_file}")
+        raise e
 
     # check input compatibility with the neural network
     first_cols = len(net[0][0])
