@@ -431,8 +431,13 @@ def main():
     )
     print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
     for r in modeb.pairs:
-        print(f"  j={r.j}: margin={qstr(r.margin_center)}  "
-              f"bound={qstr(r.rhs_bound)}  ok_real={bool(r.ok_real)}   -> {'PASS' if r.ok else 'FAIL'}")
+        print(f"  j={r.j}:\n"
+              f"           margin={qstr(r.margin_center)}\n"
+              f"           bound={float(r.rhs_bound):.20f}\n"
+              f"           ok_real={bool(r.ok_real)}\n"
+              f"           bound_real={float(r.rhs_real):.20f}\n"
+              f"           conserv={qstr(r.float_conservatism)}\n"
+              f"   -> {'PASS' if r.ok else 'FAIL'}")
 
     if modeb.ok:
         print("Mode B: PASS")
