@@ -19,6 +19,7 @@ from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_u
 from overflow import certify_no_overflow_normwise, OverflowReport
 from formats import get_float_format, FloatFormat
 from nn import forward_numpy_float32, forward
+from norms import compute_norms, load_norms, save_norms, hash_file_contents
 
 # ---- Mode B components builder ---------------------------------------------
 from dataclasses import dataclass
@@ -372,23 +373,15 @@ def main():
         print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
         sys.exit(1)        
     print(f"Loaded input with length {len(x)}")
-    
-    inf_norms = []
-    op2_norms = []
-    op2_abs_norms = []
 
-    for i, W in enumerate(net):
-        print(f"Computing norms for layer {i}, ...")
-        print(f"  infinity norm...")
-        inf_norm = layer_infinity_norm(W)
-        print(f"  operator norm...") 
-        op2_norm = layer_opnorm_upper_bound(W, gram_iters)
-        print(f"  operator norm of abs...")
-        op2_abs_norm = layer_opnorm_upper_bound(abs_matrix(W), gram_iters)
+    hsh = hash_file_contents(network_file)
+    try:
+        norms = load_norms(hsh, gram_iters, "norms.json")
+    except Exception:
+        norms = compute_norms(net, gram_iters)
+        save_norms(hsh, gram_iters, norms, "norms.json")
 
-        inf_norms.append(inf_norm)
-        op2_norms.append(op2_norm)
-        op2_abs_norms.append(op2_abs_norm)
+    inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
 
     print("Computing radii...")
     rs = radii(op2_norms, x, epsilon)
