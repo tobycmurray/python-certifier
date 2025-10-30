@@ -58,8 +58,11 @@ def load_norms(hsh: str, gram_iters: int, filename: str) -> Norms:
     if hsh != summary["hash"]:
         raise Exception(f"hash value {summary['hash']} doesn't match expected hash {hsh}")
     if gram_iters != summary["gram_iters"]:
-        raise Exception(f"gram iters {summary['gram_iters']} doesn't match expected gram iters {gram_iters}")        
-    return Norms(inf_norms=summary["inf_norms"], op2_norms=summary["op2_norms"], op2_abs_norms=summary["op2_abs_norms"])
+        raise Exception(f"gram iters {summary['gram_iters']} doesn't match expected gram iters {gram_iters}")
+    inf_norms = [Q(n) for n in summary["inf_norms"]]
+    op2_norms = [Q(n) for n in summary["op2_norms"]]
+    op2_abs_norms = [Q(n) for n in summary["op2_abs_norms"]]
+    return Norms(inf_norms=inf_norms, op2_norms=op2_norms, op2_abs_norms=op2_abs_norms)
 
 def hash_file_contents(filename: str) -> str:
     return hashlib.sha256(open(filename,'rb').read()).hexdigest()
