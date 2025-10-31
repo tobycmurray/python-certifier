@@ -399,6 +399,9 @@ def main():
             print(f"Loading input from npy file: {x1_file}")
             x = load_vector_from_npy_file(x1_file)
             epsilon = Q(cex["max_eps"])
+            # whether we simulate it or load the answer produced by the original model
+            # seems to produce identical robustness numbers for the MNIST CAV 2025 model
+            # and for confirming the non-robustness of the MNIST DeepFlool float32 counter-examples.
             if "y1" not in cex:
                 print("Simulating neural network forward pass...")
                 y_f32 = forward_numpy_float32(net, x)
