@@ -262,6 +262,8 @@ def compute_final_pair_params(
             Sij = l2_norm_upper_bound_vec(sumabs)
 
             # be conservative and do not take advantage of the "Variant" remark atm
+            # changing this to kappa doesn't seem to introduce unsoundness
+            # TODO: investigate whether just "kappa" here is in fact sound
             alpha_ij = Lij + (1 + kappa) * Sij
             beta_ij  = kappa * Sij * r_last_minus1 + Q(2) * (Q(1) + u) * ad
             out[(i, j)] = (alpha_ij, beta_ij)
@@ -439,7 +441,7 @@ def main():
             sys.exit(1)
 
         #print("Simulating real-valued neural network forward pass...")
-        y_real = forward(net, x)
+        #y_real = forward(net, x)
 
         #print("f32  logits: ", y_f32)
         #print("real logits: ", vecqstr(y_real))
