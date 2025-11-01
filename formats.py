@@ -33,16 +33,27 @@ def _derive(name: str, p: int, emin: int, emax: int) -> FloatFormat:
 
 # Authoritative IEEE-754 binary formats (unbiased exponent bounds):
 # - binary32:   p=24,  emin = -126, emax = 127
+# - binary16:   p=11,  emin = -14, emax = 15
 # - bfloat16:   p=8,   emin = -126, emax = 127   (same exponent range as fp32)
 # - binary64:   p=53,  emin = -1022, emax = 1023
 _REGISTRY = {
-    "float32":  (24, -126, 127),
-    "fp32":     (24, -126, 127),
-    "bfloat16": (8,  -126, 127),
-    "bf16":     (8,  -126, 127),
-    "float64":  (53, -1022, 1023),
-    "fp64":     (53, -1022, 1023),
-    "double":   (53, -1022, 1023),
+    "float32":   (24, -126, 127),
+    "fp32":      (24, -126, 127),
+    "binary32":  (24, -126, 127),
+    "single":    (24, -126, 127),
+
+    "float16":   (11,  -14, 15),
+    "fp16":      (11,  -14, 15),
+    "binary16":  (11,  -14, 15),
+    "half":      (11,  -14, 15),
+
+    "bfloat16":  (8,  -126, 127),
+    "bf16":      (8,  -126, 127),
+
+    "float64":   (53, -1022, 1023),
+    "fp64":      (53, -1022, 1023),
+    "binary64":  (53, -1022, 1023),
+    "double":    (53, -1022, 1023),
 }
 
 def get_float_format(name: str) -> FloatFormat:
@@ -50,5 +61,5 @@ def get_float_format(name: str) -> FloatFormat:
     try:
         p, emin, emax = _REGISTRY[key]
     except KeyError:
-        raise NotImplementedError(f"Format '{name}' not implemented.")
+        raise NotImplementedError(f"Format '{name}' not implemented. Supported formats {_REGISTRY.keys()}")
     return _derive(key, p, emin, emax)

@@ -332,11 +332,13 @@ def certify(v_prime: Vector, epsilon: Q, L: List[List[Q]]) -> bool:
     return True
 
 def main():
-    if len(sys.argv) != 5:
-        print(f"Usage: {sys.argv[0]} <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json>")
-        print(f"Usage: {sys.argv[0]} <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
+    if len(sys.argv) != 6:
+        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json>")
+        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
         sys.exit(1)
 
+    float_format = sys.argv[1]
+    sys.argv = sys.argv[1:]
     network_file = sys.argv[1]
     try:
         gram_iters = int(sys.argv[2])
@@ -383,7 +385,7 @@ def main():
     L = margin_lipschitz_bounds(net, op2_norms)        
     
     # floating-point format: for now, float32 only
-    fmt32 = get_float_format("float32")
+    fmt32 = get_float_format(float_format)
 
     # build a list of (x,epsilon,y_f32) triples to certify
     to_certify = []        
