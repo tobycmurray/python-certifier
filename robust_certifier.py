@@ -280,6 +280,9 @@ def compute_final_pair_params(
             # using (1 + kappa) instead of just kappa here makes a significant difference
             # on the MNIST (CAV 2025) model robustness goes from 93.25% (with 1 + kappa)
             # to 95.50% (with kappa), with a ceiling of 95.74% (the CAV 2025 certifier)
+            #
+            # for Fashion MNIST (CAV 2025), we certify 82.16% robust (with kappa), with
+            # a ceiling of 83.65% (the CAV 2025 certifier)
             alpha_ij = Lij + kappa * Sij
             beta_ij  = kappa * Sij * r_last_minus1 + Q(2) * (Q(1) + u) * ad
             out[(i, j)] = (alpha_ij, beta_ij)
