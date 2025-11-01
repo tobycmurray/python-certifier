@@ -114,7 +114,30 @@ def load_vector_from_file(path: str):
     return vec    
 
 def load_vector_from_npy_file(path: str):
-    arr = np.load(path)
-    arr = arr.flatten()
-    # Use repr(element) to preserve all available digits — unlike str() which can round
-    return [Q(repr(x.item())) for x in arr]    
+    arr = np.load(path, allow_pickle=False).ravel()
+    k, isz = arr.dtype.kind, arr.dtype.itemsize
+
+    # Numeric floats: f16/f32/f64
+    if k == 'f' or k == 'g':
+        f64 = arr.astype(np.float64, copy=False)
+
+    # Raw 2-byte payloads: interpret as bfloat16
+    # This is needed for some of the saved bfloat16 counter-examples
+    elif (k in ('V', 'S', 'a')) and isz == 2:
+        # little-endian 16-bit words
+        u16 = arr.view('<u2').astype(np.uint32)
+        # place as top 16 bits of IEEE754 float32
+        f32 = (u16 << 16).view('<f4')
+        f64 = f32.astype(np.float64, copy=False)
+    else:
+        raise TypeError(f"Unsupported dtype: {arr.dtype!r}")
+
+    if (f64 < 0).any() or (f64 > 1).any():
+        raise ValueError("Loaded values not in [0, 1]; check dtype interpretation.")
+
+    out = []
+    for x in f64:
+        if not np.isfinite(x):
+            raise ValueError("NaN/Inf encountered; cannot convert to Fraction.")
+        out.append(Q.from_float(float(x)))
+    return out

@@ -23,6 +23,22 @@ from formats import get_float_format, FloatFormat
 from nn import forward_numpy_float32, forward
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 
+def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
+    """
+    Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
+    Raises ValueError with an explanatory message if violated.
+    """
+    u = Q(str(fmt.u))
+    for ell, W in enumerate(network):
+        m, n = dims(W)
+        nu = u * n
+        if nu >= Q(1):
+            raise ValueError(
+                f"[Precondition] Layer {ell}: n*u = {qstr(nu)} ≥ 1 (n={n}, u={qstr(u)}). "
+                "The rounding-error model with γ_n is invalid. "
+                "Consider a wider-precision format or reducing layer width."
+            )
+
 # ---- Mode B components builder ---------------------------------------------
 from dataclasses import dataclass
 
@@ -385,7 +401,9 @@ def main():
     L = margin_lipschitz_bounds(net, op2_norms)        
     
     # floating-point format: for now, float32 only
-    fmt32 = get_float_format(float_format)
+    fmt = get_float_format(float_format)
+
+    check_rounding_preconditions(net, fmt)
 
     # build a list of (x,epsilon,y_f32) triples to certify
     to_certify = []        
@@ -441,7 +459,7 @@ def main():
         #    print(f"{i}: {qstr(r)}")
 
         #print("Certifying absence of overflow...")
-        report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt32)
+        report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt)
         if not report.ok:
             print("Overflow certification failed: ")
             print(report)
@@ -454,9 +472,9 @@ def main():
         #print("real logits: ", vecqstr(y_real))
 
         #print("Computing Mode B ball components...")
-        comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt32)
+        comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt)
         #print("Computing Mode B centre components...")
-        comp_ctr  = build_modeb_components(net, op2_norms, op2_abs_norms, x, Q(0),   fmt32)
+        comp_ctr  = build_modeb_components(net, op2_norms, op2_abs_norms, x, Q(0),   fmt)
 
         #print("\nRunning Mode B (Theorem 4) certification...")
         modeb = certify_mode_b_theorem4(

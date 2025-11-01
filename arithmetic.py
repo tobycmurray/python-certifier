@@ -122,7 +122,7 @@ def round_up(x: Q) -> Q:
     Returns a rational on the 10^{-k} grid (k <= ROUNDING_PRECISION) with r >= x.
     """
     if x < 0:
-        raise ValueError("round_up requires x >= 0")
+        raise ValueError(f"round_up requires x >= 0. got x = {x}")
     r = x
     i = 0
     # helper: is_integer
