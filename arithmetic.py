@@ -1,11 +1,12 @@
 from __future__ import annotations
-from fractions import Fraction
 
-Q = Fraction  # rational type alias
+# use gmpy2, which is much faster than Python's Fractions
+import gmpy2
+Q = gmpy2.mpq
 
-def qstr(q: Fraction) -> str:
+def qstr(q: Q) -> str:
     """
-    Exact decimal expansion of a Fraction without float rounding.
+    Exact decimal expansion of a Q without float rounding.
     - If it terminates, returns all digits.
     - If it repeats, returns a string with the repeating part in parentheses, e.g. "0.(3)".
     """
@@ -55,14 +56,6 @@ ROUNDING_PRECISION = DECIMALS
 # Parameters from Fig. 7
 SQRT_ERR = Q(1, 10**11)          # 1e-11 as a rational
 SQRT_ITERATIONS = 2_000_000
-
-def to_q(x: int | float | str | Fraction) -> Q:
-    """Convert to rational Q safely (floats go through string to avoid binary artifacts)."""
-    if isinstance(x, Fraction):
-        return x
-    if isinstance(x, float):
-        return Q(str(x))  # avoid binary float rounding noise
-    return Q(x)
 
 def trunc16_scalar(x: Q) -> Q:
     """

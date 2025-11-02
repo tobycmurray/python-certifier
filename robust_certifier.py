@@ -12,6 +12,7 @@ from typing import List, Tuple, Dict
 import sys
 import os
 import json
+import time
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up
@@ -44,7 +45,6 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ModeBComponents:
-    # Everything you need to plug into Theorem 4 for a fixed (x, ε)
     r_prev: List[Q]                                 # [r0, ..., r_{L-1}]
     alphas: List[Q]                                 # hidden layers 0..L-2
     betas: List[Q]                                  # hidden layers 0..L-2
@@ -53,11 +53,14 @@ class ModeBComponents:
 
 def build_modeb_components(
     network: List[Matrix],
+    sqrt_m_ells: Dict[int,Q],
     op2_norms: List[Q],         # [‖W_0‖₂, ..., ‖W_{L-1}‖₂]
     op2_abs_norms: List[Q],     # [‖|W_0|‖₂, ..., ‖|W_{L-1}|‖₂]
     x: Vector,
     epsilon: Q,
     fmt: FloatFormat,
+    L: Dict[Tuple[int,int],Q],
+    S: Dict[Tuple[int,int],Q]
 ) -> ModeBComponents:
     """
     Compute all Mode B ingredients for the given (x, ε):
@@ -75,6 +78,7 @@ def build_modeb_components(
         op2_abs_norms=op2_abs_norms,
         radii_prev=r_prev[:-1],     # r_0..r_{L-2}
         network=network,
+        sqrt_m_ells=sqrt_m_ells,
         fmt=fmt,
     )
 
@@ -86,6 +90,8 @@ def build_modeb_components(
         W_last=network[-1],
         r_last_minus1=r_prev[-1],
         fmt=fmt,
+        L=L,
+        S=S
     )
 
     return ModeBComponents(
@@ -202,6 +208,7 @@ def compute_linear_recursion_hidden(
     op2_abs_norms: List[Q],    # [‖|W_1|‖₂, …, ‖|W_{L-1}|‖₂]
     radii_prev: List[Q],       # [r_0, …, r_{L-2}]   (length L-1; one per hidden layer input)
     network: List[Matrix],     # to read m_ℓ, n_ℓ
+    sqrt_m_ells: Dict[int,Q],
     fmt: FloatFormat,          # to get u, denorm_min
 ) -> Tuple[List[Q], List[Q], List[Q]]:
     """
@@ -230,7 +237,7 @@ def compute_linear_recursion_hidden(
 
         alpha = op2_norms[ell] + kappa * op2_abs_norms[ell]
         # βℓ = κ_nℓ |||Wℓ|||_2 r_{ℓ-1} + (1+u) adot(nℓ) sqrt(mℓ)
-        beta_noise = (Q(1) + u) * _adot(n_ell, amul, u) * sqrt_upper_bound(Q(m_ell))
+        beta_noise = (Q(1) + u) * _adot(n_ell, amul, u) * sqrt_m_ells[m_ell]
         beta = kappa * op2_abs_norms[ell] * radii_prev[ell] + beta_noise
 
         alphas.append(alpha)
@@ -239,10 +246,38 @@ def compute_linear_recursion_hidden(
     return alphas, betas, kappas
 
 
+def compute_L_and_S(W_last: Matrix):
+    # helper to get rows
+    def row(idx: int) -> List[Q]:
+        return W_last[idx]
+
+    m, n = dims(W_last)
+    L = {}
+    S = {}
+    for i in range(m):
+        Wi = row(i)
+        absWi = [abs(x) for x in Wi]
+        for j in range(m):
+            if i == j:
+                continue
+            Wj = row(j)
+            # L_{i,j} = || Wi - Wj ||_2
+            diff = [Wj[k] - Wi[k] for k in range(n)]
+            Lij = l2_norm_upper_bound_vec(diff)
+            L[(i,j)] = Lij
+            # S_{i,j} = || |Wi| + |Wj| ||_2
+            absWj = [abs(x) for x in Wj]
+            sumabs = [absWi[k] + absWj[k] for k in range(n)]
+            Sij = l2_norm_upper_bound_vec(sumabs)
+            S[(i,j)] = Sij
+    return (L,S)
+
 def compute_final_pair_params(
     W_last: Matrix,
     r_last_minus1: Q,
     fmt: FloatFormat,
+    L: Dict[Tuple[int,int],Q],
+    S: Dict[Tuple[int,int],Q],    
 ) -> Dict[Tuple[int,int], Tuple[Q, Q]]:
     """
     For identity final activation (logits) with no bias:
@@ -257,25 +292,13 @@ def compute_final_pair_params(
     kappa = _gamma(n, u) + u * (Q(1) + _gamma(n, u))
     ad = _adot(n, amul, u)
 
-    # helper to get rows
-    def row(idx: int) -> List[Q]:
-        return W_last[idx]
-
     out: Dict[Tuple[int,int], Tuple[Q,Q]] = {}
     for i in range(m):
-        Wi = row(i)
-        absWi = [abs(x) for x in Wi]
         for j in range(m):
             if i == j:
                 continue
-            Wj = row(j)
-            # L_{i,j} = || Wi - Wj ||_2
-            diff = [Wj[k] - Wi[k] for k in range(n)]
-            Lij = l2_norm_upper_bound_vec(diff)
-            # S_{i,j} = || |Wi| + |Wj| ||_2
-            absWj = [abs(x) for x in Wj]
-            sumabs = [absWi[k] + absWj[k] for k in range(n)]
-            Sij = l2_norm_upper_bound_vec(sumabs)
+            Lij = L[(i,j)]
+            Sij = S[(i,j)]
 
             # using (1 + kappa) instead of just kappa here makes a significant difference
             # on the MNIST (CAV 2025) model robustness goes from 93.25% (with 1 + kappa)
@@ -307,6 +330,16 @@ def radii(op2_norms: List[Q], x: Vector, epsilon: Q) -> List[Q]:
         
     assert len(rs) == L
     return rs
+
+def compute_sqrt_m_ells(network: List[Matrix]):
+    res = {}
+    L = len(network)
+    for ell in range(L-1):
+        W = network[ell]
+        m_ell, n_ell = dims(W)     # m rows, n cols
+        if m_ell not in res:
+            res[m_ell] = sqrt_upper_bound(Q(m_ell))
+    return res
 
 def margin_lipschitz_bounds(network: List[Matrix], op2_norms: List[Q]) -> List[List[Q]]:
     """
@@ -401,7 +434,7 @@ def main():
     inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
 
     print("Computing margin Lipschitz bounds...")
-    L = margin_lipschitz_bounds(net, op2_norms)        
+    L_real = margin_lipschitz_bounds(net, op2_norms)        
     
     # floating-point format: for now, float32 only
     fmt = get_float_format(float_format)
@@ -419,7 +452,6 @@ def main():
             x1_file = cex["x1_file"]
             x1_file = os.path.basename(x1_file)
             x1_file = os.path.join(d,x1_file)
-            print(f"Loading input from npy file: {x1_file}")
             x = load_vector_from_npy_file(x1_file)
             epsilon = Q(cex["max_eps"])
             # whether we simulate it or load the answer produced by the original model
@@ -442,8 +474,19 @@ def main():
         to_certify.append((x,epsilon,y_f32))
 
 
+    sqrt_m_ells = compute_sqrt_m_ells(net)
+    W_last = net[-1]
+    L,S = compute_L_and_S(W_last)
+
     print(f"Got {len(to_certify)} instances to certify...")
     results = []
+
+    times={}
+    times["radii"] = 0
+    times["overflow_check"] = 0
+    times["components"] = 0
+    times["certification"] = 0
+
     for i, (x,epsilon,y_f32) in enumerate(to_certify):
         if i % 10 == 0:
             print(f"Certifying {i} of {len(to_certify)}")
@@ -451,57 +494,40 @@ def main():
         first_cols = len(net[0][0])
         if len(x) != first_cols:
             print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
-            sys.exit(1)        
-        #print(f"Certifying input with length {len(x)}")
+            sys.exit(1)
 
-
-        #print("Computing radii...")
+        time_start = time.perf_counter()
         rs = radii(op2_norms, x, epsilon)
-        #print("\nRadii:")
-        #for i, r in enumerate(rs):
-        #    print(f"{i}: {qstr(r)}")
+        time_radius = time.perf_counter()
+        times["radii"] += time_radius - time_start
 
-        #print("Certifying absence of overflow...")
+        time_overflow_check_start = time.perf_counter()
         report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt)
+        time_overflow_check_end = time.perf_counter()
+
         if not report.ok:
             print("Overflow certification failed: ")
             print(report)
             sys.exit(1)
 
-        #print("Simulating real-valued neural network forward pass...")
-        #y_real = forward(net, x)
+        times["overflow_check"] += (time_overflow_check_end - time_overflow_check_start)
 
-        #print("f32  logits: ", y_f32)
-        #print("real logits: ", vecqstr(y_real))
-
-        #print("Computing Mode B ball components...")
-        comp_ball = build_modeb_components(net, op2_norms, op2_abs_norms, x, epsilon, fmt)
-        #print("Computing Mode B centre components...")
-        comp_ctr  = build_modeb_components(net, op2_norms, op2_abs_norms, x, Q(0),   fmt)
-
-        #print("\nRunning Mode B (Theorem 4) certification...")
+        time_certification_start = time.perf_counter()
+        comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L, S)
+        comp_ctr  = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0),   fmt,  L, S)
+        time_components_end = time.perf_counter()
         modeb = certify_mode_b_theorem4(
             y_f32=y_f32,
             epsilon=epsilon,
-            L_real=L,
+            L_real=L_real,
             comp_ctr=comp_ctr,
             comp_ball=comp_ball,
         )
-        #print(f"Mode B certification check done, got {len(modeb.pairs)} pairs")
-        #for r in modeb.pairs:
-        #    print(f"  j={r.j}:\n"
-        #          f"           margin={qstr(r.margin_center)}\n"
-        #          f"           bound={float(r.rhs_bound):.20f}\n"
-        #          f"           ok_real={bool(r.ok_real)}\n"
-        #          f"           bound_real={float(r.rhs_real):.20f}\n"
-        #          f"           conserv={qstr(r.float_conservatism)}\n"
-        #          f"   -> {'PASS' if r.ok else 'FAIL'}")
+        time_certification_end = time.perf_counter()
 
-        #if modeb.ok:
-        #    print("Mode B: PASS")
-        #else:
-        #    j, lhs, rhs = modeb.first_failure or (-1, Q(0), Q(0))
-        #    print(f"Mode B: FAIL at j={j}: margin={qstr(lhs)} ≤ bound={qstr(rhs)}")
+        times["components"] += (time_components_end - time_certification_start)
+        times["certification"] += (time_certification_end - time_components_end)
+
         results.append(modeb)
 
     results_ok = [r for r in results if r.ok]
@@ -511,7 +537,15 @@ def main():
     print(f"Of {len(results)} instances we attempted to certify: ")
     print(f"Certified {len(results_ok)} instances as robust")
     print(f"Failed to certify {len(results_fail)} instances as robust")
-    print(f"Real certifier would have certified {len(results_ok_real)} instances as robust")    
+    print(f"Real certifier would have certified {len(results_ok_real)} instances as robust")
+
+    N = len(to_certify)
+    print(f"\nAverage Times (miliseconds, over {N} runs): ")
+    print(f"  Radii computation: {times['radii'] * 1000 / N}")
+    print(f"  Overflow check:    {times['overflow_check'] * 1000 / N}")
+    print(f"  Components   :     {times['components'] * 1000 / N}")
+    print(f"  Certification:     {times['certification'] * 1000 / N}")
+    print(f"  Overall:           {(times['radii'] + times['overflow_check'] + times['components'] + times['certification']) * 1000 / N}")
 
 if __name__ == "__main__":
     main()
