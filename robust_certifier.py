@@ -22,7 +22,7 @@ from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_u
 from overflow import certify_no_overflow_normwise, OverflowReport
 from formats import get_float_format, FloatFormat
 from nn import forward_numpy_float32, forward
-from norms import compute_norms, load_norms, save_norms, hash_file_contents
+from norms import compute_norms, load_norms, save_norms, hash_file_contents, QEncoder
 
 def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
     """
@@ -127,7 +127,7 @@ def E_for_pair(components: ModeBComponents, i: int, j: int) -> Q:
 
 def certify_mode_b_theorem4(
     y_f32: List[float],                       # center logits (NumPy float32 forward is fine)
-    epsilon: Q,                               
+    epsilon: Q,
     L_real: List[List[Q]],                    # real-arithmetic margin Lipschitz matrix
     comp_ctr: ModeBComponents,                # built with ε = 0
     comp_ball: ModeBComponents,               # built with ε (target)
@@ -200,7 +200,7 @@ def hidden_stack_degradation(alphas: List[Q], betas: List[Q]) -> Q:
     right_products = [Q(1)] * Lh
     right_products[-1] = Q(1)
     for t in range(len(alphas) - 2, -1, -1):
-        right_products[t] = right_products[t + 1] * alphas[t + 1]    
+        right_products[t] = right_products[t + 1] * alphas[t + 1]
     return sum(betas[s] * right_products[s] for s in range(Lh))
 
 def compute_linear_recursion_hidden(
@@ -277,7 +277,7 @@ def compute_final_pair_params(
     r_last_minus1: Q,
     fmt: FloatFormat,
     L: Dict[Tuple[int,int],Q],
-    S: Dict[Tuple[int,int],Q],    
+    S: Dict[Tuple[int,int],Q],
 ) -> Dict[Tuple[int,int], Tuple[Q, Q]]:
     """
     For identity final activation (logits) with no bias:
@@ -327,7 +327,7 @@ def radii(op2_norms: List[Q], x: Vector, epsilon: Q) -> List[Q]:
         # no bias term, plus Lipschitz constant of ReLU is 1
         r = op2_norms[ell - 1] * r
         rs.append(r)
-        
+
     assert len(rs) == L
     return rs
 
@@ -383,10 +383,32 @@ def certify(v_prime: Vector, epsilon: Q, L: List[List[Q]]) -> bool:
             return False
     return True
 
+def check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file):
+    L_ref = None
+    with open(dafny_json_file, mode="r") as f:
+        data = json.load(f, parse_float=Q)
+    for obj in data:
+        if "lipschitz_bounds" in obj.keys():
+            L_ref = obj["lipschitz_bounds"]
+            gram_iters_ref = obj["GRAM_ITERATIONS"]
+
+    if L_ref is None:
+        raise ValueError(f"Reference file {dafny_json_file} doesn't contain lipschitz bounds")
+
+    if gram_iters != gram_iters_ref:
+        raise ValueError(f"Reference gram iterations {gram_iters_ref} doesn't match actual gram iterations {gram_iters}")
+
+    if len(L_ref) != len(L_real) or len(L_ref[0]) != len(L_real[0]):
+        raise ValueError(f"Dimensions of reference Lipschitz bounds don't match actual dimensions")
+
+    if L_ref != L_real:
+        raise ValueError(f"Reference Lipschitz constants differ from computed ones")
+
+
 def main():
-    if len(sys.argv) != 6:
-        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json>")
-        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon>")
+    if len(sys.argv) != 7:
+        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -408,6 +430,8 @@ def main():
         except ValueError:
             print("Error: <epsilon> must be a float.")
             sys.exit(1)
+
+    dafny_json_file = sys.argv[5]
 
     # load network, get norms
     try:
@@ -434,15 +458,18 @@ def main():
     inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
 
     print("Computing margin Lipschitz bounds...")
-    L_real = margin_lipschitz_bounds(net, op2_norms)        
-    
+    L_real = margin_lipschitz_bounds(net, op2_norms)
+
+    check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
+    print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
+
     # floating-point format: for now, float32 only
     fmt = get_float_format(float_format)
 
     check_rounding_preconditions(net, fmt)
 
     # build a list of (x,epsilon,y_f32) triples to certify
-    to_certify = []        
+    to_certify = []
     if cex_file is not None:
         with open(cex_file, "r") as f:
             cexs = json.load(f)
@@ -463,14 +490,14 @@ def main():
             else:
                 y_f32 = cex["y1"]
             to_certify.append((x,epsilon,y_f32))
-    
+
     if input_file is not None:
         if input_file.endswith(".npy"):
             x = load_vector_from_npy_file(input_file)
         else:
             x = load_vector_from_file(input_file)
         print("Simulating neural network forward pass...")
-        y_f32 = forward_numpy_float32(net, x)            
+        y_f32 = forward_numpy_float32(net, x)
         to_certify.append((x,epsilon,y_f32))
 
 
@@ -488,7 +515,7 @@ def main():
     times["certification"] = 0
 
     for i, (x,epsilon,y_f32) in enumerate(to_certify):
-        if i % 10 == 0:
+        if i % 100 == 0:
             print(f"Certifying {i} of {len(to_certify)}")
         # check input compatibility with the neural network
         first_cols = len(net[0][0])
@@ -533,7 +560,7 @@ def main():
     results_ok = [r for r in results if r.ok]
     results_fail = [r for r in results if not r.ok]
     results_ok_real = [r for r in results if r.ok_real]
-    
+
     print(f"Of {len(results)} instances we attempted to certify: ")
     print(f"Certified {len(results_ok)} instances as robust")
     print(f"Failed to certify {len(results_fail)} instances as robust")
@@ -549,4 +576,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
