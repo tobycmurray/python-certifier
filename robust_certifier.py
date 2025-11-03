@@ -25,12 +25,15 @@ from nn import forward_numpy_float32, forward
 from norms import compute_norms, load_norms, save_norms, hash_file_contents, QEncoder
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
 
+def _q(v: float) -> Q:
+    return Q(format(v, '.150f'))
+
 def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
     """
     Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
     Raises ValueError with an explanatory message if violated.
     """
-    u = Q(str(fmt.u))
+    u = _q(fmt.u)
     for ell, W in enumerate(network):
         m, n = dims(W)
         nu = u * n
@@ -144,7 +147,7 @@ def certify_mode_b_theorem4(
     # top class at the center (float32)
     xstar = max(range(len(y_f32)), key=lambda k: y_f32[k])
     # exact Q versions of logits for precise comparisons
-    yQ = [Q(str(v)) for v in y_f32]
+    yQ = [_q(v) for v in y_f32]
 
     results: List[ModeBPairResult] = []
     first_fail: Tuple[int, Q, Q] | None = None
@@ -173,9 +176,6 @@ def certify_mode_b_theorem4(
             first_fail = (j, lhs, rhs)
 
     return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results), xstar=xstar, pairs=results, first_failure=first_fail)
-
-def _q(v: float) -> Q:
-    return Q(str(v))
 
 def _gamma(n: int, u: Q) -> Q:
     # γ_n = (n u) / (1 - n u)
