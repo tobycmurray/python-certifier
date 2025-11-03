@@ -397,8 +397,6 @@ def main():
         sys.exit(1)
 
     print(f"Loaded network with {len(net)} layers; running {gram_iters} Gram iterations per layer...")
-    for i, W in enumerate(net):
-        print(f"  Layer {i} has dims: {dims(W)}")
 
     hsh = hash_file_contents(network_file)
     norms_file = hsh+f".{gram_iters}.norms.json" # self-authenticating file name
