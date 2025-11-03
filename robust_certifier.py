@@ -451,7 +451,8 @@ def main():
     norms_file = hsh+f".{gram_iters}.norms.json" # self-authenticating file name
     try:
         norms = load_norms(hsh, gram_iters, norms_file)
-    except Exception:
+    except Exception as e:
+        print(f"Failed to load pre-computed norms. Got error: {e}")
         norms = compute_norms(net, gram_iters)
         save_norms(hsh, gram_iters, norms, norms_file)
 
