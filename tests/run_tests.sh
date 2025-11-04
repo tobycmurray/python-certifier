@@ -171,7 +171,10 @@ run_test "float64" "mnist"         "20" "cex"
 
 run_test "float32" "fashion_mnist" "13" "cex"
 
+run_test "float32" "cifar10"       "12" "cex"
+
 run_test "float32" "mnist"         "11" "all"
 run_test "float32" "mnist"         "20" "all"
 run_test "float32" "fashion_mnist" "12" "all"
 run_test "float32" "fashion_mnist" "13" "all"
+run_test "float32" "cifar10"       "12" "all"
