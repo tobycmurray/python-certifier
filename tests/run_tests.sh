@@ -157,8 +157,13 @@ run_test() {
     ref_num=$(grep -c true "$ref_results_file")
     (( count_ok_real == ref_num )) || die "Mismatch vs Dafny reference: real=$count_ok_real ref=$ref_num ($ref_results_file)"
   fi
-
   echo "OK"
+
+  if [[ "$kind" == "all" ]]; then
+    echo ""
+    tail -15 .log
+    echo ""
+  fi
 }
 
 # --- test matrix -----------------------------------------------------------

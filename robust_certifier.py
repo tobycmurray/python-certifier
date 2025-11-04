@@ -13,6 +13,8 @@ import sys
 import os
 import json
 import time
+import math
+
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up
@@ -123,6 +125,7 @@ class ModeBReport:
     xstar: int
     pairs: List[ModeBPairResult]
     first_failure: Tuple[int, Q, Q] | None  # (j, lhs, rhs)
+    max_lhs: Q
 
 def E_for_pair(components: ModeBComponents, i: int, j: int) -> Q:
     """E^{(i,j)} = α_L^(i,j) * D_{L-1} + β_L^(i,j)."""
@@ -153,6 +156,8 @@ def certify_mode_b_theorem4(
     first_fail: Tuple[int, Q, Q] | None = None
     ncls = len(y_f32)
 
+    max_lhs = None
+
     for j in range(ncls):
         if j == xstar:
             continue
@@ -160,11 +165,15 @@ def certify_mode_b_theorem4(
         # left-hand side: center margin
         lhs = yQ[xstar] - yQ[j]
 
+        if max_lhs is None or lhs > max_lhs:
+            max_lhs = lhs
+
         # error budgets and Lipschitz term
         E_ctr  = E_for_pair(comp_ctr,  xstar, j)
         E_ball = E_for_pair(comp_ball, xstar, j)
 
         # round this up so we can print out the results without having to cast to float
+        # NOTE: this doesn't impact actual conservatism e.g. when applied to CIFAR-10
         float_conservatism = round_up(E_ctr + E_ball)
 
         rhs_real = epsilon * L_real[xstar][j]
@@ -175,7 +184,7 @@ def certify_mode_b_theorem4(
         if (not ok) and (first_fail is None):
             first_fail = (j, lhs, rhs)
 
-    return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results), xstar=xstar, pairs=results, first_failure=first_fail)
+    return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results), xstar=xstar, pairs=results, first_failure=first_fail, max_lhs=max_lhs)
 
 def _gamma(n: int, u: Q) -> Q:
     # γ_n = (n u) / (1 - n u)
@@ -517,6 +526,19 @@ def main():
     print(f"Certified {len(results_ok)} instances as robust")
     print(f"Failed to certify {len(results_fail)} instances as robust")
     print(f"Real certifier would have certified {len(results_ok_real)} instances as robust")
+
+    # flattened list of pairs
+    pairs = [x for r in results for x in r.pairs]
+    N = len(pairs)
+    conservs = [float(p.float_conservatism) for p in pairs]
+    rhs_reals = [float(p.rhs_real) for p in pairs]
+    percents = [float(p.float_conservatism / p.rhs_real) for p in pairs]
+    avg_conservs = math.fsum(conservs) / N
+    avg_rhs_reals = math.fsum(rhs_reals) / N
+    avg_percents = math.fsum(percents) / N
+    print(f"\nAverage float conservatism: {avg_conservs}")
+    print(f"Average real bound: {avg_rhs_reals}")
+    print(f"Average percentage of float conservatism of the real bound: {avg_percents*100}")
 
     N = len(to_certify)
     print(f"\nAverage Times (miliseconds, over {N} runs): ")
