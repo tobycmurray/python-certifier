@@ -29,10 +29,12 @@ MNIST_RESULTS_GRAM_20="results_epsilon_0.45_[128,128,128,128,128,128,128,128]_50
 FASHION_MNIST_RESULTS_GRAM_12="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_12.json"
 FASHION_MNIST_RESULTS_GRAM_13="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_13.json"
 CIFAR10_RESULTS_GRAM_12="results_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800_eval_0.141_gram_12.json"
+Z3_RESULTS_GRAM_10="z3_certifier_results_gram_10.json"
 
 MNIST_NEURAL_NET="neural_net_mnist_epsilon_0.45_[128,128,128,128,128,128,128,128]_500.txt"
 FASHION_MNIST_NEURAL_NET="neural_net_mnist_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500.txt"
 CIFAR10_NEURAL_NET="neural_net_mnist_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800.txt"
+Z3_NEURAL_NET="z3_neural_network.txt"
 
 ALL_MNIST_TEST_INPUTS="all_mnist_test_inputs/test_inputs_epsilon_0.3.json"
 ALL_FASHION_MNIST_TEST_INPUTS="all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25.json"
@@ -43,6 +45,7 @@ CEX_MNIST_FLOAT16="cex_mnist_deepfool_float16/counter_examples.json"
 CEX_MNIST_FLOAT64="cex_mnist_deepfool_float64/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_deepfool/counter_examples.json"
 CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
+CEX_Z3_FLOAT32="z3_counter_examples.json"
 
 # --- declarative tables ----------------------------------------------------
 
@@ -50,6 +53,7 @@ declare -A NN_FILE=(
   [mnist]="$MNIST_NEURAL_NET"
   [fashion_mnist]="$FASHION_MNIST_NEURAL_NET"
   [cifar10]="$CIFAR10_NEURAL_NET"
+  [z3]="$Z3_NEURAL_NET"
 )
 
 declare -A REF_RESULTS=(
@@ -58,6 +62,7 @@ declare -A REF_RESULTS=(
   ["fashion_mnist:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
   ["fashion_mnist:13"]="$FASHION_MNIST_RESULTS_GRAM_13"
   ["cifar10:12"]="$CIFAR10_RESULTS_GRAM_12"
+  ["z3:10"]="$Z3_RESULTS_GRAM_10"
 )
 
 declare -A ALL_INPUTS=(
@@ -72,6 +77,7 @@ declare -A CEX=(
   ["mnist:float64"]="$CEX_MNIST_FLOAT64"
   ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
   ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
+  ["z3:float32"]="$CEX_Z3_FLOAT32"
 )
 
 # --- helpers ---------------------------------------------------------------
@@ -132,7 +138,7 @@ run_test() {
   esac
 
   echo -n "Running test: $format, $model, $gram, $kind ...  "
-  python "$CERTIFIER" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || die "Couldn't run python certifier"
+  python "$CERTIFIER" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum '^Got [0-9]+ instances to certify'                                )
@@ -156,6 +162,8 @@ run_test() {
 }
 
 # --- test matrix -----------------------------------------------------------
+
+run_test "float32" "z3"            "10" "cex"
 
 run_test "float32" "mnist"         "20" "cex"
 run_test "float16" "mnist"         "20" "cex"
