@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Requires: bash >= 4 (associative arrays)
 
 # script for testing the Python certifier.
 # Supports running two kinds of tests:
@@ -8,6 +9,18 @@
 # "cex" - here, we run the certifier over counter-examples to the Dafny certifier
 #         we check that the Python certifier does not certify any counter-examples, but that the real-arithmetic Python
 #         certifier would have certified all of them
+
+# --- version guard ---------------------------------------------------------
+if [[ -z ${BASH_VERSINFO-} || ${BASH_VERSINFO[0]} -lt 4 ]]; then
+  echo "ERROR: This script requires Bash >= 4."
+  echo "       On macOS, install with:  brew install bash"
+  echo "       Then run with:           /opt/homebrew/bin/bash $0"
+  exit 1
+fi
+
+set -euo pipefail
+
+# --- configuration ---------------------------------------------------------
 
 CERTIFIER=../robust_certifier.py
 
@@ -28,198 +41,129 @@ ALL_CIFAR10_TEST_INPUTS="all_cifar10_test_inputs/all_test_inputs.json"
 CEX_MNIST_FLOAT32="cex_mnist_deepfool/counter_examples.json"
 CEX_MNIST_FLOAT16="cex_mnist_deepfool_float16/counter_examples.json"
 CEX_MNIST_FLOAT64="cex_mnist_deepfool_float64/counter_examples.json"
-
 CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_deepfool/counter_examples.json"
-
 CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
 
-function run_test() {
-    format="$1"                # float32, float16, etc.
-    model="$2"                 # mnist, fashion_mnist, etc.
-    gram_iters="$3"
-    kind="$4"                  # cex or all
+# --- declarative tables ----------------------------------------------------
 
-    # variables to set: $nn_file, $ref_results_file, $cex_file
-    case $model in
-	"mnist")
-	    nn_file="${MNIST_NEURAL_NET}"
-	    case $gram_iters in
-		"20")
-		    ref_results_file="${MNIST_RESULTS_GRAM_20}"
-		    ;;
-		"11")
-		    ref_results_file="${MNIST_RESULTS_GRAM_11}"
-		    ;;
-		*)
-		    echo "Unrecognised gram iters for model $model"
-		    exit 1
-		    ;;
-	    esac
-	    case $kind in
-		"all")
-		    if [ "$format" != "float32" ]; then
-			echo "Only float32 format supported when running kind all"
-			exit 1
-		    fi
-		    cex_file="${ALL_MNIST_TEST_INPUTS}"
-		    ;;
-		"cex")
-		    case $format in
-			"float32")
-			    cex_file="${CEX_MNIST_FLOAT32}"
-			    ;;
-			"float16")
-			    cex_file="${CEX_MNIST_FLOAT16}"
-			    ;;
-			"float64")
-			    cex_file="${CEX_MNIST_FLOAT64}"
-			    ;;
-			*)
-			    echo "Unsupported format for model $model and kind $kind"
-			    exit 1
-			    ;;
-		    esac
-		    ;;
-		*)
-		    echo "Unrecognised kind $kind"
-		    exit 1
-		    ;;
-	    esac
-	    ;;
-	"fashion_mnist")
-	    nn_file="${FASHION_MNIST_NEURAL_NET}"
-	    case $gram_iters in
-		"12")
-		    ref_results_file="${FASHION_MNIST_RESULTS_GRAM_12}"
-		    ;;
-		"13")
-		    ref_results_file="${FASHION_MNIST_RESULTS_GRAM_13}"
-		    ;;
-		*)
-		    echo "Unrecognised gram iters for model $model"
-		    exit 1
-		    ;;
-	    esac
-	    case $kind in
-		"all")
-		    if [ "$format" != "float32" ]; then
-			echo "Only float32 format supported when running kind all"
-			exit 1
-		    fi
-		    cex_file="${ALL_FASHION_MNIST_TEST_INPUTS}"
-		    ;;
-		"cex")
-		    case $format in
-			"float32")
-			    cex_file="${CEX_FASHION_MNIST_FLOAT32}"
-			    ;;
-			*)
-			    echo "Unsupported format for model $model and kind $kind"
-			    exit 1
-			    ;;
-		    esac
-		    ;;
-		*)
-		    echo "Unrecognised kind $kind"
-		    exit 1
-		    ;;
-	    esac
-	    ;;
-	"cifar10")
-	    nn_file="${CIFAR10_NEURAL_NET}"
-	    case $gram_iters in
-		"12")
-		    ref_results_file="${CIFAR10_RESULTS_GRAM_12}"
-		    ;;
-		*)
-		    echo "Unrecognised gram iters for model $model"
-		    exit 1
-		    ;;
-	    esac
-	    case $kind in
-		"all")
-		    if [ "$format" != "float32" ]; then
-			echo "Only float32 format supported when running kind all"
-			exit 1
-		    fi
-		    cex_file="${ALL_CIFAR10_TEST_INPUTS}"
-		    ;;
-		"cex")
-		    case $format in
-			"float32")
-			    cex_file="${CEX_CIFAR10_FLOAT32}"
-			    ;;
-			*)
-			    echo "Unsupported format for model $model and kind $kind"
-			    exit 1
-			    ;;
-		    esac
-		    ;;
-		*)
-		    echo "Unrecognised kind $kind"
-		    exit 1
-		    ;;
-	    esac
-	    ;;
-	*)
-	    echo "Unrecognised model"
-	    exit 1
-	    ;;
-    esac
+declare -A NN_FILE=(
+  [mnist]="$MNIST_NEURAL_NET"
+  [fashion_mnist]="$FASHION_MNIST_NEURAL_NET"
+  [cifar10]="$CIFAR10_NEURAL_NET"
+)
 
-    # check we set everything
-    if [ "$nn_file" == "" ]; then
-	echo "Internal error: no nn_file set"
-	exit 1
-    fi
-    if [ "$ref_results_file" == "" ]; then
-	echo "Internal error: no ref_results_file set"
-	exit 1
-    fi
-    if [ "$cex_file" == "" ]; then
-	echo "Internal error: no cex_file set"
-	exit 1
-    fi
+declare -A REF_RESULTS=(
+  ["mnist:11"]="$MNIST_RESULTS_GRAM_11"
+  ["mnist:20"]="$MNIST_RESULTS_GRAM_20"
+  ["fashion_mnist:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
+  ["fashion_mnist:13"]="$FASHION_MNIST_RESULTS_GRAM_13"
+  ["cifar10:12"]="$CIFAR10_RESULTS_GRAM_12"
+)
 
-    echo -n "Running test: $format, $model, $gram_iters, $kind ...  "
-    python "${CERTIFIER}" "$format" "$nn_file" "$gram_iters" --cex "$cex_file" "$ref_results_file"  > .log 2>&1
-    count=$(cat .log | grep '^Got\ [0-9]\+\ instances\ to\ certify...' | cut -d' ' -f2)
-    count_ok=$(cat .log | grep '^Certified\ [0-9]\+\ instances\ as\ robust' | cut -d' ' -f2)
-    count_failed=$(cat .log | grep '^Failed\ to\ certify\ [0-9]\+\ instances\ as\ robust' | cut -d' ' -f4)
-    count_ok_real=$(cat .log | grep 'Real\ certifier\ would\ have\ certified\ [0-9]\+\ instances\ as\ robust' | cut -d' ' -f6)
+declare -A ALL_INPUTS=(
+  [mnist]="$ALL_MNIST_TEST_INPUTS"
+  [fashion_mnist]="$ALL_FASHION_MNIST_TEST_INPUTS"
+  [cifar10]="$ALL_CIFAR10_TEST_INPUTS"
+)
 
-    if (( $count_ok + $count_failed != $count )); then
-	echo "ERROR: Internal error: counts don't add up!"
-	exit 1
-    fi
+declare -A CEX=(
+  ["mnist:float32"]="$CEX_MNIST_FLOAT32"
+  ["mnist:float16"]="$CEX_MNIST_FLOAT16"
+  ["mnist:float64"]="$CEX_MNIST_FLOAT64"
+  ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
+  ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
+)
 
-    if [ "$kind" == "cex" ]; then
-	if (( $count_ok != 0 )); then
-	    echo "ERROR: Certifier certified $count_ok counter-examples!"
-	    exit 1
-	fi
-	if (( $count_ok_real != $count )); then
-	    echo "ERROR: Real-arithmetic certifier would not have certified all counter-examples!"
-	    exit 1
-	fi
-    fi
-    if [ "$kind" == "all" ]; then
-	ref_num=$(cat "${ref_results_file}" | grep true | wc -l)
-	if (( $count_ok_real != $ref_num )); then
-	    echo "ERROR: Real-arithmetic certifier $count_ok doesn't agree with Dafny reference $ref_num!"
-	    exit 1
-	fi
-    fi
-    echo "OK"
+# --- helpers ---------------------------------------------------------------
+
+die() { echo "ERROR: $*" >&2; exit 1; }
+
+grabnum() {
+  # $1: grep -E pattern
+  local pat="$1" out=""
+  # Extract the first integer from the first matching line
+  out=$(grep -E -- "$pat" .log | head -n1 | grep -Eo '[0-9]+' | head -n1 || true)
+  if [[ -z "$out" ]]; then
+    echo "ERROR: Could not parse '$pat' from .log" >&2
+    echo "------- .log tail -------" >&2
+    tail -n 40 .log | sed 's/^/| /' >&2 || true
+    echo "-------------------------" >&2
+    exit 1
+  fi
+  printf '%s\n' "$out"
 }
 
-run_test "float32" "mnist" 20 "cex"
-run_test "float16" "mnist" 20 "cex"
-run_test "float64" "mnist" 20 "cex"
+# --- main runner -----------------------------------------------------------
 
-run_test "float32" "fashion_mnist" 13 "cex"
+run_test() {
+  local format="$1" model="$2" gram="$3" kind="$4"
 
-run_test "float32" "mnist" 11 "all"
-run_test "float32" "mnist" 20 "all"
-run_test "float32" "fashion_mnist" 12 "all"
-run_test "float32" "fashion_mnist" 13 "all"
+  # lookups (use presence check that works on bash >= 4.0)
+  [[ -n ${NN_FILE[$model]+x} ]] || die "Unknown model '$model'. Known: ${!NN_FILE[*]}"
+  local nn_file="${NN_FILE[$model]}"
+
+  local key_ref="$model:$gram"
+  [[ -n ${REF_RESULTS[$key_ref]+x} ]] || {
+    # show available grams for this model
+    local grams=()
+    local k
+    for k in "${!REF_RESULTS[@]}"; do
+      [[ $k == "$model:"* ]] && grams+=("${k#"$model:"}")
+    done
+    die "Unknown gram '$gram' for '$model'. Available: ${grams[*]:-(none)}"
+  }
+  local ref_results_file="${REF_RESULTS[$key_ref]}"
+
+  local cex_file=""
+  case "$kind" in
+    all)
+      [[ "$format" == "float32" ]] || die "Only float32 format supported when running kind 'all'"
+      [[ -n ${ALL_INPUTS[$model]+x} ]] || die "No ALL inputs configured for '$model'"
+      cex_file="${ALL_INPUTS[$model]}"
+      ;;
+    cex)
+      local key_cex="$model:$format"
+      [[ -n ${CEX[$key_cex]+x} ]] || die "Unsupported format '$format' for '$model' and kind 'cex'"
+      cex_file="${CEX[$key_cex]}"
+      ;;
+    *)
+      die "Unrecognised kind '$kind'. Should be either 'all' or 'cex'."
+      ;;
+  esac
+
+  echo -n "Running test: $format, $model, $gram, $kind ...  "
+  python "$CERTIFIER" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || die "Couldn't run python certifier"
+
+  local count count_ok count_failed count_ok_real
+  count=$(       grabnum '^Got [0-9]+ instances to certify'                                )
+  count_ok=$(    grabnum '^Certified [0-9]+ instances as robust'                           )
+  count_failed=$(grabnum '^Failed to certify [0-9]+ instances as robust'                   )
+  count_ok_real=$(grabnum 'Real certifier would have certified [0-9]+ instances as robust' )
+
+  (( count_ok + count_failed == count )) || die "Internal error: counts don't add up (ok=$count_ok failed=$count_failed total=$count)"
+
+  if [[ "$kind" == "cex" ]]; then
+    (( count_ok == 0 )) || die "Certifier certified $count_ok counter-examples!"
+    (( count_ok_real == count )) || die "Real-arithmetic certifier would not have certified all counter-examples!"
+  else
+    # kind is "all"
+    local ref_num
+    ref_num=$(grep -c true "$ref_results_file")
+    (( count_ok_real == ref_num )) || die "Mismatch vs Dafny reference: real=$count_ok_real ref=$ref_num ($ref_results_file)"
+  fi
+
+  echo "OK"
+}
+
+# --- test matrix -----------------------------------------------------------
+
+run_test "float32" "mnist"         "20" "cex"
+run_test "float16" "mnist"         "20" "cex"
+run_test "float64" "mnist"         "20" "cex"
+
+run_test "float32" "fashion_mnist" "13" "cex"
+
+run_test "float32" "mnist"         "11" "all"
+run_test "float32" "mnist"         "20" "all"
+run_test "float32" "fashion_mnist" "12" "all"
+run_test "float32" "fashion_mnist" "13" "all"
