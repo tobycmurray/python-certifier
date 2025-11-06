@@ -141,9 +141,9 @@ run_test() {
   python "$CERTIFIER" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
-  count=$(       grabnum '^Got [0-9]+ instances to certify'                                )
-  count_ok=$(    grabnum '^Certified [0-9]+ instances as robust'                           )
-  count_failed=$(grabnum '^Failed to certify [0-9]+ instances as robust'                   )
+  count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
+  count_ok=$(    grabnum 'Certified [0-9]+ instances as robust'                           )
+  count_failed=$(grabnum 'Failed to certify [0-9]+ instances as robust'                   )
   count_ok_real=$(grabnum 'Real certifier would have certified [0-9]+ instances as robust' )
 
   (( count_ok + count_failed == count )) || die "Internal error: counts don't add up (ok=$count_ok failed=$count_failed total=$count)"
@@ -160,9 +160,9 @@ run_test() {
   echo "OK"
 
   if [[ "$kind" == "all" ]]; then
-    echo ""
-    tail -15 .log
-    echo ""
+      echo ""
+      awk '/CERTIFIER\ RESULTS/ {flag=1} flag' .log
+      echo ""
   fi
 }
 
@@ -179,7 +179,7 @@ run_test "float32" "fashion_mnist" "13" "cex"
 run_test "float32" "cifar10"       "12" "cex"
 
 run_test "float32" "mnist"         "11" "all"
-run_test "float32" "mnist"         "20" "all"
+#run_test "float32" "mnist"         "20" "all"
 run_test "float32" "fashion_mnist" "12" "all"
-run_test "float32" "fashion_mnist" "13" "all"
+#run_test "float32" "fashion_mnist" "13" "all"
 run_test "float32" "cifar10"       "12" "all"

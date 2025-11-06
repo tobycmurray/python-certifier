@@ -1,31 +1,30 @@
-# robust_certifier.py
-# Unverified Python implementation of the verified certifier described in:
-# "A Formally Verified Robustness Certifier for Neural Networks" (CAV 2025).
-# - Follows Gram iteration (Fig. 6) and SqrtUpperBound (Fig. 7).
-# - Arithmetic uses exact rationals (fractions.Fraction).
-#
-# NOTE: This mirrors the algorithmic structure; it is not a formally verified artifact.
-
 from __future__ import annotations
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
+from dataclasses import dataclass
 
-import sys
-import os
-import json
-import time
-import math
-
+import sys, os, json, time, math
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up
-from linear_algebra import Matrix, Vector, mtm, is_zero_matrix, frobenius_norm_upper_bound, matrix_div_scalar, \
-    truncate_with_error, l2_norm_upper_bound_vec, layer_opnorm_upper_bound, layer_infinity_norm, abs_matrix, \
-    dims, vecqstr
-from overflow import certify_no_overflow_normwise, OverflowReport
+from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
+from overflow import certify_no_overflow_normwise
 from formats import get_float_format, FloatFormat
-from nn import forward_numpy_float32, forward
-from norms import compute_norms, load_norms, save_norms, hash_file_contents, QEncoder
+from nn import forward_numpy_float32
+from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
+
+
+@dataclass(frozen=True)
+class FloatStats:
+    mean: Optional[float]
+    minimum: Optional[float]
+    maximum: Optional[float]
+
+def compute_stats(vals: List[float]) -> FloatStats:
+    if not vals:
+        return FloatStats(None, None, None)
+    fsum = math.fsum(vals)
+    return FloatStats(fsum/len(vals), min(vals), max(vals))
 
 def _q(v: float) -> Q:
     return Q(format(v, '.150f'))
@@ -46,15 +45,16 @@ def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> Non
                 "Consider a wider-precision format or reducing layer width."
             )
 
-# ---- Mode B components builder ---------------------------------------------
-from dataclasses import dataclass
-
 @dataclass(frozen=True)
 class ModeBComponents:
     r_prev: List[Q]                                 # [r0, ..., r_{L-1}]
     alphas: List[Q]                                 # hidden layers 0..L-2
     betas: List[Q]                                  # hidden layers 0..L-2
+    gammas: List[Q]
+    kappas: List[Q]
     DLm1: Q                                         # hidden stack degradation
+    right_products: List[Q]     # ∏_{t=ℓ+1}^{L-1} α_t for ℓ=0..L-2
+    contribs: List[Q]           # β_ℓ * right_products[ℓ]
     final_pairs: Dict[Tuple[int,int], Tuple[Q, Q]]  # (i,j) -> (alpha_L_ij, beta_L_ij)
 
 def build_modeb_components(
@@ -68,44 +68,24 @@ def build_modeb_components(
     L: Dict[Tuple[int,int],Q],
     S: Dict[Tuple[int,int],Q]
 ) -> ModeBComponents:
-    """
-    Compute all Mode B ingredients for the given (x, ε):
-      - r_prev(x,ε)
-      - hidden {alpha_l, beta_l}
-      - D_{L-1}(x,ε)
-      - final layer pair params {alpha_L^(i,j), beta_L^(i,j)}
-    """
-    # 1) radii r_{-1..} but we return per-layer inputs [r0..r_{L-1}]
-    r_prev = radii(op2_norms, x, epsilon)              # length L
+    r_prev = radii(op2_norms, x, epsilon)
 
-    # 2) hidden recursion (uses r_prev[:-1])
-    alphas, betas, _kappas = compute_linear_recursion_hidden(
-        op2_norms=op2_norms,
-        op2_abs_norms=op2_abs_norms,
-        radii_prev=r_prev[:-1],     # r_0..r_{L-2}
-        network=network,
-        sqrt_m_ells=sqrt_m_ells,
-        fmt=fmt,
+    alphas, betas, gammas, kappas = compute_linear_recursion_hidden(
+        op2_norms, op2_abs_norms, r_prev[:-1], network, sqrt_m_ells, fmt
     )
 
-    # 3) D_{L-1}(x,ε)
-    DLm1 = hidden_stack_degradation(alphas, betas)
+    DLm1, right_products = hidden_stack_degradation_with_products(alphas, betas)
 
-    # 4) final-layer pair params (needs r_{L-1})
-    final_pairs = compute_final_pair_params(
-        W_last=network[-1],
-        r_last_minus1=r_prev[-1],
-        fmt=fmt,
-        L=L,
-        S=S
-    )
+    contribs = []
+    for ell in range(len(alphas)):
+        contribs.append(betas[ell] * right_products[ell])
+
+    final_pairs = compute_final_pair_params(network[-1], r_prev[-1], fmt, L, S)
 
     return ModeBComponents(
-        r_prev=r_prev,
-        alphas=alphas,
-        betas=betas,
-        DLm1=DLm1,
-        final_pairs=final_pairs,
+        r_prev=r_prev, alphas=alphas, betas=betas,
+        gammas=gammas, kappas=kappas, DLm1=DLm1, right_products=right_products,
+        contribs=contribs, final_pairs=final_pairs
     )
 
 @dataclass(frozen=True)
@@ -133,58 +113,44 @@ def E_for_pair(components: ModeBComponents, i: int, j: int) -> Q:
     return alpha_L_ij * components.DLm1 + beta_L_ij
 
 def certify_mode_b_theorem4(
-    y_f32: List[float],                       # center logits (NumPy float32 forward is fine)
+    y_f32: List[float],
     epsilon: Q,
-    L_real: List[List[Q]],                    # real-arithmetic margin Lipschitz matrix
-    comp_ctr: ModeBComponents,                # built with ε = 0
-    comp_ball: ModeBComponents,               # built with ε (target)
+    L_real: List[List[Q]],
+    comp_ctr: ModeBComponents,
+    comp_ball: ModeBComponents,
 ) -> ModeBReport:
-    """
-    Mode B certification per Theorem 4:
-      For i* = argmax y, check ∀ j≠i*:
-          (y[i*] - y[j])  >  ε·L_real[i*,j] + E_ctr(i*,j) + E_ball(i*,j).
-    """
     if not y_f32:
-        return ModeBReport(ok=False, xstar=-1, pairs=[], first_failure=None)
+        return ModeBReport(ok=False, ok_real=False, xstar=-1, pairs=[], first_failure=None, max_lhs=Q(0))
 
-    # top class at the center (float32)
     xstar = max(range(len(y_f32)), key=lambda k: y_f32[k])
-    # exact Q versions of logits for precise comparisons
     yQ = [_q(v) for v in y_f32]
 
     results: List[ModeBPairResult] = []
     first_fail: Tuple[int, Q, Q] | None = None
-    ncls = len(y_f32)
-
     max_lhs = None
 
-    for j in range(ncls):
-        if j == xstar:
-            continue
-
-        # left-hand side: center margin
+    for j in range(len(y_f32)):
+        if j == xstar: continue
         lhs = yQ[xstar] - yQ[j]
+        max_lhs = lhs if max_lhs is None or lhs > max_lhs else max_lhs
 
-        if max_lhs is None or lhs > max_lhs:
-            max_lhs = lhs
-
-        # error budgets and Lipschitz term
         E_ctr  = E_for_pair(comp_ctr,  xstar, j)
         E_ball = E_for_pair(comp_ball, xstar, j)
-
-        # round this up so we can print out the results without having to cast to float
-        # NOTE: this doesn't impact actual conservatism e.g. when applied to CIFAR-10
-        float_conservatism = round_up(E_ctr + E_ball)
+        float_cons = round_up(E_ctr + E_ball)
 
         rhs_real = epsilon * L_real[xstar][j]
-        rhs = rhs_real + float_conservatism
+        rhs = rhs_real + float_cons
         ok_real = lhs > rhs_real
         ok = lhs > rhs
-        results.append(ModeBPairResult(j=j, margin_center=lhs, rhs_bound=rhs, rhs_real=rhs_real, float_conservatism=float_conservatism, ok_real=ok_real, ok=ok))
+        results.append(
+            ModeBPairResult(j=j, margin_center=lhs, rhs_bound=rhs, rhs_real=rhs_real,
+                            float_conservatism=float_cons, ok_real=ok_real, ok=ok)
+        )
         if (not ok) and (first_fail is None):
             first_fail = (j, lhs, rhs)
 
-    return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results), xstar=xstar, pairs=results, first_failure=first_fail, max_lhs=max_lhs)
+    return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results),
+                       xstar=xstar, pairs=results, first_failure=first_fail, max_lhs=max_lhs)
 
 def _gamma(n: int, u: Q) -> Q:
     # γ_n = (n u) / (1 - n u)
@@ -196,22 +162,15 @@ def _adot(n: int, amul: Q, u: Q) -> Q:
     gamma_nm1 = _gamma(n-1, u) if n > 1 else Q(0)
     return (Q(1) + gamma_nm1) * n * amul
 
-
-
-def hidden_stack_degradation(alphas: List[Q], betas: List[Q]) -> Q:
-    """
-    D_{L-1}(x, ε) = sum_{s=1}^{L-1} beta_s * (alpha_{s+1} ... alpha_{L-1})
-    Here 'alphas' and 'betas' are indexed 0..L-2 (hidden layers).
-    """
-    Lh = len(alphas)  # number of hidden layers
+def hidden_stack_degradation_with_products(alphas: List[Q], betas: List[Q]) -> Tuple[Q, List[Q]]:
+    Lh = len(alphas)
     if Lh == 0:
-        return Q(0)
-    # right_products[t] = prod_{u=t+1}^{L-1} alpha_u
+        return Q(0), []
     right_products = [Q(1)] * Lh
-    right_products[-1] = Q(1)
-    for t in range(len(alphas) - 2, -1, -1):
+    for t in range(Lh - 2, -1, -1):
         right_products[t] = right_products[t + 1] * alphas[t + 1]
-    return sum(betas[s] * right_products[s] for s in range(Lh))
+    DLm1 = sum(betas[s] * right_products[s] for s in range(Lh))
+    return DLm1, right_products
 
 def compute_linear_recursion_hidden(
     op2_norms: List[Q],        # [‖W_1‖₂, …, ‖W_{L-1}‖₂]
@@ -219,15 +178,14 @@ def compute_linear_recursion_hidden(
     radii_prev: List[Q],       # [r_0, …, r_{L-2}]   (length L-1; one per hidden layer input)
     network: List[Matrix],     # to read m_ℓ, n_ℓ
     sqrt_m_ells: Dict[int,Q],
-    fmt: FloatFormat,          # to get u, denorm_min
-) -> Tuple[List[Q], List[Q], List[Q]]:
+    fmt: FloatFormat,
+) -> Tuple[List[Q], List[Q], List[Q], List[Q]]:
     """
-    Returns (alphas, betas, kappas) for layers ℓ = 1..L-1 (hidden stack).
-    All values are Q and follow the Mode B linear recursion definitions.
+    Returns (alphas, betas, gammas, kappas) for hidden layers
     """
     L = len(network)
     if L == 0:
-        return [], [], []
+        return [], [], [], []
     if not (len(op2_norms) == L and len(op2_abs_norms) == L and len(radii_prev) == L-1):
         raise ValueError("length mismatch between norms/radii/network")
 
@@ -237,49 +195,37 @@ def compute_linear_recursion_hidden(
     alphas: List[Q] = []
     betas:  List[Q] = []
     kappas: List[Q] = []
+    gammas: List[Q] = []
 
-    # hidden layers are indices 0..L-2
     for ell in range(L-1):
-        W = network[ell]
-        m_ell, n_ell = dims(W)     # m rows, n cols
-        kappa = _gamma(n_ell, u) + u * (Q(1) + _gamma(n_ell, u))
-        kappas.append(kappa)
-
+        m_ell, n_ell = dims(network[ell])
+        gamma = _gamma(n_ell, u); gammas.append(gamma)
+        kappa = gamma + u * (Q(1) + gamma); kappas.append(kappa)
         alpha = op2_norms[ell] + kappa * op2_abs_norms[ell]
-        # βℓ = κ_nℓ |||Wℓ|||_2 r_{ℓ-1} + (1+u) adot(nℓ) sqrt(mℓ)
+
+        beta_data  = kappa * op2_abs_norms[ell] * radii_prev[ell]
         beta_noise = (Q(1) + u) * _adot(n_ell, amul, u) * sqrt_m_ells[m_ell]
-        beta = kappa * op2_abs_norms[ell] * radii_prev[ell] + beta_noise
-
+        betas.append(beta_data + beta_noise)
         alphas.append(alpha)
-        betas.append(beta)
 
-    return alphas, betas, kappas
-
+    return alphas, betas, gammas, kappas
 
 def compute_L_and_S(W_last: Matrix):
-    # helper to get rows
     def row(idx: int) -> List[Q]:
         return W_last[idx]
-
     m, n = dims(W_last)
-    L = {}
-    S = {}
+    L, S = {}, {}
     for i in range(m):
         Wi = row(i)
         absWi = [abs(x) for x in Wi]
         for j in range(m):
-            if i == j:
-                continue
+            if i == j: continue
             Wj = row(j)
-            # L_{i,j} = || Wi - Wj ||_2
             diff = [Wj[k] - Wi[k] for k in range(n)]
-            Lij = l2_norm_upper_bound_vec(diff)
-            L[(i,j)] = Lij
-            # S_{i,j} = || |Wi| + |Wj| ||_2
+            L[(i,j)] = l2_norm_upper_bound_vec(diff)
             absWj = [abs(x) for x in Wj]
             sumabs = [absWi[k] + absWj[k] for k in range(n)]
-            Sij = l2_norm_upper_bound_vec(sumabs)
-            S[(i,j)] = Sij
+            S[(i,j)] = l2_norm_upper_bound_vec(sumabs)
     return (L,S)
 
 def compute_final_pair_params(
@@ -319,7 +265,6 @@ def compute_final_pair_params(
             alpha_ij = Lij + kappa * Sij
             beta_ij  = kappa * Sij * r_last_minus1 + Q(2) * (Q(1) + u) * ad
             out[(i, j)] = (alpha_ij, beta_ij)
-
     return out
 
 def radii(op2_norms: List[Q], x: Vector, epsilon: Q) -> List[Q]:
@@ -345,27 +290,10 @@ def compute_sqrt_m_ells(network: List[Matrix]):
     res = {}
     L = len(network)
     for ell in range(L-1):
-        W = network[ell]
-        m_ell, n_ell = dims(W)     # m rows, n cols
+        m_ell, n_ell = dims(network[ell])
         if m_ell not in res:
             res[m_ell] = sqrt_upper_bound(Q(m_ell))
     return res
-
-def certify(v_prime: Vector, epsilon: Q, L: List[List[Q]]) -> bool:
-    """
-    Implements the certification rule (Fig. 4):
-    - x = argmax v'
-    - for all i != x: require v'[x] - v'[i] > epsilon * L[i][x]
-    """
-    # argmax index
-    x = max(range(len(v_prime)), key=lambda k: v_prime[k])
-    vx = v_prime[x]
-    for i in range(len(v_prime)):
-        if i == x:
-            continue
-        if epsilon * L[i][x] >= vx - v_prime[i]:
-            return False
-    return True
 
 def main():
     if len(sys.argv) != 7:
@@ -395,20 +323,18 @@ def main():
 
     dafny_json_file = sys.argv[5]
 
-    # load network, get norms
+    # load network & norms
     try:
         net = load_network_from_file(network_file, validate=True)
     except ParseError as e:
-        print(f"Error parsing network file: {e}")
-        sys.exit(1)
+        print(f"Error parsing network file: {e}"); sys.exit(1)
     except FileNotFoundError:
-        print(f"Error: file not found: {network_file}")
-        sys.exit(1)
+        print(f"Error: file not found: {network_file}"); sys.exit(1)
 
     print(f"Loaded network with {len(net)} layers; running {gram_iters} Gram iterations per layer...")
 
     hsh = hash_file_contents(network_file)
-    norms_file = hsh+f".{gram_iters}.norms.json" # self-authenticating file name
+    norms_file = hsh+f".{gram_iters}.norms.json"
     try:
         norms = load_norms(hsh, gram_iters, norms_file)
     except Exception as e:
@@ -420,38 +346,27 @@ def main():
 
     print("Computing margin Lipschitz bounds...")
     L_real = margin_lipschitz_bounds(net, op2_norms)
-
     check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
     print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
 
-    # floating-point format: for now, float32 only
     fmt = get_float_format(float_format)
-
     check_rounding_preconditions(net, fmt)
 
-    # build a list of (x,epsilon,y_f32) triples to certify
+    # inputs to certify
     to_certify = []
     if cex_file is not None:
         with open(cex_file, "r") as f:
             cexs = json.load(f)
         for cex in cexs:
-            # ignore the absolute paths in the JSON file and assume inputs are in the same directory as the cex file
             d = os.path.dirname(cex_file)
-            x1_file = cex["x1_file"]
-            x1_file = os.path.basename(x1_file)
-            x1_file = os.path.join(d,x1_file)
+            x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
             x = load_vector_from_npy_file(x1_file)
             epsilon = Q(cex["max_eps"])
-            # whether we simulate it or load the answer produced by the original model
-            # seems to produce identical robustness numbers for the MNIST CAV 2025 model
-            # and for confirming the non-robustness of the MNIST DeepFlool float32 counter-examples.
-            if "y1" not in cex:
+            y_f32 = cex.get("y1", None)
+            if y_f32 is None:
                 print("Simulating neural network forward pass...")
                 y_f32 = forward_numpy_float32(net, x)
-            else:
-                y_f32 = cex["y1"]
             to_certify.append((x,epsilon,y_f32))
-
     if input_file is not None:
         if input_file.endswith(".npy"):
             x = load_vector_from_npy_file(input_file)
@@ -461,90 +376,146 @@ def main():
         y_f32 = forward_numpy_float32(net, x)
         to_certify.append((x,epsilon,y_f32))
 
-
     sqrt_m_ells = compute_sqrt_m_ells(net)
     W_last = net[-1]
-    L,S = compute_L_and_S(W_last)
+    L_pairs,S_pairs = compute_L_and_S(W_last)
+
+    H = len(net) - 1  # hidden layers
+    layer_fanins = [dims(net[ell])[1] for ell in range(H)]
+    abs_signed_ratios = [float(op2_abs_norms[ell] / op2_norms[ell]) for ell in range(H)]
+    u = fmt.u  # scalar float
 
     print(f"Got {len(to_certify)} instances to certify...")
     results = []
 
-    times={}
-    times["radii"] = 0
-    times["overflow_check"] = 0
-    times["components"] = 0
-    times["certification"] = 0
+    times = {"radii":0.0, "overflow_check":0.0, "components":0.0, "certification":0.0}
 
-    for i, (x,epsilon,y_f32) in enumerate(to_certify):
-        if i % 100 == 0:
-            print(f"Certifying {i} of {len(to_certify)}")
-        # check input compatibility with the neural network
+    # essential aggregators
+    r0_all: List[float] = []
+    DLm1s: List[float] = []
+    float_cons_all: List[float] = []
+    real_rhs_all: List[float] = []
+
+    # layerwise means we care about (across examples)
+    layer_alpha_sum    = [0.0]*H
+    layer_kappa_sum    = [0.0]*H
+    layer_r_input_sum  = [0.0]*H
+    layer_rightprod_sum= [0.0]*H
+    layer_beta_sum     = [0.0]*H
+    layer_contrib_sum  = [0.0]*H
+    layer_count = 0
+
+    for idx, (x,epsilon,y_f32) in enumerate(to_certify):
+        if idx % 100 == 0:
+            print(f"Certifying {idx} of {len(to_certify)}")
         first_cols = len(net[0][0])
         if len(x) != first_cols:
             print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
             sys.exit(1)
 
-        time_start = time.perf_counter()
+        t0 = time.perf_counter()
         rs = radii(op2_norms, x, epsilon)
-        time_radius = time.perf_counter()
-        times["radii"] += time_radius - time_start
+        t1 = time.perf_counter()
+        times["radii"] += (t1 - t0)
+        r0_all.append(float(rs[0]))
 
-        time_overflow_check_start = time.perf_counter()
+        t2 = time.perf_counter()
         report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt)
-        time_overflow_check_end = time.perf_counter()
-
+        t3 = time.perf_counter()
         if not report.ok:
             print("Overflow certification failed: ")
             print(report)
             sys.exit(1)
+        times["overflow_check"] += (t3 - t2)
 
-        times["overflow_check"] += (time_overflow_check_end - time_overflow_check_start)
+        t4 = time.perf_counter()
+        comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs)
+        comp_ctr  = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0),   fmt, L_pairs, S_pairs)
+        t5 = time.perf_counter()
+        modeb = certify_mode_b_theorem4(y_f32, epsilon, L_real, comp_ctr, comp_ball)
+        t6 = time.perf_counter()
 
-        time_certification_start = time.perf_counter()
-        comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L, S)
-        comp_ctr  = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0),   fmt,  L, S)
-        time_components_end = time.perf_counter()
-        modeb = certify_mode_b_theorem4(
-            y_f32=y_f32,
-            epsilon=epsilon,
-            L_real=L_real,
-            comp_ctr=comp_ctr,
-            comp_ball=comp_ball,
-        )
-        time_certification_end = time.perf_counter()
-
-        times["components"] += (time_components_end - time_certification_start)
-        times["certification"] += (time_certification_end - time_components_end)
-
+        times["components"] += (t5 - t4)
+        times["certification"] += (t6 - t5)
         results.append(modeb)
+
+        # essentials
+        DLm1s.append(float(comp_ball.DLm1))
+        # mean float conservatism and real rhs across pairs in this example
+        if modeb.pairs:
+            fc = [float(p.float_conservatism) for p in modeb.pairs]
+            rr = [float(p.rhs_real) for p in modeb.pairs]
+            float_cons_all.append(sum(fc)/len(fc))
+            real_rhs_all.append(sum(rr)/len(rr))
+
+        # layerwise means we care about
+        for ell in range(H):
+            layer_alpha_sum[ell]    += float(comp_ball.alphas[ell])
+            layer_kappa_sum[ell]    += float(comp_ball.kappas[ell])
+            layer_r_input_sum[ell]  += float(comp_ball.r_prev[ell])
+            layer_rightprod_sum[ell]+= float(comp_ball.right_products[ell])
+            layer_beta_sum[ell]     += float(comp_ball.betas[ell])
+            layer_contrib_sum[ell]  += float(comp_ball.contribs[ell])
+
+        layer_count += 1
 
     results_ok = [r for r in results if r.ok]
     results_fail = [r for r in results if not r.ok]
     results_ok_real = [r for r in results if r.ok_real]
 
-    print(f"Of {len(results)} instances we attempted to certify: ")
-    print(f"Certified {len(results_ok)} instances as robust")
-    print(f"Failed to certify {len(results_fail)} instances as robust")
-    print(f"Real certifier would have certified {len(results_ok_real)} instances as robust")
+    print("\nCERTIFIER RESULTS")
+    print(f"Of {len(results)} instances we attempted to certify:")
+    print(f"  Certified {len(results_ok)} instances as robust")
+    print(f"  Failed to certify {len(results_fail)} instances as robust")
+    print(f"  Real certifier would have certified {len(results_ok_real)} instances as robust")
 
-    # flattened list of pairs
-    pairs = [x for r in results for x in r.pairs]
-    N = len(pairs)
-    conservs = [float(p.float_conservatism) for p in pairs]
-    rhs_reals = [float(p.rhs_real) for p in pairs]
-    percents = [float(p.float_conservatism / p.rhs_real) for p in pairs]
-    avg_conservs = math.fsum(conservs) / N
-    avg_rhs_reals = math.fsum(rhs_reals) / N
-    avg_percents = math.fsum(percents) / N
-    print(f"\nAverage float conservatism: {avg_conservs}")
-    print(f"Average real bound: {avg_rhs_reals}")
-    print(f"Average percentage of float conservatism of the real bound: {avg_percents*100}")
+    # essentials summary
+    stats_fc  = compute_stats(float_cons_all)
+    stats_rr  = compute_stats(real_rhs_all)
+    stats_D   = compute_stats(DLm1s)
+    stats_r0  = compute_stats(r0_all)
 
-    N = len(to_certify)
-    print(f"\nAverage Times (miliseconds, over {N} runs): ")
+    pct_fc = (stats_fc.mean / stats_rr.mean) if (stats_fc.mean is not None and stats_rr.mean and stats_rr.mean != 0.0) else None
+
+    print("\nFloat conservatism:")
+    print(f"  mean float_conservatism per pair: {stats_fc.mean}")
+    print(f"  mean real RHS per pair:           {stats_rr.mean}")
+    print(f"  float_conservatism / real_RHS:    {pct_fc}")
+
+    print(f"\nD_(L-1) mean: {stats_D.mean}")
+    print(f"r0 (per example) mean: {stats_r0.mean}")
+
+    # layerwise spotlight (first 2 layers) + top-3 contributors
+    if layer_count > 0 and H > 0:
+        mean_alpha    = [a/layer_count for a in layer_alpha_sum]
+        mean_kappa    = [k/layer_count for k in layer_kappa_sum]
+        mean_r_in     = [r/layer_count for r in layer_r_input_sum]
+        mean_right    = [p/layer_count for p in layer_rightprod_sum]
+        mean_beta     = [b/layer_count for b in layer_beta_sum]
+        mean_contrib  = [c/layer_count for c in layer_contrib_sum]
+        total_contrib = sum(mean_contrib) if sum(mean_contrib) != 0.0 else 1.0
+        shares = [c/total_contrib for c in mean_contrib]
+
+        def print_layer(ell: int):
+            n_in = layer_fanins[ell]
+            nu   = n_in * u
+            print(f"  Layer {ell}: n_in={n_in}, nu=n*u={nu:.7e}, kappa={mean_kappa[ell]:.7e}, "
+                  f"|W|/|W|={abs_signed_ratios[ell]:.3f}, alpha={mean_alpha[ell]:.5f}, "
+                  f"r_in={mean_r_in[ell]:.5f}, right_prod={mean_right[ell]:.5f}, "
+                  f"beta={mean_beta[ell]:.6f}, contrib={mean_contrib[ell]:.6f}, share(D)={shares[ell]:.3f}")
+
+        idx_sorted = sorted(range(H), key=lambda e: mean_contrib[e], reverse=True)
+        topk = idx_sorted[:min(3, H)]
+        print("\nTop contributing hidden layers:")
+        for rank, ell in enumerate(topk, 1):
+            print(f"  {rank}. ", end="")
+            print_layer(ell)
+
+    N = len(to_certify) if to_certify else 1
+    print(f"\nAverage Times (ms, over {len(to_certify)} runs):")
     print(f"  Radii computation: {times['radii'] * 1000 / N}")
     print(f"  Overflow check:    {times['overflow_check'] * 1000 / N}")
-    print(f"  Components   :     {times['components'] * 1000 / N}")
+    print(f"  Components:        {times['components'] * 1000 / N}")
     print(f"  Certification:     {times['certification'] * 1000 / N}")
     print(f"  Overall:           {(times['radii'] + times['overflow_check'] + times['components'] + times['certification']) * 1000 / N}")
 
