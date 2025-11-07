@@ -44,7 +44,10 @@ CEX_MNIST_FLOAT32="cex_mnist_deepfool/counter_examples.json"
 CEX_MNIST_FLOAT16="cex_mnist_deepfool_float16/counter_examples.json"
 CEX_MNIST_FLOAT64="cex_mnist_deepfool_float64/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_deepfool/counter_examples.json"
+CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_deepfool_float16/counter_examples.json"
+CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_deepfool_float16/counter_examples.json"
 CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
+CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
 CEX_Z3_FLOAT32="z3_counter_examples.json"
 
 # --- declarative tables ----------------------------------------------------
@@ -76,7 +79,10 @@ declare -A CEX=(
   ["mnist:float16"]="$CEX_MNIST_FLOAT16"
   ["mnist:float64"]="$CEX_MNIST_FLOAT64"
   ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
+  ["fashion_mnist:float16"]="$CEX_FASHION_MNIST_FLOAT16"
+  ["fashion_mnist:float64"]="$CEX_FASHION_MNIST_FLOAT64"
   ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
+  ["cifar10:float64"]="$CEX_CIFAR10_FLOAT64"
   ["z3:float32"]="$CEX_Z3_FLOAT32"
 )
 
@@ -175,8 +181,11 @@ run_test "float16" "mnist"         "20" "cex"
 run_test "float64" "mnist"         "20" "cex"
 
 run_test "float32" "fashion_mnist" "13" "cex"
+run_test "float16" "fashion_mnist" "13" "cex"
+run_test "float64" "fashion_mnist" "13" "cex"
 
 run_test "float32" "cifar10"       "12" "cex"
+run_test "float64" "cifar10"       "12" "cex"
 
 run_test "float32" "mnist"         "11" "all"
 #run_test "float32" "mnist"         "20" "all"
