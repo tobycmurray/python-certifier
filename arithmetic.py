@@ -4,6 +4,20 @@ from __future__ import annotations
 import gmpy2
 Q = gmpy2.mpq
 
+def float_to_q(v: float) -> Q:
+    """Convert a float to Q with high precision (150 decimal places).
+
+    This ensures minimal loss of precision when converting IEEE-754 floats
+    to exact rational representations.
+
+    Args:
+        v: Float value to convert
+
+    Returns:
+        Q rational number representing v with 150 decimal places of precision
+    """
+    return Q(format(v, '.150f'))
+
 def qstr(q: Q) -> str:
     """
     Exact decimal expansion of a Q without float rounding.
@@ -158,4 +172,3 @@ def sqrt_upper_bound(x: Q) -> Q:
         if old_r - r < SQRT_ERR:
             return r
     return r
-        

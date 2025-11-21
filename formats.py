@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from math import ldexp
+from arithmetic import Q
 
 @dataclass(frozen=True)
 class FloatFormat:
@@ -63,3 +64,59 @@ def get_float_format(name: str) -> FloatFormat:
     except KeyError:
         raise NotImplementedError(f"Format '{name}' not implemented. Supported formats {_REGISTRY.keys()}")
     return _derive(key, p, emin, emax)
+
+# ==============================================================================
+# Floating-point error accumulation factors
+# ==============================================================================
+
+def gamma_n(n: int, u: Q) -> Q:
+    """Relative error accumulation factor for n operations.
+
+    γ_n = (n·u) / (1 - n·u)
+
+    This is the standard forward error analysis term (1+u)^n - 1 ≈ n·u,
+    used to bound accumulated roundoff error in dot products and matrix operations.
+
+    Args:
+        n: Number of operations (e.g., layer input dimension)
+        u: Unit roundoff (e.g., 2^(-p) for p-bit precision)
+
+    Returns:
+        γ_n as a rational
+
+    Raises:
+        ValueError: If n·u >= 1 (error model breaks down)
+    """
+    nu = Q(n) * u
+    if nu >= 1:
+        raise ValueError(
+            f"n·u = {float(nu)} >= 1. Error model requires n·u < 1 (n={n}, u={float(u)})"
+        )
+    return nu / (1 - nu)
+
+
+def a_dot(n: int, u: Q, a_mul: Q) -> Q:
+    """Absolute error bound for dot products with potential subnormals.
+
+    a_dot(n) = (1 + γ_{n-1}) · n · a_mul
+
+    where a_mul is the rounding error for a single subnormal product.
+    For round-to-nearest: a_mul = denorm_min / 2.
+
+    This bounds the accumulated absolute error from subnormal intermediate
+    results in a length-n dot product.
+
+    Args:
+        n: Number of products in dot product
+        u: Unit roundoff
+        a_mul: Subnormal rounding error (typically denorm_min / 2)
+
+    Returns:
+        a_dot(n) as a rational
+    """
+    if n <= 1:
+        # For n=1, no accumulation
+        return Q(n) * a_mul
+    # For n>1, include accumulation factor
+    gamma_nm1 = gamma_n(n - 1, u) if n > 1 else Q(0)
+    return (Q(1) + gamma_nm1) * Q(n) * a_mul

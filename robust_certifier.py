@@ -5,10 +5,10 @@ from dataclasses import dataclass
 import sys, os, json, time, math
 
 from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
-from arithmetic import Q, qstr, sqrt_upper_bound, round_up
+from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
 from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
 from overflow import certify_no_overflow_normwise
-from formats import get_float_format, FloatFormat
+from formats import get_float_format, FloatFormat, gamma_n, a_dot
 from nn import forward_numpy_float32
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
@@ -26,15 +26,12 @@ def compute_stats(vals: List[float]) -> FloatStats:
     fsum = math.fsum(vals)
     return FloatStats(fsum/len(vals), min(vals), max(vals))
 
-def _q(v: float) -> Q:
-    return Q(format(v, '.150f'))
-
 def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
     """
     Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
     Raises ValueError with an explanatory message if violated.
     """
-    u = _q(fmt.u)
+    u = float_to_q(fmt.u)
     for ell, W in enumerate(network):
         m, n = dims(W)
         nu = u * n
@@ -123,7 +120,7 @@ def certify_mode_b_theorem4(
         return ModeBReport(ok=False, ok_real=False, xstar=-1, pairs=[], first_failure=None, max_lhs=Q(0))
 
     xstar = max(range(len(y_f32)), key=lambda k: y_f32[k])
-    yQ = [_q(v) for v in y_f32]
+    yQ = [float_to_q(v) for v in y_f32]
 
     results: List[ModeBPairResult] = []
     first_fail: Tuple[int, Q, Q] | None = None
@@ -152,16 +149,6 @@ def certify_mode_b_theorem4(
     return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results),
                        xstar=xstar, pairs=results, first_failure=first_fail, max_lhs=max_lhs)
 
-def _gamma(n: int, u: Q) -> Q:
-    # γ_n = (n u) / (1 - n u)
-    nu = u * n
-    return nu / (Q(1) - nu)
-
-def _adot(n: int, amul: Q, u: Q) -> Q:
-    # adot(n) = (1 + γ_{n-1}) * n * amul   (with γ_{n-1} defined for n-1 >= 1; else take γ_0 = 0)
-    gamma_nm1 = _gamma(n-1, u) if n > 1 else Q(0)
-    return (Q(1) + gamma_nm1) * n * amul
-
 def hidden_stack_degradation_with_products(alphas: List[Q], betas: List[Q]) -> Tuple[Q, List[Q]]:
     Lh = len(alphas)
     if Lh == 0:
@@ -189,8 +176,8 @@ def compute_linear_recursion_hidden(
     if not (len(op2_norms) == L and len(op2_abs_norms) == L and len(radii_prev) == L-1):
         raise ValueError("length mismatch between norms/radii/network")
 
-    u = _q(fmt.u)                  # unit roundoff as Q
-    amul = _q(fmt.denorm_min) / 2  # amul = denorm_min / 2
+    u = float_to_q(fmt.u)                  # unit roundoff as Q
+    amul = float_to_q(fmt.denorm_min) / 2  # amul = denorm_min / 2
 
     alphas: List[Q] = []
     betas:  List[Q] = []
@@ -199,12 +186,12 @@ def compute_linear_recursion_hidden(
 
     for ell in range(L-1):
         m_ell, n_ell = dims(network[ell])
-        gamma = _gamma(n_ell, u); gammas.append(gamma)
+        gamma = gamma_n(n_ell, u); gammas.append(gamma)
         kappa = gamma + u * (Q(1) + gamma); kappas.append(kappa)
         alpha = op2_norms[ell] + kappa * op2_abs_norms[ell]
 
         beta_data  = kappa * op2_abs_norms[ell] * radii_prev[ell]
-        beta_noise = (Q(1) + u) * _adot(n_ell, amul, u) * sqrt_m_ells[m_ell]
+        beta_noise = (Q(1) + u) * a_dot(n_ell, u, amul) * sqrt_m_ells[m_ell]
         betas.append(beta_data + beta_noise)
         alphas.append(alpha)
 
@@ -243,10 +230,10 @@ def compute_final_pair_params(
     Returns a dict mapping (i,j) with i!=j to (alpha_L_ij, beta_L_ij).
     """
     m, n = dims(W_last)
-    u = _q(fmt.u)
-    amul = _q(fmt.denorm_min) / 2
-    kappa = _gamma(n, u) + u * (Q(1) + _gamma(n, u))
-    ad = _adot(n, amul, u)
+    u = float_to_q(fmt.u)
+    amul = float_to_q(fmt.denorm_min) / 2
+    kappa = gamma_n(n, u) + u * (Q(1) + gamma_n(n, u))
+    ad = a_dot(n, u, amul)
 
     out: Dict[Tuple[int,int], Tuple[Q,Q]] = {}
     for i in range(m):
@@ -344,6 +331,9 @@ def main():
 
     inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
 
+    # Extract layer widths (input dimensions) for overflow checking with margin terms
+    layer_widths = [len(W[0]) for W in net]  # n_l = number of columns in W_l
+
     print("Computing margin Lipschitz bounds...")
     L_real = margin_lipschitz_bounds(net, op2_norms)
     check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
@@ -420,7 +410,7 @@ def main():
         r0_all.append(float(rs[0]))
 
         t2 = time.perf_counter()
-        report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, fmt)
+        report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, layer_widths, fmt)
         t3 = time.perf_counter()
         if not report.ok:
             print("Overflow certification failed: ")
