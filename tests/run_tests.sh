@@ -165,6 +165,8 @@ run_test() {
   fi
   echo "OK"
 
+  (grep -i warn .log | head -1) || echo -n ""
+
   if [[ "$kind" == "all" ]]; then
       echo ""
       awk '/CERTIFIER\ RESULTS/ {flag=1} flag' .log

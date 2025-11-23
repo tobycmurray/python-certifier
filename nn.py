@@ -50,3 +50,124 @@ def forward_numpy_float32(network: List[Matrix], x: Vector) -> List[float]:
             v = z.astype(np.float32, copy=False)
     # return as Python floats (still float32 values)
     return [float(t) for t in v.tolist()]
+
+def _to_numpy16_matrix(W: Matrix) -> np.ndarray:
+    """Convert a Q-matrix to np.float16 with shape (m, n)."""
+    m = len(W)
+    n = len(W[0]) if m else 0
+    A = np.empty((m, n), dtype=np.float16)
+    for i in range(m):
+        row = W[i]
+        for j in range(n):
+            A[i, j] = np.float16(float(row[j]))  # exact decimal -> float -> f16
+    return A
+
+def forward_numpy_float16(network: List[Matrix], x: Vector) -> List[float]:
+    """
+    Float16 forward using NumPy:
+      v <- (W^T) v, ReLU after each non-final layer, no biases.
+    Returns Python floats (each representable as float16).
+    """
+    # convert once
+    nets_np = [_to_numpy16_matrix(W) for W in network]
+    v = np.array([np.float16(float(q)) for q in x], dtype=np.float16)
+    L = len(nets_np)
+    for ell, W in enumerate(nets_np):
+        z = W @ v  # (n,) = (n,m) @ (m,)
+        if ell < L - 1:
+            # ReLU in float16
+            v = np.maximum(z, np.float16(0.0), dtype=np.float16)
+        else:
+            v = z.astype(np.float16, copy=False)
+    # return as Python floats (still float16 values)
+    return [float(t) for t in v.tolist()]
+
+def forward_layerwise_exact(network: List[Matrix], x: Vector) -> List[Vector]:
+    """
+    Exact forward pass returning activations at each layer.
+    Returns list [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+    """
+    activations = []
+    v = x[:]
+    L = len(network)
+    for idx, W in enumerate(network):
+        v = mv_product(W, v)
+        if idx < L - 1:
+            v = relu_vec(v)
+        activations.append(v)
+    return activations
+
+def forward_layerwise_float16(network: List[Matrix], x: Vector) -> List[np.ndarray]:
+    """
+    Float16 forward pass returning activations at each layer.
+    Returns list [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+    Each activation is a numpy array of float16.
+    """
+    nets_np = [_to_numpy16_matrix(W) for W in network]
+    v = np.array([np.float16(float(q)) for q in x], dtype=np.float16)
+    activations = []
+    L = len(nets_np)
+    for ell, W in enumerate(nets_np):
+        z = W @ v  # (n,) = (n,m) @ (m,)
+        if ell < L - 1:
+            # ReLU in float16
+            v = np.maximum(z, np.float16(0.0), dtype=np.float16)
+        else:
+            v = z.astype(np.float16, copy=False)
+        activations.append(v.copy())  # Store activation after layer ell
+    return activations
+
+def forward_layerwise_float64(network: List[Matrix], x: Vector) -> List[np.ndarray]:
+    """
+    Float64 forward pass returning activations at each layer (high precision baseline).
+    Returns list [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+    Each activation is a numpy array of float64.
+    """
+    # Convert to float64 matrices
+    nets_np = []
+    for W in network:
+        m = len(W)
+        n = len(W[0]) if m else 0
+        A = np.empty((m, n), dtype=np.float64)
+        for i in range(m):
+            row = W[i]
+            for j in range(n):
+                A[i, j] = float(row[j])
+        nets_np.append(A)
+
+    v = np.array([float(q) for q in x], dtype=np.float64)
+    activations = []
+    L = len(nets_np)
+    for ell, W in enumerate(nets_np):
+        z = W @ v
+        if ell < L - 1:
+            v = np.maximum(z, 0.0)
+        else:
+            v = z
+        activations.append(v.copy())
+    return activations
+
+def compute_deviations(exact_activations: List[Vector],
+                      fp_activations: List[np.ndarray]) -> List[float]:
+    """
+    Compute L2 norm of deviation at each layer.
+
+    Args:
+        exact_activations: List of exact activations (Q vectors)
+        fp_activations: List of FP activations (numpy arrays)
+
+    Returns:
+        List of L2 norms [||ẑ_0 - z_0||_2, ..., ||ẑ_{L-1} - z_{L-1}||_2]
+    """
+    deviations = []
+    for z_exact, z_fp in zip(exact_activations, fp_activations):
+        # Convert exact to float64 for comparison
+        z_exact_np = np.array([float(q) for q in z_exact], dtype=np.float64)
+        z_fp_np = z_fp.astype(np.float64)
+
+        # Compute L2 norm of difference
+        diff = z_fp_np - z_exact_np
+        l2_norm = np.linalg.norm(diff, ord=2)
+        deviations.append(float(l2_norm))
+
+    return deviations

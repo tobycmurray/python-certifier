@@ -35,6 +35,81 @@ class OverflowReport:
     first_failure: Optional[Tuple[int, str]]  # (layer_idx, "S_layer"|"M_layer")
 
 
+def check_overflow_single_layer(
+    layer_idx: int,
+    op2_abs: Q,              # ‖|W_ℓ|‖_2
+    inf_norm: Q,             # ‖W_ℓ‖_∞
+    fp_activation_bound: Q,  # r_{ℓ-1} + D_{ℓ-1} (bound on ‖ẑ_{ℓ-1}‖_2)
+    layer_width: int,        # n_ℓ (input dimension)
+    fmt: FloatFormat,
+    bias_norm: Q = Q(0),     # ‖b_ℓ‖_∞ (default 0 if no bias)
+) -> OverflowLayerStats:
+    """Check overflow for a single layer using FP activation bound.
+
+    This implements the deviation-aware overflow check from the updated LaTeX writeup
+    (Theorem 3.1) and Coq formalization (layerwise_simple_with_deviation_implies_finite).
+
+    For layer ℓ, verifies:
+        1. S_layer · (1 + γ_n) + a_dot(n) + ‖b_ℓ‖_∞ < F_max
+        2. M_layer < F_max
+
+    where:
+        - S_layer = ‖|W_ℓ|‖_2 · (r_{ℓ-1} + D_{ℓ-1})  [uses FP activation bound!]
+        - M_layer = ‖W_ℓ‖_∞ · (r_{ℓ-1} + D_{ℓ-1})
+        - fp_activation_bound = r_{ℓ-1} + D_{ℓ-1} from triangle inequality
+
+    Args:
+        layer_idx: Layer index ℓ
+        op2_abs: ‖|W_ℓ|‖_2
+        inf_norm: ‖W_ℓ‖_∞
+        fp_activation_bound: r_{ℓ-1} + D_{ℓ-1} (bounds ‖ẑ_{ℓ-1}‖_2)
+        layer_width: n_ℓ (input dimension)
+        fmt: Floating-point format
+        bias_norm: ‖b_ℓ‖_∞ (infinity norm of bias, 0 if no bias)
+
+    Returns:
+        OverflowLayerStats with pass/fail and detailed statistics
+
+    Raises:
+        ValueError: If n·u ≥ 1 (model is invalid for this format)
+    """
+    Fmax_q = float_to_q(fmt.Fmax)
+    u_q = float_to_q(fmt.u)
+    a_mul_q = float_to_q(fmt.denorm_min) / 2
+
+    # Compute bounds using FP activation bound (not just exact radius!)
+    S_layer = op2_abs * fp_activation_bound      # ‖|W|‖_2 · (r_{ℓ-1} + D_{ℓ-1})
+    M_layer = inf_norm * fp_activation_bound     # ‖W‖_∞ · (r_{ℓ-1} + D_{ℓ-1})
+
+    # Compute margin terms
+    gamma = gamma_n(layer_width, u_q)
+    a_dot_n = a_dot(layer_width, u_q, a_mul_q)
+
+    # Apply margin to S_layer check
+    S_with_margin = S_layer * (1 + gamma) + a_dot_n + bias_norm
+
+    # Compute slack (positive = passes)
+    s2 = Fmax_q - S_with_margin
+    si = Fmax_q - M_layer
+
+    ok = (s2 > 0) and (si > 0)
+
+    return OverflowLayerStats(
+        layer_idx=layer_idx,
+        layer_width=layer_width,
+        norm2_abs=op2_abs,
+        norminf=inf_norm,
+        S_layer=S_layer,
+        M_layer=M_layer,
+        gamma_n=gamma,
+        a_dot_n=a_dot_n,
+        S_with_margin=S_with_margin,
+        slack_2=s2,
+        slack_inf=si,
+        ok=ok
+    )
+
+
 def certify_no_overflow_normwise(
     op2_abs: List[Q],        # [‖|W_0|‖_2, ..., ‖|W_{L-1}|‖_2]
     inf_norm: List[Q],       # [‖W_0‖_∞, ..., ‖W_{L-1}‖_∞]
@@ -137,6 +212,84 @@ def certify_no_overflow_normwise(
 
         if not ok:
             failure_type = "S_layer" if s2 <= 0 else "M_layer"
+            return OverflowReport(layers, False, (l, failure_type))
+
+    return OverflowReport(layers, True, None)
+
+
+def certify_no_overflow_with_deviations(
+    op2_abs: List[Q],
+    inf_norm: List[Q],
+    radii_prev: List[Q],          # [r_0, ..., r_{L-1}]
+    deviation_bounds: List[Q],    # [D_{-1}, D_0, ..., D_{L-2}] (length L)
+    layer_widths: List[int],
+    fmt: FloatFormat,
+    bias_norms: Optional[List[Q]] = None,
+) -> OverflowReport:
+    """Certify absence of overflow using deviation-aware bounds (SOUND VERSION).
+
+    This is the corrected overflow checker that uses triangle inequality to bound
+    FP activations: ‖ẑ_{ℓ-1}‖_2 ≤ ‖z_{ℓ-1}‖_2 + ‖d_{ℓ-1}‖_2 ≤ r_{ℓ-1} + D_{ℓ-1}
+
+    For layer ℓ, uses fp_bound = r_{ℓ-1} + D_{ℓ-1} where:
+        - r_{ℓ-1} bounds the exact activation ‖z_{ℓ-1}‖_2 (from radii.v)
+        - D_{ℓ-1} bounds the deviation ‖ẑ_{ℓ-1} - z_{ℓ-1}‖_2 (from deviation recursion)
+
+    Args:
+        op2_abs: [‖|W_0|‖_2, ..., ‖|W_{L-1}|‖_2]
+        inf_norm: [‖W_0‖_∞, ..., ‖W_{L-1}‖_∞]
+        radii_prev: [r_0, ..., r_{L-1}] (exact radius bounds)
+        deviation_bounds: [D_{-1}, D_0, ..., D_{L-2}] where:
+            - deviation_bounds[0] = D_{-1} = 0 for layer 0
+            - deviation_bounds[ℓ] = D_{ℓ-1} for layer ℓ > 0
+        layer_widths: [n_0, ..., n_{L-1}]
+        fmt: Floating-point format
+        bias_norms: Optional [‖b_0‖_∞, ..., ‖b_{L-1}‖_∞]
+
+    Returns:
+        OverflowReport with per-layer statistics and overall pass/fail
+
+    Raises:
+        ValueError: If input lists have mismatched lengths or n·u ≥ 1
+    """
+    L = len(op2_abs)
+    if not (len(inf_norm) == L and len(radii_prev) == L and
+            len(deviation_bounds) == L and len(layer_widths) == L):
+        raise ValueError(
+            f"Input lists must have same length. Got: "
+            f"op2_abs={len(op2_abs)}, inf_norm={len(inf_norm)}, "
+            f"radii_prev={len(radii_prev)}, deviation_bounds={len(deviation_bounds)}, "
+            f"layer_widths={len(layer_widths)}"
+        )
+
+    if bias_norms is not None and len(bias_norms) != L:
+        raise ValueError(f"bias_norms length {len(bias_norms)} != {L}")
+
+    layers: List[OverflowLayerStats] = []
+
+    for l in range(L):
+        rprev = radii_prev[l]
+        D_prev = deviation_bounds[l]
+        b_norm = bias_norms[l] if bias_norms is not None else Q(0)
+
+        # Use triangle inequality bound: ‖ẑ_{ℓ-1}‖_2 ≤ r_{ℓ-1} + D_{ℓ-1}
+        fp_bound = rprev + D_prev
+
+        # Check overflow for this layer
+        stats = check_overflow_single_layer(
+            layer_idx=l,
+            op2_abs=op2_abs[l],
+            inf_norm=inf_norm[l],
+            fp_activation_bound=fp_bound,
+            layer_width=layer_widths[l],
+            fmt=fmt,
+            bias_norm=b_norm
+        )
+
+        layers.append(stats)
+
+        if not stats.ok:
+            failure_type = "S_layer" if stats.slack_2 <= 0 else "M_layer"
             return OverflowReport(layers, False, (l, failure_type))
 
     return OverflowReport(layers, True, None)

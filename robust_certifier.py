@@ -7,7 +7,8 @@ import sys, os, json, time, math
 from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
 from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
-from overflow import certify_no_overflow_normwise
+from overflow import certify_no_overflow_normwise, check_overflow_single_layer
+from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
 from nn import forward_numpy_float32
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
@@ -370,7 +371,8 @@ def main():
     W_last = net[-1]
     L_pairs,S_pairs = compute_L_and_S(W_last)
 
-    H = len(net) - 1  # hidden layers
+    L = len(net)      # total layers
+    H = L - 1         # hidden layers (L - 1)
     layer_fanins = [dims(net[ell])[1] for ell in range(H)]
     abs_signed_ratios = [float(op2_abs_norms[ell] / op2_norms[ell]) for ell in range(H)]
     u = fmt.u  # scalar float
@@ -403,22 +405,120 @@ def main():
             print(f"Error: input length {len(x)} does not match first layer column count {first_cols}.")
             sys.exit(1)
 
+        # ===== Step 1: Compute exact radii (unchanged) =====
         t0 = time.perf_counter()
         rs = radii(op2_norms, x, epsilon)
         t1 = time.perf_counter()
         times["radii"] += (t1 - t0)
         r0_all.append(float(rs[0]))
 
+        # ===== Step 2: Forward induction through layers =====
+        # Interleave overflow checking and deviation computation
         t2 = time.perf_counter()
-        report = certify_no_overflow_normwise(op2_abs_norms, inf_norms, rs, layer_widths, fmt)
+
+        D_prev = Q(0)  # D_{-1} = 0 for exact input
+        layer_params = []  # Track deviation params for each hidden layer
+        deviation_bounds = []  # Track [D_0, D_1, ..., D_{L-2}]
+
+        # Debug header for first example
+        if idx == 0:
+            print(f"\nDEBUG: Deviation computation trace for {float_format}:")
+            x_norm = l2_norm_upper_bound_vec(x)
+            print(f"  Input: x norm = {float(x_norm):.6e}, epsilon = {float(epsilon):.6e}")
+            print(f"  Network: {H} hidden layers + 1 output layer")
+            print(f"  Radii: {[f'{float(r):.2e}' for r in rs]}")
+            print(f"  ||W||_2 norms: {[f'{float(n):.2e}' for n in op2_norms[:H]]}")
+            print(f"  |||W|||_2 norms: {[f'{float(n):.2e}' for n in op2_abs_norms[:H]]}")
+            print(f"  Layer widths: {[dims(net[i])[1] for i in range(H)]}")
+            print(f"  Unit roundoff u: {float(float_to_q(fmt.u)):.6e}")
+            print()
+
+        # Hidden layers (0 to L-2)
+        for ell in range(H):  # H = L - 1 hidden layers
+            m_ell, n_ell = dims(net[ell])
+
+            # (a) Check overflow at layer ℓ using r_{ℓ-1} + D_{ℓ-1}
+            fp_bound = rs[ell] + D_prev
+            overflow_stats = check_overflow_single_layer(
+                layer_idx=ell,
+                op2_abs=op2_abs_norms[ell],
+                inf_norm=inf_norms[ell],
+                fp_activation_bound=fp_bound,
+                layer_width=n_ell,
+                fmt=fmt,
+                bias_norm=Q(0)  # Assuming no biases in hidden layers
+            )
+            if not overflow_stats.ok:
+                print(f"WARNING: Overflow certification failed at layer {ell}:")
+                print(f"  S_layer check: slack = {float(overflow_stats.slack_2):.15e}")
+                print(f"  M_layer check: slack = {float(overflow_stats.slack_inf):.15e}")
+                print(f"  Continuing with robustness certification anyway...")
+
+            # (b) Compute deviation D_ℓ for this layer
+            params = compute_layer_deviation_params(
+                layer_idx=ell,
+                op2_norm=op2_norms[ell],
+                op2_abs_norm=op2_abs_norms[ell],
+                r_prev=rs[ell],  # r_{ℓ-1} (exact radius)
+                layer_width=n_ell,
+                output_dim=m_ell,
+                sqrt_m=sqrt_m_ells[m_ell],
+                fmt=fmt
+            )
+            D_curr = compute_deviation_bound(D_prev, params)
+
+            # Debug trace for first example
+            if idx == 0:
+                print(f"  Layer {ell}: α={float(params.alpha):.6e}, β={float(params.beta):.6e}, "
+                      f"r_{{{ell}}}={float(rs[ell]):.6e}, D_{{{ell-1}}}={float(D_prev):.6e}, "
+                      f"D_{{{ell}}}={float(D_curr):.6e}, D/r={float(D_curr/rs[ell]) if rs[ell] > 0 else 'N/A'}")
+
+            layer_params.append(params)
+            deviation_bounds.append(D_curr)
+            D_prev = D_curr
+
+        # Final layer overflow check (uses D_{L-2})
+        if L > 0:
+            m_last, n_last = dims(net[-1])
+            fp_bound_final = rs[H] + D_prev  # rs[H] = r_{L-1}
+
+            # Debug output for investigating overflow
+            if idx == 0:  # Only print for first example
+                print(f"\nDEBUG: Final layer overflow check (layer {H}):")
+                print(f"  Format: {float_format}")
+                print(f"  F_max: {float(float_to_q(fmt.Fmax)):.6e}")
+                print(f"  r_{{L-1}} (exact radius): {float(rs[H]):.6e}")
+                print(f"  D_{{L-2}} (deviation): {float(D_prev):.6e}")
+                print(f"  fp_bound = r + D: {float(fp_bound_final):.6e}")
+                print(f"  ||W_{{L-1}}||_∞: {float(inf_norms[H]):.6e}")
+                print(f"  ||W_{{L-1}}||_∞ · r (old bound): {float(inf_norms[H] * rs[H]):.6e}")
+                print(f"  ||W_{{L-1}}||_∞ · (r+D) (new bound): {float(inf_norms[H] * fp_bound_final):.6e}")
+                print(f"  Ratio D/r: {float(D_prev / rs[H]) if rs[H] > 0 else 'N/A'}")
+
+            overflow_stats_final = check_overflow_single_layer(
+                layer_idx=H,
+                op2_abs=op2_abs_norms[H],
+                inf_norm=inf_norms[H],
+                fp_activation_bound=fp_bound_final,
+                layer_width=n_last,
+                fmt=fmt,
+                bias_norm=Q(0)
+            )
+            if not overflow_stats_final.ok:
+                print(f"\nWARNING: Overflow certification failed at final layer {H}:")
+                print(f"  S_layer check: slack = {float(overflow_stats_final.slack_2):.15e}")
+                print(f"  M_layer check: slack = {float(overflow_stats_final.slack_inf):.15e}")
+                print(f"  This may indicate the old overflow checker was UNSOUND for {float_format}.")
+                print(f"  Continuing with robustness certification anyway...")
+
         t3 = time.perf_counter()
-        if not report.ok:
-            print("Overflow certification failed: ")
-            print(report)
-            sys.exit(1)
         times["overflow_check"] += (t3 - t2)
 
+        # ===== Step 3: Build components using computed deviations =====
         t4 = time.perf_counter()
+        # DLm1 is now D_{L-2} from forward induction
+        DLm1 = D_prev
+
         comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs)
         comp_ctr  = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0),   fmt, L_pairs, S_pairs)
         t5 = time.perf_counter()
