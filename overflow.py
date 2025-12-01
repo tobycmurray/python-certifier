@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 from arithmetic import Q, float_to_q
-from formats import FloatFormat, gamma_n, a_dot
+from formats import FloatFormat, gamma_n, a_dot_fwd
 
 @dataclass(frozen=True)
 class OverflowLayerStats:
@@ -17,7 +17,7 @@ class OverflowLayerStats:
     S_layer: Q            # ‖|W_l|‖_2 · r_{l-1} (exact bound)
     M_layer: Q            # ‖W_l‖_∞ · r_{l-1}
     gamma_n: Q            # Relative error accumulation: γ_n = (n·u)/(1-n·u)
-    a_dot_n: Q            # Absolute error for subnormals: (1+γ_{n-1})·n·a_mul
+    a_dot_n: Q            # Absolute error for subnormals: a_dot_fwd(n) = (1+γ_{n-1})·n·a_mul
     S_with_margin: Q      # S_layer · (1 + γ_n) + a_dot(n) [what actually needs checking]
     slack_2: Q            # F_max - S_with_margin (>0 means no overflow)
     slack_inf: Q          # F_max - M_layer (>0 means no overflow)
@@ -83,7 +83,7 @@ def check_overflow_single_layer(
 
     # Compute margin terms
     gamma = gamma_n(layer_width, u_q)
-    a_dot_n = a_dot(layer_width, u_q, a_mul_q)
+    a_dot_n = a_dot_fwd(layer_width, u_q, a_mul_q)
 
     # Apply margin to S_layer check
     S_with_margin = S_layer * (1 + gamma) + a_dot_n + bias_norm
@@ -183,7 +183,7 @@ def certify_no_overflow_normwise(
 
         # Compute margin terms
         gamma = gamma_n(n, u_q)
-        a_dot_n = a_dot(n, u_q, a_mul_q)
+        a_dot_n = a_dot_fwd(n, u_q, a_mul_q)
 
         # Apply margin to S_layer check
         S_with_margin = S_layer * (1 + gamma) + a_dot_n + b_norm

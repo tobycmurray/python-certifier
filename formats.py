@@ -96,15 +96,44 @@ def gamma_n(n: int, u: Q) -> Q:
 
 
 def a_dot(n: int, u: Q, a_mul: Q) -> Q:
-    """Absolute error bound for dot products with potential subnormals.
+    """Absolute error bound for dot products (deviation analysis).
 
-    a_dot(n) = (1 + γ_{n-1}) · n · a_mul
+    a_dot(n) = n · a_mul · (1 + γ_n)
 
-    where a_mul is the rounding error for a single subnormal product.
-    For round-to-nearest: a_mul = denorm_min / 2.
+    This is the mixed error model bound from LAProof, used in the deviation
+    recursion where we need the decomposition into relative and absolute parts.
 
-    This bounds the accumulated absolute error from subnormal intermediate
-    results in a length-n dot product.
+    The factor (1 + γ_n) accounts for propagation of absolute errors through
+    the full chain of n operations (n multiplications + n-1 additions, but
+    using γ_n for the mixed model decomposition).
+
+    Args:
+        n: Number of products in dot product (layer input dimension)
+        u: Unit roundoff
+        a_mul: Subnormal rounding error (typically denorm_min / 2)
+
+    Returns:
+        a_dot(n) as a rational
+
+    See also:
+        a_dot_fwd: Tighter forward error variant for overflow analysis
+    """
+    if n <= 1:
+        return Q(n) * a_mul
+    gamma = gamma_n(n, u)
+    return Q(n) * a_mul * (Q(1) + gamma)
+
+
+def a_dot_fwd(n: int, u: Q, a_mul: Q) -> Q:
+    """Absolute error bound for dot products (overflow/forward error analysis).
+
+    a_dot_fwd(n) = (1 + γ_{n-1}) · n · a_mul
+
+    This is the tighter forward error bound, using γ_{n-1} since a length-n
+    dot product involves n multiplications but only n-1 additions.
+
+    Used in overflow analysis where only the total error magnitude matters,
+    not the mixed error decomposition.
 
     Args:
         n: Number of products in dot product
@@ -112,11 +141,12 @@ def a_dot(n: int, u: Q, a_mul: Q) -> Q:
         a_mul: Subnormal rounding error (typically denorm_min / 2)
 
     Returns:
-        a_dot(n) as a rational
+        a_dot_fwd(n) as a rational
+
+    See also:
+        a_dot: Mixed error model variant for deviation analysis
     """
     if n <= 1:
-        # For n=1, no accumulation
         return Q(n) * a_mul
-    # For n>1, include accumulation factor
-    gamma_nm1 = gamma_n(n - 1, u) if n > 1 else Q(0)
+    gamma_nm1 = gamma_n(n - 1, u)
     return (Q(1) + gamma_nm1) * Q(n) * a_mul

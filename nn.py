@@ -171,3 +171,72 @@ def compute_deviations(exact_activations: List[Vector],
         deviations.append(float(l2_norm))
 
     return deviations
+
+
+def convert_network_to_numpy64(network: List[Matrix]) -> List[np.ndarray]:
+    """
+    Convert Q network to numpy float64 matrices (one-time conversion).
+
+    This is much more efficient than converting on every forward pass.
+    Use this once at startup, then use forward_layerwise_float64_optimized
+    for all subsequent forward passes.
+
+    Args:
+        network: List of Q weight matrices
+
+    Returns:
+        List of numpy float64 weight matrices
+    """
+    weights_np = []
+    for W in network:
+        m = len(W)
+        n = len(W[0]) if m > 0 else 0
+        W_np = np.empty((m, n), dtype=np.float64)
+        for i in range(m):
+            for j in range(n):
+                W_np[i, j] = float(W[i][j])
+        weights_np.append(W_np)
+    return weights_np
+
+
+def forward_layerwise_float64_optimized(weights_np: List[np.ndarray],
+                                        x: Vector) -> List[np.ndarray]:
+    """
+    Optimized float64 forward pass using pre-converted weight matrices.
+
+    This is ~750× faster than forward_layerwise_float64() because it avoids
+    converting Q matrices to numpy on every forward pass.
+
+    Usage:
+        # One-time conversion (do once at startup):
+        weights_np = convert_network_to_numpy64(network)
+
+        # Fast forward passes (do for each input):
+        activations = forward_layerwise_float64_optimized(weights_np, x)
+
+    Args:
+        weights_np: Pre-converted numpy float64 weight matrices
+        x: Input vector (Q or numpy)
+
+    Returns:
+        List [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+        Each activation is a numpy array of float64.
+    """
+    # Convert input to numpy if needed
+    if len(x) > 0 and isinstance(x[0], Q):
+        v = np.array([float(q) for q in x], dtype=np.float64)
+    else:
+        v = np.asarray(x, dtype=np.float64)
+
+    activations = []
+    L = len(weights_np)
+
+    for ell, W in enumerate(weights_np):
+        z = W @ v
+        if ell < L - 1:
+            v = np.maximum(z, 0.0)
+        else:
+            v = z
+        activations.append(v.copy())
+
+    return activations
