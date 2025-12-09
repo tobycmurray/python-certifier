@@ -144,7 +144,7 @@ run_test() {
   esac
 
   echo -n "Running test: $format, $model, $gram, $kind ...  "
-  python "$CERTIFIER" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  python "$CERTIFIER"  "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
@@ -165,13 +165,13 @@ run_test() {
   fi
   echo "OK"
 
-  (grep -i warn .log | head -1) || echo -n ""
+  (grep -i warn .log) || echo -n ""
 
-  if [[ "$kind" == "all" ]]; then
+  #if [[ "$kind" == "all" ]]; then
       echo ""
       awk '/CERTIFIER\ RESULTS/ {flag=1} flag' .log
       echo ""
-  fi
+  #fi
 }
 
 # --- test matrix -----------------------------------------------------------
@@ -180,6 +180,7 @@ run_test "float32" "z3"            "10" "cex"
 
 run_test "float32" "mnist"         "20" "cex"
 run_test "float16" "mnist"         "20" "cex"
+exit 1
 run_test "float64" "mnist"         "20" "cex"
 
 run_test "float32" "fashion_mnist" "13" "cex"

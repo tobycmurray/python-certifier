@@ -97,6 +97,26 @@ def forward_layerwise_exact(network: List[Matrix], x: Vector) -> List[Vector]:
         activations.append(v)
     return activations
 
+def forward_layerwise_float32(network: List[Matrix], x: Vector) -> List[np.ndarray]:
+    """
+    Float32 forward pass returning activations at each layer.
+    Returns list [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+    Each activation is a numpy array of float32.
+    """
+    nets_np = [_to_numpy32_matrix(W) for W in network]
+    v = np.array([np.float32(float(q)) for q in x], dtype=np.float32)
+    activations = []
+    L = len(nets_np)
+    for ell, W in enumerate(nets_np):
+        z = W @ v  # (n,) = (n,m) @ (m,)
+        if ell < L - 1:
+            # ReLU in float32
+            v = np.maximum(z, np.float32(0.0), dtype=np.float32)
+        else:
+            v = z.astype(np.float32, copy=False)
+        activations.append(v.copy())  # Store activation after layer ell
+    return activations
+
 def forward_layerwise_float16(network: List[Matrix], x: Vector) -> List[np.ndarray]:
     """
     Float16 forward pass returning activations at each layer.
@@ -237,6 +257,144 @@ def forward_layerwise_float64_optimized(weights_np: List[np.ndarray],
             v = np.maximum(z, 0.0)
         else:
             v = z
+        activations.append(v.copy())
+
+    return activations
+
+
+def convert_network_to_numpy32(network: List[Matrix]) -> List[np.ndarray]:
+    """
+    Convert Q network to numpy float32 matrices (one-time conversion).
+
+    This is much more efficient than converting on every forward pass.
+    Use this once at startup, then use forward_layerwise_float32_optimized
+    for all subsequent forward passes.
+
+    Args:
+        network: List of Q weight matrices
+
+    Returns:
+        List of numpy float32 weight matrices
+    """
+    weights_np = []
+    for W in network:
+        m = len(W)
+        n = len(W[0]) if m > 0 else 0
+        W_np = np.empty((m, n), dtype=np.float32)
+        for i in range(m):
+            for j in range(n):
+                W_np[i, j] = np.float32(float(W[i][j]))
+        weights_np.append(W_np)
+    return weights_np
+
+
+def forward_layerwise_float32_optimized(weights_np: List[np.ndarray],
+                                        x: Vector) -> List[np.ndarray]:
+    """
+    Optimized float32 forward pass using pre-converted weight matrices.
+
+    This is much faster than forward_layerwise_float32() because it avoids
+    converting Q matrices to numpy on every forward pass.
+
+    Usage:
+        # One-time conversion (do once at startup):
+        weights_np = convert_network_to_numpy32(network)
+
+        # Fast forward passes (do for each input):
+        activations = forward_layerwise_float32_optimized(weights_np, x)
+
+    Args:
+        weights_np: Pre-converted numpy float32 weight matrices
+        x: Input vector (Q or numpy)
+
+    Returns:
+        List [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+        Each activation is a numpy array of float32.
+    """
+    # Convert input to numpy float32
+    if len(x) > 0 and isinstance(x[0], Q):
+        v = np.array([np.float32(float(q)) for q in x], dtype=np.float32)
+    else:
+        v = np.asarray(x, dtype=np.float32)
+
+    activations = []
+    L = len(weights_np)
+
+    for ell, W in enumerate(weights_np):
+        z = W @ v
+        if ell < L - 1:
+            v = np.maximum(z, np.float32(0.0), dtype=np.float32)
+        else:
+            v = z.astype(np.float32, copy=False)
+        activations.append(v.copy())
+
+    return activations
+
+
+def convert_network_to_numpy16(network: List[Matrix]) -> List[np.ndarray]:
+    """
+    Convert Q network to numpy float16 matrices (one-time conversion).
+
+    This is much more efficient than converting on every forward pass.
+    Use this once at startup, then use forward_layerwise_float16_optimized
+    for all subsequent forward passes.
+
+    Args:
+        network: List of Q weight matrices
+
+    Returns:
+        List of numpy float16 weight matrices
+    """
+    weights_np = []
+    for W in network:
+        m = len(W)
+        n = len(W[0]) if m > 0 else 0
+        W_np = np.empty((m, n), dtype=np.float16)
+        for i in range(m):
+            for j in range(n):
+                W_np[i, j] = np.float16(float(W[i][j]))
+        weights_np.append(W_np)
+    return weights_np
+
+
+def forward_layerwise_float16_optimized(weights_np: List[np.ndarray],
+                                        x: Vector) -> List[np.ndarray]:
+    """
+    Optimized float16 forward pass using pre-converted weight matrices.
+
+    This is much faster than forward_layerwise_float16() because it avoids
+    converting Q matrices to numpy on every forward pass.
+
+    Usage:
+        # One-time conversion (do once at startup):
+        weights_np = convert_network_to_numpy16(network)
+
+        # Fast forward passes (do for each input):
+        activations = forward_layerwise_float16_optimized(weights_np, x)
+
+    Args:
+        weights_np: Pre-converted numpy float16 weight matrices
+        x: Input vector (Q or numpy)
+
+    Returns:
+        List [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
+        Each activation is a numpy array of float16.
+    """
+    # Convert input to numpy float16
+    if len(x) > 0 and isinstance(x[0], Q):
+        v = np.array([np.float16(float(q)) for q in x], dtype=np.float16)
+    else:
+        v = np.asarray(x, dtype=np.float16)
+
+    activations = []
+    L = len(weights_np)
+
+    for ell, W in enumerate(weights_np):
+        z = W @ v
+        if ell < L - 1:
+            v = np.maximum(z, np.float16(0.0), dtype=np.float16)
+        else:
+            v = z.astype(np.float16, copy=False)
         activations.append(v.copy())
 
     return activations
