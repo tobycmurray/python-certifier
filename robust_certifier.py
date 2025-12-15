@@ -441,7 +441,10 @@ def main():
         norms = compute_norms(net, gram_iters)
         save_norms(hsh, gram_iters, norms, norms_file)
 
-    inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
+    max_row_inf_norms = norms.max_row_inf_norms
+    op2_norms = norms.op2_norms
+    op2_abs_norms = norms.op2_abs_norms
+    max_row_l2_norms = norms.max_row_l2_norms
 
     # Extract layer widths (input dimensions) for overflow checking with margin terms
     layer_widths = [len(W[0]) for W in net]  # n_l = number of columns in W_l
@@ -562,8 +565,8 @@ def main():
             fp_bound = rs[ell] + D_prev
             overflow_stats = check_overflow_single_layer(
                 layer_idx=ell,
-                op2_abs=op2_abs_norms[ell],
-                inf_norm=inf_norms[ell],
+                max_row_l2=max_row_l2_norms[ell],
+                max_abs_entry=max_row_inf_norms[ell],
                 fp_activation_bound=fp_bound,
                 layer_width=n_ell,
                 fmt=fmt,
@@ -603,23 +606,10 @@ def main():
             m_last, n_last = dims(net[-1])
             fp_bound_final = rs[H] + D_prev  # rs[H] = r_{L-1}
 
-            # Debug output for investigating overflow
-            if idx == 0:  # Only print for first example
-                print(f"\nDEBUG: Final layer overflow check (layer {H}):")
-                print(f"  Format: {float_format}")
-                print(f"  F_max: {float(float_to_q(fmt.Fmax)):.6e}")
-                print(f"  r_{{L-1}} (exact radius): {float(rs[H]):.6e}")
-                print(f"  D_{{L-2}} (deviation): {float(D_prev):.6e}")
-                print(f"  fp_bound = r + D: {float(fp_bound_final):.6e}")
-                print(f"  ||W_{{L-1}}||_∞: {float(inf_norms[H]):.6e}")
-                print(f"  ||W_{{L-1}}||_∞ · r (old bound): {float(inf_norms[H] * rs[H]):.6e}")
-                print(f"  ||W_{{L-1}}||_∞ · (r+D) (new bound): {float(inf_norms[H] * fp_bound_final):.6e}")
-                print(f"  Ratio D/r: {float(D_prev / rs[H]) if rs[H] > 0 else 'N/A'}")
-
             overflow_stats_final = check_overflow_single_layer(
                 layer_idx=H,
-                op2_abs=op2_abs_norms[H],
-                inf_norm=inf_norms[H],
+                max_row_l2=max_row_l2_norms[H],
+                max_abs_entry=max_row_inf_norms[H],
                 fp_activation_bound=fp_bound_final,
                 layer_width=n_last,
                 fmt=fmt,
@@ -627,10 +617,7 @@ def main():
             )
             if not overflow_stats_final.ok:
                 print(f"\nWARNING: Overflow certification failed at final layer {H}:")
-                print(f"  S_layer check: slack = {float(overflow_stats_final.slack_2):.15e}")
-                print(f"  M_layer check: slack = {float(overflow_stats_final.slack_inf):.15e}")
-                print(f"  This may indicate the old overflow checker was UNSOUND for {float_format}.")
-                print(f"  Continuing with robustness certification anyway...")
+                print(f"WARNING: Continuing with robustness certification anyway...")
 
         t3 = time.perf_counter()
         times["overflow_check"] += (t3 - t2)
@@ -669,19 +656,6 @@ def main():
                 net, op2_norms, op2_abs_norms,
                 input_radius, r_meas_ball, sqrt_m_ells, fmt
             )
-
-            # Debug output for first example
-            if idx == 0:
-                print(f"\nHYBRID+MEASURED mode debug:")
-                print(f"  ||ẑ - ẑ^hi||_2 (measured diff): {float(hm_data.measured_center_diff):.6e}")
-                print(f"  D^hi_{{{H-1}}} (fp64 theoretical): {float(D_hi_final):.6e}")
-                print(f"  D^hybrid (center): {float(D_hybrid_center):.6e}")
-                print(f"  D^meas (ball): {float(D_meas_ball):.6e}")
-                print(f"  Standard D (ball): {float(D_prev):.6e}")
-                improvement = f"{float(D_prev / D_meas_ball):.2f}" if D_meas_ball > 0 else "N/A"
-                print(f"  Improvement factor: {improvement}x")
-                if r_meas_ball:
-                    print(f"  Sample measured radii: r^meas_0={float(r_meas_ball[0]):.6e}, r_0={float(rs[0]):.6e}")
 
             # Get predicted class for computing E terms
             xstar = max(range(len(y_f32)), key=lambda k: y_f32[k])
@@ -780,6 +754,7 @@ def main():
     results_ok_real = [r for r in results if r.ok_real]
 
     print("\nCERTIFIER RESULTS")
+    print(f"Norms file: {norms_file}")
     print(f"Of {len(results)} instances we attempted to certify:")
     print(f"  Certified {len(results_ok)} instances as robust")
     print(f"  Failed to certify {len(results_fail)} instances as robust")

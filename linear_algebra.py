@@ -143,13 +143,36 @@ def layer_opnorm_upper_bound(W: Matrix, gram_iters: int) -> Q:
     return gram_iteration(W, gram_iters)
 
 def layer_infinity_norm(W: Matrix) -> Q:
-    """Compute ||W||_∞ = max_r sum_k |W[r,k]| (rational exact)."""
-    max_sum = Q(0)
+    """Compute max absolute entry = max_r max_k |W[r,k]| (rational exact).
+
+    This is the maximum row infinity norm, i.e., max_r ||W_r||_∞.
+    Used for the M_layer overflow check to bound max single product.
+
+    Note: This is NOT the standard matrix infinity norm (which is max row sum).
+    """
+    max_abs = Q(0)
     for row in W:
-        s = sum(abs(x) for x in row)
-        if s > max_sum:
-            max_sum = s
-    return max_sum
+        for x in row:
+            ax = abs(x)
+            if ax > max_abs:
+                max_abs = ax
+    return max_abs
+
+
+def max_row_l2_norm(W: Matrix) -> Q:
+    """Compute max row L2 norm = max_r ||W_r||_2 (upper bound).
+
+    This is the maximum L2 norm of any row in the matrix.
+    Used for the S_layer overflow check to bound max absolute sum of dot product.
+
+    Note: This is tighter than the spectral norm of the absolute matrix.
+    """
+    max_norm = Q(0)
+    for row in W:
+        norm = l2_norm_upper_bound_vec(row)
+        if norm > max_norm:
+            max_norm = norm
+    return max_norm
 
 def abs_matrix(W: Matrix) -> Matrix:
     return [[abs(x) for x in row] for row in W]
