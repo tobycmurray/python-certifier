@@ -4,17 +4,12 @@ from dataclasses import dataclass
 
 import sys, os, json, time, math
 
-from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
+from parsing import load_network_from_file, ParseError, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
 from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
 from overflow import check_overflow_single_layer
 from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
-from nn import (
-    forward_numpy_float32, forward_layerwise_float64, forward_layerwise_float16,
-    convert_network_to_numpy64, convert_network_to_numpy16,
-    forward_layerwise_float64_optimized, forward_layerwise_float16_optimized
-)
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
 
@@ -32,7 +27,7 @@ def compute_stats(vals: List[float]) -> FloatStats:
 
 def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
     """
-    Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
+     Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
     Raises ValueError with an explanatory message if violated.
     """
     u = float_to_q(fmt.u)
@@ -288,9 +283,8 @@ def compute_sqrt_m_ells(network: List[Matrix]):
     return res
 
 def main():
-    if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
+    if len(sys.argv) != 6:
+        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <cex_file.json> <dafny-ref-json-file>")
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -302,18 +296,9 @@ def main():
         print("Error: <GRAM_ITERATIONS> must be an integer.")
         sys.exit(1)
 
-    cex_file, input_file = None, None
-    if sys.argv[3] == "--cex":
-        cex_file = sys.argv[4]
-    else:
-        input_file = sys.argv[3]
-        try:
-            epsilon = Q(sys.argv[4])
-        except ValueError:
-            print("Error: <epsilon> must be a float.")
-            sys.exit(1)
+    cex_file = sys.argv[3]
 
-    dafny_json_file = sys.argv[5]
+    dafny_json_file = sys.argv[4]
 
     # load network & norms
     try:
@@ -352,26 +337,17 @@ def main():
 
     # inputs to certify
     to_certify = []
-    if cex_file is not None:
-        with open(cex_file, "r") as f:
-            cexs = json.load(f)
-        for cex in cexs:
-            d = os.path.dirname(cex_file)
-            x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
-            x = load_vector_from_npy_file(x1_file)
-            epsilon = Q(cex["max_eps"])
-            y_f32 = cex.get("y1", None)
-            if y_f32 is None:
-                print("Simulating neural network forward pass...")
-                y_f32 = forward_numpy_float32(net, x)
-            to_certify.append((x,epsilon,y_f32))
-    if input_file is not None:
-        if input_file.endswith(".npy"):
-            x = load_vector_from_npy_file(input_file)
-        else:
-            x = load_vector_from_file(input_file)
-        print("Simulating neural network forward pass...")
-        y_f32 = forward_numpy_float32(net, x)
+    with open(cex_file, "r") as f:
+        cexs = json.load(f)
+    for cex in cexs:
+        d = os.path.dirname(cex_file)
+        x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
+        x = load_vector_from_npy_file(x1_file)
+        epsilon = Q(cex["max_eps"])
+        y_f32 = cex.get("y1", None)
+        if y_f32 is None:
+            print("cex file missing \"y1\" field")
+            sys.exit(1)
         to_certify.append((x,epsilon,y_f32))
 
     sqrt_m_ells = compute_sqrt_m_ells(net)

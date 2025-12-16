@@ -144,7 +144,7 @@ run_test() {
   esac
 
   echo -n "Running test: $format, $model, $gram, $kind ...  "
-  python "$CERTIFIER"  "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  python "$CERTIFIER"  "$format" "$nn_file" "$gram" "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
