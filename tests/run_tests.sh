@@ -179,6 +179,7 @@ run_test() {
 run_test "float32" "z3"            "10" "cex"
 
 run_test "float32" "mnist"         "20" "cex"
+exit 1
 run_test "float16" "mnist"         "20" "cex"
 run_test "float64" "mnist"         "20" "cex"
 

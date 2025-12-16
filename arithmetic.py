@@ -64,21 +64,11 @@ def qstr(q: Q) -> str:
             return f"{sign}{int_part}.({rep})"
 
 DECIMALS = 16
-DEC_SCALE = 10 ** DECIMALS
 ROUNDING_PRECISION = DECIMALS
 
 # Parameters from Fig. 7
 SQRT_ERR = Q(1, 10**11)          # 1e-11 as a rational
 SQRT_ITERATIONS = 2_000_000
-
-def trunc16_scalar(x: Q) -> Q:
-    """
-    Truncate a rational number to 16 decimal places (towards zero), per the paper's
-    "truncate to 16 decimal places" step.
-    """
-    y = x * DEC_SCALE
-    num = y.numerator // y.denominator   # Python's // is floor for ints, including negatives
-    return Q(num, DEC_SCALE)
 
 def round_down(x: Q) -> Q:
     """
