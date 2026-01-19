@@ -95,6 +95,32 @@ def gamma_n(n: int, u: Q) -> Q:
     return nu / (1 - nu)
 
 
+def kappa_n(n: int, u: Q) -> Q:
+    """Combined FP error constant for n operations.
+
+    κ_n = γ_n + u·(1 + γ_n)
+
+    This is the combined constant that accounts for:
+    - The main dot product error (γ_n term)
+    - Additional rounding when storing/using the result (u·(1+γ_n) term)
+
+    Used in the deviation recursion (Corollary 3.1) where we need to bound
+    both the accumulated error and the final rounding.
+
+    Args:
+        n: Number of operations (layer input dimension)
+        u: Unit roundoff
+
+    Returns:
+        κ_n as a rational
+
+    Raises:
+        ValueError: If n·u >= 1
+    """
+    gamma = gamma_n(n, u)
+    return gamma + u * (Q(1) + gamma)
+
+
 def a_dot(n: int, u: Q, a_mul: Q) -> Q:
     """Absolute error bound for dot products (deviation analysis).
 

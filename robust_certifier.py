@@ -4,16 +4,14 @@ from dataclasses import dataclass
 
 import sys, os, json, time, math
 
-from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
+from parsing import load_network_from_file, ParseError, load_vector_from_npy_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
 from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
-from overflow import certify_no_overflow_normwise, check_overflow_single_layer
+from overflow import check_overflow_single_layer
 from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
-from nn import forward_numpy_float32
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
-
 
 @dataclass(frozen=True)
 class FloatStats:
@@ -29,7 +27,7 @@ def compute_stats(vals: List[float]) -> FloatStats:
 
 def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
     """
-    Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
+     Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
     Raises ValueError with an explanatory message if violated.
     """
     u = float_to_q(fmt.u)
@@ -149,6 +147,7 @@ def certify_mode_b_theorem4(
 
     return ModeBReport(ok=all(r.ok for r in results), ok_real=all(r.ok_real for r in results),
                        xstar=xstar, pairs=results, first_failure=first_fail, max_lhs=max_lhs)
+
 
 def hidden_stack_degradation_with_products(alphas: List[Q], betas: List[Q]) -> Tuple[Q, List[Q]]:
     Lh = len(alphas)
@@ -284,9 +283,8 @@ def compute_sqrt_m_ells(network: List[Matrix]):
     return res
 
 def main():
-    if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
+    if len(sys.argv) != 6:
+        print(f"Usage: {sys.argv[0]} format <neural_network_input.txt> <GRAM_ITERATIONS> <cex_file.json> <dafny-ref-json-file>")
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -298,18 +296,9 @@ def main():
         print("Error: <GRAM_ITERATIONS> must be an integer.")
         sys.exit(1)
 
-    cex_file, input_file = None, None
-    if sys.argv[3] == "--cex":
-        cex_file = sys.argv[4]
-    else:
-        input_file = sys.argv[3]
-        try:
-            epsilon = Q(sys.argv[4])
-        except ValueError:
-            print("Error: <epsilon> must be a float.")
-            sys.exit(1)
+    cex_file = sys.argv[3]
 
-    dafny_json_file = sys.argv[5]
+    dafny_json_file = sys.argv[4]
 
     # load network & norms
     try:
@@ -330,7 +319,10 @@ def main():
         norms = compute_norms(net, gram_iters)
         save_norms(hsh, gram_iters, norms, norms_file)
 
-    inf_norms, op2_norms, op2_abs_norms = norms.inf_norms, norms.op2_norms, norms.op2_abs_norms
+    max_row_inf_norms = norms.max_row_inf_norms
+    op2_norms = norms.op2_norms
+    op2_abs_norms = norms.op2_abs_norms
+    max_row_l2_norms = norms.max_row_l2_norms
 
     # Extract layer widths (input dimensions) for overflow checking with margin terms
     layer_widths = [len(W[0]) for W in net]  # n_l = number of columns in W_l
@@ -345,26 +337,17 @@ def main():
 
     # inputs to certify
     to_certify = []
-    if cex_file is not None:
-        with open(cex_file, "r") as f:
-            cexs = json.load(f)
-        for cex in cexs:
-            d = os.path.dirname(cex_file)
-            x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
-            x = load_vector_from_npy_file(x1_file)
-            epsilon = Q(cex["max_eps"])
-            y_f32 = cex.get("y1", None)
-            if y_f32 is None:
-                print("Simulating neural network forward pass...")
-                y_f32 = forward_numpy_float32(net, x)
-            to_certify.append((x,epsilon,y_f32))
-    if input_file is not None:
-        if input_file.endswith(".npy"):
-            x = load_vector_from_npy_file(input_file)
-        else:
-            x = load_vector_from_file(input_file)
-        print("Simulating neural network forward pass...")
-        y_f32 = forward_numpy_float32(net, x)
+    with open(cex_file, "r") as f:
+        cexs = json.load(f)
+    for cex in cexs:
+        d = os.path.dirname(cex_file)
+        x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
+        x = load_vector_from_npy_file(x1_file)
+        epsilon = Q(cex["max_eps"])
+        y_f32 = cex.get("y1", None)
+        if y_f32 is None:
+            print("cex file missing \"y1\" field")
+            sys.exit(1)
         to_certify.append((x,epsilon,y_f32))
 
     sqrt_m_ells = compute_sqrt_m_ells(net)
@@ -441,8 +424,8 @@ def main():
             fp_bound = rs[ell] + D_prev
             overflow_stats = check_overflow_single_layer(
                 layer_idx=ell,
-                op2_abs=op2_abs_norms[ell],
-                inf_norm=inf_norms[ell],
+                max_row_l2=max_row_l2_norms[ell],
+                max_abs_entry=max_row_inf_norms[ell],
                 fp_activation_bound=fp_bound,
                 layer_width=n_ell,
                 fmt=fmt,
@@ -482,23 +465,10 @@ def main():
             m_last, n_last = dims(net[-1])
             fp_bound_final = rs[H] + D_prev  # rs[H] = r_{L-1}
 
-            # Debug output for investigating overflow
-            if idx == 0:  # Only print for first example
-                print(f"\nDEBUG: Final layer overflow check (layer {H}):")
-                print(f"  Format: {float_format}")
-                print(f"  F_max: {float(float_to_q(fmt.Fmax)):.6e}")
-                print(f"  r_{{L-1}} (exact radius): {float(rs[H]):.6e}")
-                print(f"  D_{{L-2}} (deviation): {float(D_prev):.6e}")
-                print(f"  fp_bound = r + D: {float(fp_bound_final):.6e}")
-                print(f"  ||W_{{L-1}}||_∞: {float(inf_norms[H]):.6e}")
-                print(f"  ||W_{{L-1}}||_∞ · r (old bound): {float(inf_norms[H] * rs[H]):.6e}")
-                print(f"  ||W_{{L-1}}||_∞ · (r+D) (new bound): {float(inf_norms[H] * fp_bound_final):.6e}")
-                print(f"  Ratio D/r: {float(D_prev / rs[H]) if rs[H] > 0 else 'N/A'}")
-
             overflow_stats_final = check_overflow_single_layer(
                 layer_idx=H,
-                op2_abs=op2_abs_norms[H],
-                inf_norm=inf_norms[H],
+                max_row_l2=max_row_l2_norms[H],
+                max_abs_entry=max_row_inf_norms[H],
                 fp_activation_bound=fp_bound_final,
                 layer_width=n_last,
                 fmt=fmt,
@@ -506,16 +476,14 @@ def main():
             )
             if not overflow_stats_final.ok:
                 print(f"\nWARNING: Overflow certification failed at final layer {H}:")
-                print(f"  S_layer check: slack = {float(overflow_stats_final.slack_2):.15e}")
-                print(f"  M_layer check: slack = {float(overflow_stats_final.slack_inf):.15e}")
-                print(f"  This may indicate the old overflow checker was UNSOUND for {float_format}.")
-                print(f"  Continuing with robustness certification anyway...")
+                print(f"WARNING: Continuing with robustness certification anyway...")
 
         t3 = time.perf_counter()
         times["overflow_check"] += (t3 - t2)
 
-        # ===== Step 3: Build components using computed deviations =====
+        # ===== Step 3: Build components and certify =====
         t4 = time.perf_counter()
+
         # DLm1 is now D_{L-2} from forward induction
         DLm1 = D_prev
 
@@ -531,14 +499,8 @@ def main():
 
         # essentials
         DLm1s.append(float(comp_ball.DLm1))
-        # mean float conservatism and real rhs across pairs in this example
-        if modeb.pairs:
-            fc = [float(p.float_conservatism) for p in modeb.pairs]
-            rr = [float(p.rhs_real) for p in modeb.pairs]
-            float_cons_all.append(sum(fc)/len(fc))
-            real_rhs_all.append(sum(rr)/len(rr))
 
-        # layerwise means we care about
+        # layerwise means we care about (only in standard mode)
         for ell in range(H):
             layer_alpha_sum[ell]    += float(comp_ball.alphas[ell])
             layer_kappa_sum[ell]    += float(comp_ball.kappas[ell])
@@ -547,6 +509,13 @@ def main():
             layer_beta_sum[ell]     += float(comp_ball.betas[ell])
             layer_contrib_sum[ell]  += float(comp_ball.contribs[ell])
 
+        result = results[-1]
+        if result.pairs:
+            fc = [float(p.float_conservatism) for p in result.pairs]
+            rr = [float(p.rhs_real) for p in result.pairs]
+            float_cons_all.append(sum(fc)/len(fc))
+            real_rhs_all.append(sum(rr)/len(rr))
+
         layer_count += 1
 
     results_ok = [r for r in results if r.ok]
@@ -554,6 +523,7 @@ def main():
     results_ok_real = [r for r in results if r.ok_real]
 
     print("\nCERTIFIER RESULTS")
+    print(f"Norms file: {norms_file}")
     print(f"Of {len(results)} instances we attempted to certify:")
     print(f"  Certified {len(results_ok)} instances as robust")
     print(f"  Failed to certify {len(results_fail)} instances as robust")
