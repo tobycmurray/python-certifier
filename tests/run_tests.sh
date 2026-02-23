@@ -37,6 +37,8 @@ CIFAR10_NEURAL_NET="neural_net_mnist_epsilon_0.1551_[512,256,128,128,128,128,128
 Z3_NEURAL_NET="z3_neural_network.txt"
 
 ALL_MNIST_TEST_INPUTS="all_mnist_test_inputs/test_inputs_epsilon_0.3.json"
+ALL_MNIST_TEST_INPUTS_FLOAT16="all_mnist_test_inputs_float16/test_inputs_epsilon_0.3.json"
+ALL_MNIST_TEST_INPUTS_FLOAT64="all_mnist_test_inputs_float64/test_inputs_epsilon_0.3.json"
 ALL_FASHION_MNIST_TEST_INPUTS="all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25.json"
 ALL_CIFAR10_TEST_INPUTS="all_cifar10_test_inputs/all_test_inputs.json"
 
@@ -46,6 +48,7 @@ CEX_MNIST_FLOAT64="cex_mnist_deepfool_float64/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_deepfool/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_deepfool_float16/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_deepfool_float16/counter_examples.json"
+CEX_CIFAR10_FLOAT16="cex_cifar10_deepfool_float16/counter_examples.json"
 CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
 CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
 CEX_Z3_FLOAT32="z3_counter_examples.json"
@@ -69,9 +72,11 @@ declare -A REF_RESULTS=(
 )
 
 declare -A ALL_INPUTS=(
-  [mnist]="$ALL_MNIST_TEST_INPUTS"
-  [fashion_mnist]="$ALL_FASHION_MNIST_TEST_INPUTS"
-  [cifar10]="$ALL_CIFAR10_TEST_INPUTS"
+  ["mnist:float32"]="$ALL_MNIST_TEST_INPUTS"
+  ["mnist:float16"]="$ALL_MNIST_TEST_INPUTS_FLOAT16"
+  ["mnist:float64"]="$ALL_MNIST_TEST_INPUTS_FLOAT16"
+  ["fashion_mnist:float32"]="$ALL_FASHION_MNIST_TEST_INPUTS"
+  ["cifar10:float32"]="$ALL_CIFAR10_TEST_INPUTS"
 )
 
 declare -A CEX=(
@@ -81,6 +86,7 @@ declare -A CEX=(
   ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
   ["fashion_mnist:float16"]="$CEX_FASHION_MNIST_FLOAT16"
   ["fashion_mnist:float64"]="$CEX_FASHION_MNIST_FLOAT64"
+  ["cifar10:float16"]="$CEX_CIFAR10_FLOAT16"
   ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
   ["cifar10:float64"]="$CEX_CIFAR10_FLOAT64"
   ["z3:float32"]="$CEX_Z3_FLOAT32"
@@ -129,9 +135,9 @@ run_test() {
   local cex_file=""
   case "$kind" in
     all)
-      [[ "$format" == "float32" ]] || die "Only float32 format supported when running kind 'all'"
-      [[ -n ${ALL_INPUTS[$model]+x} ]] || die "No ALL inputs configured for '$model'"
-      cex_file="${ALL_INPUTS[$model]}"
+      local key_all="$model:$format"
+      [[ -n ${ALL_INPUTS[$key_all]+x} ]] || die "Unsupported format '$format' for '$model' and kind 'all'"
+      cex_file="${ALL_INPUTS[$key_all]}"
       ;;
     cex)
       local key_cex="$model:$format"
@@ -158,10 +164,12 @@ run_test() {
     (( count_ok == 0 )) || die "Certifier certified $count_ok counter-examples!"
     (( count_ok_real == count )) || die "Real-arithmetic certifier would not have certified all counter-examples!"
   else
-    # kind is "all"
-    local ref_num
-    ref_num=$(grep -c true "$ref_results_file")
-    (( count_ok_real == ref_num )) || die "Mismatch vs Dafny reference: real=$count_ok_real ref=$ref_num ($ref_results_file)"
+      if [[ "$format" == "float32" ]]; then
+        # kind is "all"
+        local ref_num
+        ref_num=$(grep -c true "$ref_results_file")
+        (( count_ok_real == ref_num )) || die "Mismatch vs Dafny reference: real=$count_ok_real ref=$ref_num ($ref_results_file)"
+      fi
   fi
   echo "OK"
 
@@ -176,6 +184,11 @@ run_test() {
 
 # --- test matrix -----------------------------------------------------------
 
+run_test "float16" "mnist"         "20" "all"
+run_test "float64" "mnist"         "20" "all"
+echo "Premature exit for testing. FIXME: remove"
+exit 1
+
 run_test "float32" "z3"            "10" "cex"
 
 run_test "float32" "mnist"         "20" "cex"
@@ -186,6 +199,7 @@ run_test "float32" "fashion_mnist" "13" "cex"
 run_test "float16" "fashion_mnist" "13" "cex"
 run_test "float64" "fashion_mnist" "13" "cex"
 
+run_test "float16" "cifar10"       "12" "cex"
 run_test "float32" "cifar10"       "12" "cex"
 run_test "float64" "cifar10"       "12" "cex"
 
