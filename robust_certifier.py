@@ -395,9 +395,18 @@ def main():
         hybrid_meas_mode = True
         sys.argv = [sys.argv[0]] + sys.argv[2:]  # Remove --hybrid-meas from args
 
+    # Check for --json-output flag
+    json_output_file = None
+    if len(sys.argv) > 1 and sys.argv[1] == "--json-output":
+        if len(sys.argv) < 3:
+            print("Error: --json-output requires a filename argument")
+            sys.exit(1)
+        json_output_file = sys.argv[2]
+        sys.argv = [sys.argv[0]] + sys.argv[3:]  # Remove --json-output and filename from args
+
     if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} [--hybrid-meas] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-        print(f"Usage: {sys.argv[0]} [--hybrid-meas] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} [--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} [--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -503,6 +512,7 @@ def main():
 
     print(f"Got {len(to_certify)} instances to certify...")
     results = []
+    json_results = []  # For JSON output compatible with test_verified_certified_robust_accuracy.py
 
     times = {"radii":0.0, "overflow_check":0.0, "components":0.0, "certification":0.0}
 
@@ -709,6 +719,14 @@ def main():
             times["certification"] += (t6 - t5)
             results.append(report)
 
+            # Collect JSON output if requested
+            if json_output_file:
+                json_results.append({
+                    "output": y_f32,
+                    "radius": float(epsilon),
+                    "certified": report.ok
+                })
+
             # essentials - use hybrid+measured deviation
             DLm1s.append(float(D_meas_ball))
 
@@ -726,6 +744,14 @@ def main():
             times["components"] += (t5 - t4)
             times["certification"] += (t6 - t5)
             results.append(modeb)
+
+            # Collect JSON output if requested
+            if json_output_file:
+                json_results.append({
+                    "output": y_f32,
+                    "radius": float(epsilon),
+                    "certified": modeb.ok
+                })
 
             # essentials
             DLm1s.append(float(comp_ball.DLm1))
@@ -809,6 +835,20 @@ def main():
     print(f"  Components:        {times['components'] * 1000 / N}")
     print(f"  Certification:     {times['certification'] * 1000 / N}")
     print(f"  Overall:           {(times['radii'] + times['overflow_check'] + times['components'] + times['certification']) * 1000 / N}")
+
+    # Write JSON output if requested
+    if json_output_file:
+        # Build output array with placeholder first element (will be skipped by processing script)
+        mode_label = "hybrid_measured" if hybrid_meas_mode else "standard"
+        json_output = [
+            {"certifier": f"python_certifier_{mode_label}", "format": float_format, "gram_iterations": gram_iters}
+        ] + json_results
+
+        with open(json_output_file, 'w') as f:
+            json.dump(json_output, f, indent=2)
+
+        print(f"\nJSON results written to: {json_output_file}")
+        print(f"Total records (excluding header): {len(json_results)}")
 
 if __name__ == "__main__":
     main()
