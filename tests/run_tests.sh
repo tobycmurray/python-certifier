@@ -143,8 +143,12 @@ run_test() {
       ;;
   esac
 
+  # Create unique JSON output filename based on test parameters
+  local json_output="json_results/hybrid_meas_${model}_${format}_gram${gram}_${kind}.json"
+  mkdir -p json_results
+
   echo -n "Running test: $format, $model, $gram, $kind ...  "
-  python "$CERTIFIER"  "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  python "$CERTIFIER" --hybrid-meas --json-output "$json_output" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
