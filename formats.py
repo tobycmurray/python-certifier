@@ -72,9 +72,9 @@ def get_float_format(name: str) -> FloatFormat:
 def gamma_n(n: int, u: Q) -> Q:
     """Relative error accumulation factor for n operations.
 
-    γ_n = (n·u) / (1 - n·u)
+    γ_n = (1 + u)^n - 1
 
-    This is the standard forward error analysis term (1+u)^n - 1 ≈ n·u,
+    This is the exact forward error analysis term from the Coq formalization,
     used to bound accumulated roundoff error in dot products and matrix operations.
 
     Args:
@@ -83,16 +83,8 @@ def gamma_n(n: int, u: Q) -> Q:
 
     Returns:
         γ_n as a rational
-
-    Raises:
-        ValueError: If n·u >= 1 (error model breaks down)
     """
-    nu = Q(n) * u
-    if nu >= 1:
-        raise ValueError(
-            f"n·u = {float(nu)} >= 1. Error model requires n·u < 1 (n={n}, u={float(u)})"
-        )
-    return nu / (1 - nu)
+    return (Q(1) + u) ** n - Q(1)
 
 
 def kappa_n(n: int, u: Q) -> Q:
