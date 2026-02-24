@@ -398,3 +398,50 @@ def forward_layerwise_float16_optimized(weights_np: List[np.ndarray],
         activations.append(v.copy())
 
     return activations
+
+
+def measure_center_diff_norm(
+    weights_np64: List[np.ndarray],
+    weights_np_target: List[np.ndarray],
+    x: Vector,
+    hidden_layers: int,
+) -> float:
+    """Measure ||z^hi_{H-1}(x) - z^fp_{H-1}(x)||_2 without storing intermediate activations.
+
+    Runs the fp64 and target-format forward passes simultaneously through the
+    hidden layers only (stopping before the output layer), keeping only the
+    current layer's activation in each format.  No intermediate arrays are
+    allocated or returned.
+
+    Args:
+        weights_np64:      Pre-converted fp64 weight matrices (length >= hidden_layers).
+        weights_np_target: Pre-converted target-format weight matrices (same length).
+                           Must have the same length as weights_np64.
+                           Pass weights_np64 again when target IS fp64 (returns 0.0).
+        x:                 Input vector (Q or numpy-compatible).
+        hidden_layers:     Number of hidden layers H = L-1 to process.
+
+    Returns:
+        ||z^hi_{H-1} - z^fp_{H-1}||_2 as a Python float.
+    """
+    if weights_np_target is weights_np64:
+        return 0.0
+
+    # Convert input
+    if len(x) > 0 and isinstance(x[0], Q):
+        v_hi = np.array([float(q) for q in x], dtype=np.float64)
+    else:
+        v_hi = np.asarray(x, dtype=np.float64)
+
+    target_dtype = weights_np_target[0].dtype
+    v_fp = v_hi.astype(target_dtype)
+
+    # Run through hidden layers only — no intermediate allocation
+    zero_hi = np.float64(0.0)
+    zero_fp = target_dtype.type(0)
+
+    for ell in range(hidden_layers):
+        v_hi = np.maximum(weights_np64[ell] @ v_hi, zero_hi)
+        v_fp = np.maximum(weights_np_target[ell] @ v_fp, zero_fp)
+
+    return float(np.linalg.norm(v_fp.astype(np.float64) - v_hi, ord=2))
