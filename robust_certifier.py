@@ -12,15 +12,17 @@ from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
 from nn import (
     forward_numpy_float32, forward_layerwise_float64, forward_layerwise_float16,
-    convert_network_to_numpy64, convert_network_to_numpy16,
-    forward_layerwise_float64_optimized, forward_layerwise_float16_optimized
+    convert_network_to_numpy64, convert_network_to_numpy32, convert_network_to_numpy16,
+    forward_layerwise_float64_optimized, forward_layerwise_float32_optimized,
+    forward_layerwise_float16_optimized
 )
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
 from hybrid_measured import (
     build_hybrid_measured_data, compute_r_meas_all_layers,
     compute_D_meas_with_input, compute_D_hybrid_center,
-    compute_cumulative_lipschitz, compute_hybrid_measured_certification
+    compute_cumulative_lipschitz, compute_hybrid_measured_certification,
+    compute_measured_center_diff, compute_D_hi_all_layers
 )
 
 
@@ -389,11 +391,15 @@ def compute_sqrt_m_ells(network: List[Matrix]):
     return res
 
 def main():
-    # Check for --hybrid-meas flag
+    # Check for --hybrid-meas / --hybrid-only flags (mutually exclusive)
     hybrid_meas_mode = False
+    hybrid_only_mode = False
     if len(sys.argv) > 1 and sys.argv[1] == "--hybrid-meas":
         hybrid_meas_mode = True
-        sys.argv = [sys.argv[0]] + sys.argv[2:]  # Remove --hybrid-meas from args
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
+    elif len(sys.argv) > 1 and sys.argv[1] == "--hybrid-only":
+        hybrid_only_mode = True
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
 
     # Check for --json-output flag
     json_output_file = None
@@ -405,8 +411,8 @@ def main():
         sys.argv = [sys.argv[0]] + sys.argv[3:]  # Remove --json-output and filename from args
 
     if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} [--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-        print(f"Usage: {sys.argv[0]} [--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} [--hybrid-meas|--hybrid-only] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} [--hybrid-meas|--hybrid-only] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -494,15 +500,23 @@ def main():
     W_last = net[-1]
     L_pairs,S_pairs = compute_L_and_S(W_last)
 
-    # Pre-convert network for optimized forward passes in hybrid+measured mode
+    # Pre-convert network for optimized forward passes in hybrid modes
     weights_np64 = None
-    weights_np16 = None
-    if hybrid_meas_mode:
-        print("Pre-converting network for hybrid+measured mode...")
+    weights_np_target = None  # weights in the target format (float16, float32, or None for float64)
+    fmt_hi = None
+    if hybrid_meas_mode or hybrid_only_mode:
+        print("Pre-converting network for hybrid mode...")
         weights_np64 = convert_network_to_numpy64(net)
-        weights_np16 = convert_network_to_numpy16(net)
+        if fmt.name == "float16":
+            weights_np_target = convert_network_to_numpy16(net)
+        elif fmt.name == "float32":
+            weights_np_target = convert_network_to_numpy32(net)
+        # else: float64 target — z_fp = z_hi, no extra conversion needed
+    if hybrid_meas_mode:
         # Compute cumulative Lipschitz constants (needed for measured radii)
         Lip_cumulative = compute_cumulative_lipschitz(op2_norms)
+    if hybrid_only_mode:
+        fmt_hi = get_float_format("float64")
 
     L = len(net)      # total layers
     H = L - 1         # hidden layers (L - 1)
@@ -521,6 +535,7 @@ def main():
     DLm1s: List[float] = []
     float_cons_all: List[float] = []
     real_rhs_all: List[float] = []
+    D_hybrid_all: List[float] = []  # hybrid-only mode: D^hybrid per example
 
     # layerwise means we care about (across examples)
     layer_alpha_sum    = [0.0]*H
@@ -637,9 +652,14 @@ def main():
 
         if hybrid_meas_mode:
             # ===== HYBRID+MEASURED CERTIFICATION PATH =====
-            # Run fp64 and fp16 forward passes
+            # Run fp64 and target-format forward passes
             z_hi = forward_layerwise_float64_optimized(weights_np64, x)
-            z_fp = forward_layerwise_float16_optimized(weights_np16, x)
+            if fmt.name == "float16":
+                z_fp = forward_layerwise_float16_optimized(weights_np_target, x)
+            elif fmt.name == "float32":
+                z_fp = forward_layerwise_float32_optimized(weights_np_target, x)
+            else:  # float64: target IS the high-precision format
+                z_fp = z_hi
 
             # Build hybrid+measured data
             hm_data = build_hybrid_measured_data(
@@ -731,12 +751,36 @@ def main():
             DLm1s.append(float(D_meas_ball))
 
         else:
-            # ===== STANDARD CERTIFICATION PATH =====
+            # ===== STANDARD / HYBRID-ONLY CERTIFICATION PATH =====
             # DLm1 is now D_{L-2} from forward induction
             DLm1 = D_prev
 
             comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs)
             comp_ctr  = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0),   fmt, L_pairs, S_pairs)
+
+            if hybrid_only_mode:
+                # Compute D^hybrid: measure target-format vs fp64 difference at center,
+                # then substitute it for comp_ctr.DLm1.  All β_L terms and
+                # E_ball remain exactly as in the standard path.
+                z_hi = forward_layerwise_float64_optimized(weights_np64, x)
+                if fmt.name == "float16":
+                    z_fp = forward_layerwise_float16_optimized(weights_np_target, x)
+                elif fmt.name == "float32":
+                    z_fp = forward_layerwise_float32_optimized(weights_np_target, x)
+                else:  # float64: target IS the high-precision format
+                    z_fp = z_hi
+                measured_diff = compute_measured_center_diff(z_fp, z_hi)
+                D_hi_list = compute_D_hi_all_layers(net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi)
+                D_hi_final = D_hi_list[H-1] if H > 0 else Q(0)
+                D_hybrid = compute_D_hybrid_center(measured_diff, D_hi_final)
+                comp_ctr = ModeBComponents(
+                    r_prev=comp_ctr.r_prev, alphas=comp_ctr.alphas, betas=comp_ctr.betas,
+                    gammas=comp_ctr.gammas, kappas=comp_ctr.kappas, DLm1=D_hybrid,
+                    right_products=comp_ctr.right_products, contribs=comp_ctr.contribs,
+                    final_pairs=comp_ctr.final_pairs
+                )
+                D_hybrid_all.append(float(D_hybrid))
+
             t5 = time.perf_counter()
             modeb = certify_mode_b_theorem4(y_f32, epsilon, L_real, comp_ctr, comp_ball)
             t6 = time.perf_counter()
@@ -800,6 +844,9 @@ def main():
     print(f"  float_conservatism / real_RHS:    {pct_fc}")
 
     print(f"\nD_(L-1) mean: {stats_D.mean}")
+    if hybrid_only_mode and D_hybrid_all:
+        stats_Dh = compute_stats(D_hybrid_all)
+        print(f"D_hybrid mean: {stats_Dh.mean}  (used for E_ctr; D_(L-1) above is D^std used for E_ball)")
     print(f"r0 (per example) mean: {stats_r0.mean}")
 
     # layerwise spotlight (first 2 layers) + top-3 contributors
@@ -839,7 +886,7 @@ def main():
     # Write JSON output if requested
     if json_output_file:
         # Build output array with placeholder first element (will be skipped by processing script)
-        mode_label = "hybrid_measured" if hybrid_meas_mode else "standard"
+        mode_label = "hybrid_measured" if hybrid_meas_mode else ("hybrid_only" if hybrid_only_mode else "standard")
         json_output = [
             {"certifier": f"python_certifier_{mode_label}", "format": float_format, "gram_iterations": gram_iters}
         ] + json_results
