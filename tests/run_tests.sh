@@ -45,7 +45,8 @@ CEX_MNIST_FLOAT16="cex_mnist_deepfool_float16/counter_examples.json"
 CEX_MNIST_FLOAT64="cex_mnist_deepfool_float64/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_deepfool/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_deepfool_float16/counter_examples.json"
-CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_deepfool_float16/counter_examples.json"
+CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_deepfool_float64/counter_examples.json"
+CEX_CIFAR10_FLOAT16="cex_cifar10_deepfool_float16/counter_examples.json"
 CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
 CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
 CEX_Z3_FLOAT32="z3_counter_examples.json"
@@ -81,6 +82,7 @@ declare -A CEX=(
   ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
   ["fashion_mnist:float16"]="$CEX_FASHION_MNIST_FLOAT16"
   ["fashion_mnist:float64"]="$CEX_FASHION_MNIST_FLOAT64"
+  ["cifar10:float16"]="$CEX_CIFAR10_FLOAT16"
   ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
   ["cifar10:float64"]="$CEX_CIFAR10_FLOAT64"
   ["z3:float32"]="$CEX_Z3_FLOAT32"
@@ -108,7 +110,7 @@ grabnum() {
 # --- main runner -----------------------------------------------------------
 
 run_test() {
-  local format="$1" model="$2" gram="$3" kind="$4"
+  local format="$1" model="$2" gram="$3" kind="$4" mode="$5"
 
   # lookups (use presence check that works on bash >= 4.0)
   [[ -n ${NN_FILE[$model]+x} ]] || die "Unknown model '$model'. Known: ${!NN_FILE[*]}"
@@ -143,12 +145,19 @@ run_test() {
       ;;
   esac
 
-  # Create unique JSON output filename based on test parameters
-  local json_output="json_results/hybrid_only_${model}_${format}_gram${gram}_${kind}.json"
+  local mode_flag mode_tag
+  case "$mode" in
+    standard)    mode_flag="";              mode_tag="standard"     ;;
+    hybrid-only) mode_flag="--hybrid-only"; mode_tag="hybrid_only"  ;;
+    *) die "Unrecognised mode '$mode'. Should be 'standard' or 'hybrid-only'." ;;
+  esac
+
+  local json_output="json_results/${mode_tag}_${model}_${format}_gram${gram}_${kind}.json"
   mkdir -p json_results
 
-  echo -n "Running test: $format, $model, $gram, $kind ...  "
-  python "$CERTIFIER" --hybrid-only --json-output "$json_output" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
+  # shellcheck disable=SC2086
+  python "$CERTIFIER" $mode_flag --json-output "$json_output" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
@@ -171,30 +180,44 @@ run_test() {
 
   (grep -i warn .log) || echo -n ""
 
-  #if [[ "$kind" == "all" ]]; then
-      echo ""
-      awk '/CERTIFIER\ RESULTS/ {flag=1} flag' .log
-      echo ""
-  #fi
+  echo ""
+  awk '/CERTIFIER\ RESULTS/ {flag=1} flag' .log
+  echo ""
 }
 
 # --- test matrix -----------------------------------------------------------
+# Each test is run in both standard and hybrid-only modes.
 
-run_test "float32" "z3"            "10" "cex"
+run_test "float32" "z3"            "10" "cex" "standard"
+run_test "float32" "z3"            "10" "cex" "hybrid-only"
 
-run_test "float32" "mnist"         "20" "cex"
-run_test "float16" "mnist"         "20" "cex"
-run_test "float64" "mnist"         "20" "cex"
+run_test "float32" "mnist"         "20" "cex" "standard"
+run_test "float32" "mnist"         "20" "cex" "hybrid-only"
+run_test "float16" "mnist"         "20" "cex" "standard"
+run_test "float16" "mnist"         "20" "cex" "hybrid-only"
+run_test "float64" "mnist"         "20" "cex" "standard"
+run_test "float64" "mnist"         "20" "cex" "hybrid-only"
 
-run_test "float32" "fashion_mnist" "13" "cex"
-run_test "float16" "fashion_mnist" "13" "cex"
-run_test "float64" "fashion_mnist" "13" "cex"
+run_test "float32" "fashion_mnist" "13" "cex" "standard"
+run_test "float32" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float16" "fashion_mnist" "13" "cex" "standard"
+run_test "float16" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float64" "fashion_mnist" "13" "cex" "standard"
+run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
 
-run_test "float32" "cifar10"       "12" "cex"
-run_test "float64" "cifar10"       "12" "cex"
+run_test "float32" "cifar10"       "12" "cex" "standard"
+run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
+run_test "float64" "cifar10"       "12" "cex" "standard"
+run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
+# NOTE: we don't run float16 cifar10 tests since n*u>=1 for that instance
 
-run_test "float32" "mnist"         "11" "all"
-#run_test "float32" "mnist"         "20" "all"
-run_test "float32" "fashion_mnist" "12" "all"
-#run_test "float32" "fashion_mnist" "13" "all"
-run_test "float32" "cifar10"       "12" "all"
+run_test "float32" "mnist"         "11" "all" "standard"
+run_test "float32" "mnist"         "11" "all" "hybrid-only"
+#run_test "float32" "mnist"         "20" "all" "standard"
+#run_test "float32" "mnist"         "20" "all" "hybrid-only"
+run_test "float32" "fashion_mnist" "12" "all" "standard"
+run_test "float32" "fashion_mnist" "12" "all" "hybrid-only"
+#run_test "float32" "fashion_mnist" "13" "all" "standard"
+#run_test "float32" "fashion_mnist" "13" "all" "hybrid-only"
+run_test "float32" "cifar10"       "12" "all" "standard"
+run_test "float32" "cifar10"       "12" "all" "hybrid-only"
