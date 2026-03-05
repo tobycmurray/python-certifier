@@ -1,0 +1,11 @@
+# Core certifier dependencies
+numpy>=1.24,<2
+gmpy2>=2.1,<3
+
+# Dependencies for counter-example generation (attack_verified_certifier_nat.py)
+# and VRA computation (test_verified_certified_robust_accuracy.py)
+tensorflow>=2.13,<2.16
+mpmath>=1.3,<2
+Pillow>=9.0,<11
+adversarial-robustness-toolbox>=1.15,<2
+tensorflow_datasets>=4.9,<5

@@ -593,7 +593,8 @@ def main():
             json_results.append({
                 "output": y_f32,
                 "radius": float(epsilon),
-                "certified": modeb.ok
+                "certified": modeb.ok,
+                "certified_real": modeb.ok_real
             })
 
         # essentials
