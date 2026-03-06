@@ -590,12 +590,16 @@ def main():
 
         # Collect JSON output if requested
         if json_output_file:
-            json_results.append({
+            record = {
                 "output": y_f32,
                 "radius": float(epsilon),
                 "certified": modeb.ok,
                 "certified_real": modeb.ok_real
-            })
+            }
+            if modeb.pairs:
+                record["float_conservatism"] = sum(float(p.float_conservatism) for p in modeb.pairs) / len(modeb.pairs)
+                record["real_RHS"] = sum(float(p.rhs_real) for p in modeb.pairs) / len(modeb.pairs)
+            json_results.append(record)
 
         # essentials
         DLm1s.append(float(comp_ball.DLm1))
