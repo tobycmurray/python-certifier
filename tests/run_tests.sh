@@ -80,6 +80,7 @@ declare -A REF_RESULTS=(
 
 declare -A ALL_INPUTS=(
   [mnist]="$ALL_MNIST_TEST_INPUTS"
+  [mnist_biased_5e6]="$ALL_MNIST_TEST_INPUTS"
   [fashion_mnist]="$ALL_FASHION_MNIST_TEST_INPUTS"
   [cifar10]="$ALL_CIFAR10_TEST_INPUTS"
 )
@@ -239,3 +240,6 @@ run_test "float32" "fashion_mnist" "12" "all" "hybrid-only"
 #run_test "float32" "fashion_mnist" "13" "all" "hybrid-only"
 run_test "float32" "cifar10"       "12" "all" "standard"
 run_test "float32" "cifar10"       "12" "all" "hybrid-only"
+
+run_test "float32" "mnist_biased_5e6" "20" "all" "standard"
+run_test "float32" "mnist_biased_5e6" "20" "all" "hybrid-only"
