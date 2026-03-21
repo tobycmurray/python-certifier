@@ -51,18 +51,27 @@ CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
 CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
 CEX_Z3_FLOAT32="z3_counter_examples.json"
 
+MNIST_BIASED_5E6_BIASES="mnist_biased_5e6/biases.txt"
+CEX_MNIST_BIASED_5E6_FLOAT32="cex_mnist_biased_5e6_float32/counter_examples.json"
+
 # --- declarative tables ----------------------------------------------------
 
 declare -A NN_FILE=(
   [mnist]="$MNIST_NEURAL_NET"
+  [mnist_biased_5e6]="$MNIST_NEURAL_NET"
   [fashion_mnist]="$FASHION_MNIST_NEURAL_NET"
   [cifar10]="$CIFAR10_NEURAL_NET"
   [z3]="$Z3_NEURAL_NET"
 )
 
+declare -A BIASES_FILE=(
+  [mnist_biased_5e6]="$MNIST_BIASED_5E6_BIASES"
+)
+
 declare -A REF_RESULTS=(
   ["mnist:11"]="$MNIST_RESULTS_GRAM_11"
   ["mnist:20"]="$MNIST_RESULTS_GRAM_20"
+  ["mnist_biased_5e6:20"]="$MNIST_RESULTS_GRAM_20"
   ["fashion_mnist:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
   ["fashion_mnist:13"]="$FASHION_MNIST_RESULTS_GRAM_13"
   ["cifar10:12"]="$CIFAR10_RESULTS_GRAM_12"
@@ -86,6 +95,7 @@ declare -A CEX=(
   ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
   ["cifar10:float64"]="$CEX_CIFAR10_FLOAT64"
   ["z3:float32"]="$CEX_Z3_FLOAT32"
+  ["mnist_biased_5e6:float32"]="$CEX_MNIST_BIASED_5E6_FLOAT32"
 )
 
 # --- helpers ---------------------------------------------------------------
@@ -152,12 +162,17 @@ run_test() {
     *) die "Unrecognised mode '$mode'. Should be 'standard' or 'hybrid-only'." ;;
   esac
 
+  local bias_flag=""
+  if [[ -n ${BIASES_FILE[$model]+x} ]]; then
+    bias_flag="--biases ${BIASES_FILE[$model]}"
+  fi
+
   local json_output="json_results/${mode_tag}_${model}_${format}_gram${gram}_${kind}.json"
   mkdir -p json_results
 
   echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
   # shellcheck disable=SC2086
-  python "$CERTIFIER" $mode_flag --json-output "$json_output" "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  python "$CERTIFIER" $mode_flag --json-output "$json_output" $bias_flag "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
@@ -210,6 +225,9 @@ run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
 run_test "float64" "cifar10"       "12" "cex" "standard"
 run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
 # NOTE: we don't run float16 cifar10 tests since n*u>=1 for that instance
+
+run_test "float32" "mnist_biased_5e6" "20" "cex" "standard"
+run_test "float32" "mnist_biased_5e6" "20" "cex" "hybrid-only"
 
 run_test "float32" "mnist"         "11" "all" "standard"
 run_test "float32" "mnist"         "11" "all" "hybrid-only"

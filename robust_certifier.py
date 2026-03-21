@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import sys, os, json, time, math
 
-from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file
+from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file, load_biases_from_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
 from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
 from overflow import certify_no_overflow_normwise, check_overflow_single_layer
@@ -69,12 +69,16 @@ def build_modeb_components(
     epsilon: Q,
     fmt: FloatFormat,
     L: Dict[Tuple[int,int],Q],
-    S: Dict[Tuple[int,int],Q]
+    S: Dict[Tuple[int,int],Q],
+    bias_l2_norms: List[Q] = None,  # [||b_0||_2, ..., ||b_{L-1}||_2]
 ) -> ModeBComponents:
-    r_prev = radii(op2_norms, x, epsilon)
+    r_prev = radii(op2_norms, x, epsilon, bias_l2_norms=bias_l2_norms)
 
+    # For hidden layers, pass only bias norms for layers 0..L-2
+    hidden_bias_l2 = bias_l2_norms[:len(network)-1] if bias_l2_norms is not None else None
     alphas, betas, gammas, kappas = compute_linear_recursion_hidden(
-        op2_norms, op2_abs_norms, r_prev[:-1], network, sqrt_m_ells, fmt
+        op2_norms, op2_abs_norms, r_prev[:-1], network, sqrt_m_ells, fmt,
+        bias_l2_norms=hidden_bias_l2,
     )
 
     DLm1, right_products = hidden_stack_degradation_with_products(alphas, betas)
@@ -173,6 +177,7 @@ def compute_linear_recursion_hidden(
     network: List[Matrix],     # to read m_ℓ, n_ℓ
     sqrt_m_ells: Dict[int,Q],
     fmt: FloatFormat,
+    bias_l2_norms: List[Q] = None,  # [||b_0||_2, ..., ||b_{L-2}||_2] (one per hidden layer)
 ) -> Tuple[List[Q], List[Q], List[Q], List[Q]]:
     """
     Returns (alphas, betas, gammas, kappas) for hidden layers
@@ -198,8 +203,9 @@ def compute_linear_recursion_hidden(
         alpha = op2_norms[ell] + kappa * op2_abs_norms[ell]
 
         beta_data  = kappa * op2_abs_norms[ell] * radii_prev[ell]
+        beta_bias  = u * (bias_l2_norms[ell] if bias_l2_norms is not None else Q(0))
         beta_noise = (Q(1) + u) * a_dot(n_ell, u, amul) * sqrt_m_ells[m_ell]
-        betas.append(beta_data + beta_noise)
+        betas.append(beta_data + beta_bias + beta_noise)
         alphas.append(alpha)
 
     return alphas, betas, gammas, kappas
@@ -261,7 +267,7 @@ def compute_final_pair_params(
             out[(i, j)] = (alpha_ij, beta_ij)
     return out
 
-def radii(op2_norms: List[Q], x: Vector, epsilon: Q) -> List[Q]:
+def radii(op2_norms: List[Q], x: Vector, epsilon: Q, bias_l2_norms: List[Q] = None) -> List[Q]:
     L = len(op2_norms)
     if L == 0:
         return []
@@ -272,9 +278,11 @@ def radii(op2_norms: List[Q], x: Vector, epsilon: Q) -> List[Q]:
     r = r0
     # propagate only until r_{L-1}
     for ell in range(1, L):
-        # r_l = L_phi(||W_l|| r_{l-1} + bias_l)
-        # no bias term, plus Lipschitz constant of ReLU is 1
+        # r_l = ||W_{l-1}||_2 · r_{l-1} + ||b_{l-1}||_2
+        # Lipschitz constant of ReLU is 1
         r = op2_norms[ell - 1] * r
+        if bias_l2_norms is not None and bias_l2_norms[ell - 1] is not None:
+            r = r + bias_l2_norms[ell - 1]
         rs.append(r)
 
     assert len(rs) == L
@@ -288,6 +296,24 @@ def compute_sqrt_m_ells(network: List[Matrix]):
         if m_ell not in res:
             res[m_ell] = sqrt_upper_bound(Q(m_ell))
     return res
+
+def compute_bias_norms(biases):
+    """Compute L2 and infinity norms for each bias vector.
+
+    Args:
+        biases: list of Q vectors, one per layer
+
+    Returns:
+        (l2_norms, inf_norms): each is a list of Q, one per layer.
+    """
+    l2_norms = []
+    inf_norms = []
+    for b in biases:
+        l2 = l2_norm_upper_bound_vec(b)
+        linf = max(abs(x) for x in b) if b else Q(0)
+        l2_norms.append(l2)
+        inf_norms.append(linf)
+    return l2_norms, inf_norms
 
 def main():
     # Check for --hybrid-only flag
@@ -303,6 +329,15 @@ def main():
             print("Error: --json-output requires a filename argument")
             sys.exit(1)
         json_output_file = sys.argv[2]
+        sys.argv = [sys.argv[0]] + sys.argv[3:]
+
+    # Check for --biases flag
+    biases_file = None
+    if len(sys.argv) > 1 and sys.argv[1] == "--biases":
+        if len(sys.argv) < 3:
+            print("Error: --biases requires a file argument")
+            sys.exit(1)
+        biases_file = sys.argv[2]
         sys.argv = [sys.argv[0]] + sys.argv[3:]
 
     if len(sys.argv) != 7:
@@ -342,6 +377,21 @@ def main():
 
     print(f"Loaded network with {len(net)} layers; running {gram_iters} Gram iterations per layer...")
 
+    # Load biases if provided
+    biases = None
+    bias_l2_norms = None
+    bias_inf_norms = None
+    if biases_file is not None:
+        biases = load_biases_from_file(biases_file)
+        if len(biases) != len(net):
+            print(f"Error: bias file has {len(biases)} vectors but network has {len(net)} layers")
+            sys.exit(1)
+        bias_l2_norms, bias_inf_norms = compute_bias_norms(biases)
+        print(f"Loaded biases from {biases_file}: {len(biases)} layers")
+        for ell, b in enumerate(biases):
+            if bias_l2_norms[ell] > 0:
+                print(f"  Layer {ell}: ||b||_2 = {float(bias_l2_norms[ell]):.6e}, ||b||_inf = {float(bias_inf_norms[ell]):.6e}, dim = {len(b)}")
+
     hsh = hash_file_contents(network_file)
     norms_file = hsh+f".{gram_iters}.norms.json"
     try:
@@ -373,6 +423,8 @@ def main():
         with open(cex_file, "r") as f:
             cexs = json.load(f)
         for cex in cexs:
+            if "x1_file" not in cex:
+                continue
             d = os.path.dirname(cex_file)
             x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
             x = load_vector_from_npy_file(x1_file)
@@ -380,7 +432,7 @@ def main():
             y_f32 = cex.get("y1", None)
             if y_f32 is None:
                 print("Simulating neural network forward pass...")
-                y_f32 = forward_numpy_float32(net, x)
+                y_f32 = forward_numpy_float32(net, x, biases=biases)
             to_certify.append((x,epsilon,y_f32))
     if input_file is not None:
         if input_file.endswith(".npy"):
@@ -388,7 +440,7 @@ def main():
         else:
             x = load_vector_from_file(input_file)
         print("Simulating neural network forward pass...")
-        y_f32 = forward_numpy_float32(net, x)
+        y_f32 = forward_numpy_float32(net, x, biases=biases)
         to_certify.append((x,epsilon,y_f32))
 
     sqrt_m_ells = compute_sqrt_m_ells(net)
@@ -447,7 +499,7 @@ def main():
 
         # ===== Step 1: Compute exact radii (unchanged) =====
         t0 = time.perf_counter()
-        rs = radii(op2_norms, x, epsilon)
+        rs = radii(op2_norms, x, epsilon, bias_l2_norms=bias_l2_norms)
         t1 = time.perf_counter()
         times["radii"] += (t1 - t0)
         r0_all.append(float(rs[0]))
@@ -486,7 +538,7 @@ def main():
                 fp_activation_bound=fp_bound,
                 layer_width=n_ell,
                 fmt=fmt,
-                bias_norm=Q(0)  # Assuming no biases in hidden layers
+                bias_norm=bias_inf_norms[ell] if bias_inf_norms is not None else Q(0)
             )
             if not overflow_stats.ok:
                 print(f"WARNING: Overflow certification failed at layer {ell}:")
@@ -503,7 +555,8 @@ def main():
                 layer_width=n_ell,
                 output_dim=m_ell,
                 sqrt_m=sqrt_m_ells[m_ell],
-                fmt=fmt
+                fmt=fmt,
+                bias_l2_norm=bias_l2_norms[ell] if bias_l2_norms is not None else Q(0),
             )
             D_curr = compute_deviation_bound(D_prev, params)
 
@@ -529,7 +582,7 @@ def main():
                 fp_activation_bound=fp_bound_final,
                 layer_width=n_last,
                 fmt=fmt,
-                bias_norm=Q(0)
+                bias_norm=bias_inf_norms[H] if bias_inf_norms is not None else Q(0)
             )
             if not overflow_stats_final.ok:
                 print(f"\nWARNING: Overflow certification failed at final layer {H}:")
@@ -543,7 +596,7 @@ def main():
 
         # ===== STANDARD / HYBRID-ONLY CERTIFICATION PATH =====
 
-        comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs)
+        comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms)
 
         if hybrid_only_mode:
             # Compute D^hybrid = ||z^fp_{H-1}(x) - z^hi_{H-1}(x)|| + D^hi_{H-1}.
@@ -566,7 +619,7 @@ def main():
 
             # Build comp_ctr cheaply: only r_{L-1} at ε=0 and final_pairs are needed.
             # Skip the full hidden-stack recursion (DLm1 is replaced by D_hybrid).
-            r_ctr_last = radii(op2_norms, x, Q(0))[-1]
+            r_ctr_last = radii(op2_norms, x, Q(0), bias_l2_norms=bias_l2_norms)[-1]
             final_pairs_ctr = compute_final_pair_params(
                 net[-1], r_ctr_last, fmt, L_pairs, S_pairs
             )
@@ -577,7 +630,7 @@ def main():
             )
         else:
             comp_ctr = build_modeb_components(
-                net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs
+                net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms
             )
 
         t5 = time.perf_counter()

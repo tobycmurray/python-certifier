@@ -46,6 +46,7 @@ def compute_layer_deviation_params(
     output_dim: int,       # m_ℓ (output dimension)
     sqrt_m: Q,             # √m_ℓ
     fmt: FloatFormat,
+    bias_l2_norm: Q = Q(0),  # ||b_ℓ||_2 (L2 norm of bias, 0 if no bias)
 ) -> LayerDeviationParams:
     """Compute deviation recursion parameters for a single layer.
 
@@ -77,10 +78,11 @@ def compute_layer_deviation_params(
     # α_ℓ = ||W_ℓ||_2 + κ_ℓ · |||W_ℓ|||_2
     alpha = op2_norm + kappa * op2_abs_norm
 
-    # β_ℓ = κ_ℓ · |||W_ℓ|||_2 · r_{ℓ-1} + (1+u)·a_dot(n_ℓ)·√m_ℓ
+    # β_ℓ = κ_ℓ · |||W_ℓ|||_2 · r_{ℓ-1} + u · ||b_ℓ||_2 + (1+u)·a_dot(n_ℓ)·√m_ℓ
     beta_data = kappa * op2_abs_norm * r_prev
+    beta_bias = u * bias_l2_norm
     beta_noise = (Q(1) + u) * a_dot(layer_width, u, amul) * sqrt_m
-    beta = beta_data + beta_noise
+    beta = beta_data + beta_bias + beta_noise
 
     return LayerDeviationParams(
         layer_idx=layer_idx,

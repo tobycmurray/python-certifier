@@ -8,14 +8,20 @@ from linear_algebra import Vector, Matrix, mv_product
 def relu_vec(v: Vector) -> Vector:
     return [x if x > 0 else Q(0) for x in v]
 
-def forward(network: List[Matrix], x: Vector) -> Vector:
+def _add_bias(v: Vector, b: Vector) -> Vector:
+    return [v[i] + b[i] for i in range(len(v))]
+
+def forward(network: List[Matrix], x: Vector, biases: List = None) -> Vector:
     """
-    Forward pass with ReLU after each non-final layer; no biases
+    Forward pass with ReLU after each non-final layer.
+    biases: optional list (one per layer, entry is Vector or None).
     """
     v = x[:]
     L = len(network)
     for idx, W in enumerate(network):
         v = mv_product(W, v)
+        if biases is not None and biases[idx] is not None:
+            v = _add_bias(v, biases[idx])
         if idx < L - 1:
             v = relu_vec(v)
     return v
@@ -31,18 +37,27 @@ def _to_numpy32_matrix(W: Matrix) -> np.ndarray:
             A[i, j] = np.float32(float(row[j]))  # exact decimal -> float -> f32
     return A
 
-def forward_numpy_float32(network: List[Matrix], x: Vector) -> List[float]:
+def _bias_to_numpy(b, dtype):
+    """Convert a Q bias vector to numpy array of given dtype."""
+    return np.array([dtype(float(q)) for q in b], dtype=dtype)
+
+def forward_numpy_float32(network: List[Matrix], x: Vector, biases: List = None) -> List[float]:
     """
     Float32 forward using NumPy:
-      v <- (W^T) v, ReLU after each non-final layer, no biases.
+      v <- (W^T) v + b, ReLU after each non-final layer.
     Returns Python floats (each representable as float32).
     """
     # convert once
     nets_np = [_to_numpy32_matrix(W) for W in network]
+    biases_np = None
+    if biases is not None:
+        biases_np = [_bias_to_numpy(b, np.float32) if b is not None else None for b in biases]
     v = np.array([np.float32(float(q)) for q in x], dtype=np.float32)
     L = len(nets_np)
     for ell, W in enumerate(nets_np):
         z = W @ v  # (n,) = (n,m) @ (m,)
+        if biases_np is not None and biases_np[ell] is not None:
+            z = (z + biases_np[ell]).astype(np.float32)
         if ell < L - 1:
             # ReLU in float32
             v = np.maximum(z, np.float32(0.0), dtype=np.float32)
@@ -82,7 +97,7 @@ def forward_numpy_float16(network: List[Matrix], x: Vector) -> List[float]:
     # return as Python floats (still float16 values)
     return [float(t) for t in v.tolist()]
 
-def forward_layerwise_exact(network: List[Matrix], x: Vector) -> List[Vector]:
+def forward_layerwise_exact(network: List[Matrix], x: Vector, biases: List = None) -> List[Vector]:
     """
     Exact forward pass returning activations at each layer.
     Returns list [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
@@ -92,23 +107,30 @@ def forward_layerwise_exact(network: List[Matrix], x: Vector) -> List[Vector]:
     L = len(network)
     for idx, W in enumerate(network):
         v = mv_product(W, v)
+        if biases is not None and biases[idx] is not None:
+            v = _add_bias(v, biases[idx])
         if idx < L - 1:
             v = relu_vec(v)
         activations.append(v)
     return activations
 
-def forward_layerwise_float32(network: List[Matrix], x: Vector) -> List[np.ndarray]:
+def forward_layerwise_float32(network: List[Matrix], x: Vector, biases: List = None) -> List[np.ndarray]:
     """
     Float32 forward pass returning activations at each layer.
     Returns list [z_0, z_1, ..., z_{L-1}] where z_ℓ is the activation after layer ℓ.
     Each activation is a numpy array of float32.
     """
     nets_np = [_to_numpy32_matrix(W) for W in network]
+    biases_np = None
+    if biases is not None:
+        biases_np = [_bias_to_numpy(b, np.float32) if b is not None else None for b in biases]
     v = np.array([np.float32(float(q)) for q in x], dtype=np.float32)
     activations = []
     L = len(nets_np)
     for ell, W in enumerate(nets_np):
         z = W @ v  # (n,) = (n,m) @ (m,)
+        if biases_np is not None and biases_np[ell] is not None:
+            z = (z + biases_np[ell]).astype(np.float32)
         if ell < L - 1:
             # ReLU in float32
             v = np.maximum(z, np.float32(0.0), dtype=np.float32)

@@ -113,6 +113,33 @@ def load_vector_from_file(path: str):
         raise ParseError(f"Unexpected trailing content at position {i}: {s[i:]}")
     return vec    
 
+def parse_bias_vectors(s: str):
+    """Parse a sequence of comma-separated bracket vectors: [v0,...],[v1,...],... """
+    i = 0
+    vectors = []
+    v, i = parse_vector(s, i)
+    vectors.append(v)
+    while i < len(s) and s[i] == ',':
+        i += 1
+        v, i = parse_vector(s, i)
+        vectors.append(v)
+    if i != len(s):
+        raise ParseError(f"Unexpected trailing content at position {i}")
+    return vectors
+
+def load_biases_from_file(path: str):
+    """Load bias vectors from a single text file.
+
+    Format: [b0_0,b0_1,...],[b1_0,b1_1,...],... (one bracket vector per layer,
+    comma-separated, same style as the network weight file but with vectors
+    instead of matrices).
+
+    Returns a list of Q vectors, one per layer.
+    """
+    s = load_text_strict(path)
+    return parse_bias_vectors(s)
+
+
 def load_vector_from_npy_file(path: str):
     arr = np.load(path, allow_pickle=False).ravel()
     k, isz = arr.dtype.kind, arr.dtype.itemsize
