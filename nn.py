@@ -5,6 +5,23 @@ from arithmetic import Q
 from linear_algebra import Vector, Matrix, mv_product
 
 
+def _mm(W, v):
+    """Matrix-vector product with spurious FP-exception warnings silenced.
+
+    On Apple Silicon (aarch64) the Accelerate BLAS backend speculatively
+    processes SIMD padding lanes, which sets the CPU's floating-point status
+    flags (divide-by-zero / overflow / invalid). numpy reads those flags after
+    the call and emits RuntimeWarnings even for well-scaled, fully finite inputs
+    -- the computed result is unaffected. We never rely on these flags:
+    correctness is enforced by the exact rational kernel and explicit finiteness
+    checks, and any genuinely non-finite value (e.g. a real float16 overflow)
+    still propagates as inf/nan, which only makes certification more
+    conservative. So it is safe to silence them here.
+    """
+    with np.errstate(divide="ignore", over="ignore", invalid="ignore"):
+        return W @ v
+
+
 def relu_vec(v: Vector) -> Vector:
     return [x if x > 0 else Q(0) for x in v]
 
@@ -274,7 +291,7 @@ def forward_layerwise_float64_optimized(weights_np: List[np.ndarray],
     L = len(weights_np)
 
     for ell, W in enumerate(weights_np):
-        z = W @ v
+        z = _mm(W, v)
         if ell < L - 1:
             v = np.maximum(z, 0.0)
         else:
@@ -343,7 +360,7 @@ def forward_layerwise_float32_optimized(weights_np: List[np.ndarray],
     L = len(weights_np)
 
     for ell, W in enumerate(weights_np):
-        z = W @ v
+        z = _mm(W, v)
         if ell < L - 1:
             v = np.maximum(z, np.float32(0.0), dtype=np.float32)
         else:
@@ -412,7 +429,7 @@ def forward_layerwise_float16_optimized(weights_np: List[np.ndarray],
     L = len(weights_np)
 
     for ell, W in enumerate(weights_np):
-        z = W @ v
+        z = _mm(W, v)
         if ell < L - 1:
             v = np.maximum(z, np.float16(0.0), dtype=np.float16)
         else:
@@ -463,7 +480,7 @@ def measure_center_diff_norm(
     zero_fp = target_dtype.type(0)
 
     for ell in range(hidden_layers):
-        v_hi = np.maximum(weights_np64[ell] @ v_hi, zero_hi)
-        v_fp = np.maximum(weights_np_target[ell] @ v_fp, zero_fp)
+        v_hi = np.maximum(_mm(weights_np64[ell], v_hi), zero_hi)
+        v_fp = np.maximum(_mm(weights_np_target[ell], v_fp), zero_fp)
 
     return float(np.linalg.norm(v_fp.astype(np.float64) - v_hi, ord=2))

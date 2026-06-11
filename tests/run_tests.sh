@@ -219,56 +219,83 @@ run_test() {
 }
 
 # --- test matrix -----------------------------------------------------------
-# Each test is run in both standard and hybrid-only modes.
+# Each test is run in standard, hybrid-only, and hybrid-measured modes.
+# hybrid-only and hybrid-measured both use a high-precision pre-deployment pass;
+# hybrid-measured strictly dominates hybrid-only (it additionally tightens the
+# E_ball term with measured radii), so hybrid-only is retained as an ablation
+# midpoint to show how much the measured ball bound adds on top of the measured
+# centre bound. Only the "all" runs feed the paper tables (via compute_vra.py);
+# the "cex" runs are soundness checks (the tightest mode, hybrid-measured, must
+# still reject every counter-example).
 
 run_test "float32" "z3"            "10" "cex" "standard"
 run_test "float32" "z3"            "10" "cex" "hybrid-only"
+run_test "float32" "z3"            "10" "cex" "hybrid-meas"
 
 run_test "float32" "mnist"         "20" "cex" "standard"
 run_test "float32" "mnist"         "20" "cex" "hybrid-only"
+run_test "float32" "mnist"         "20" "cex" "hybrid-meas"
 run_test "float16" "mnist"         "20" "cex" "standard"
 run_test "float16" "mnist"         "20" "cex" "hybrid-only"
+run_test "float16" "mnist"         "20" "cex" "hybrid-meas"
 run_test "float64" "mnist"         "20" "cex" "standard"
 run_test "float64" "mnist"         "20" "cex" "hybrid-only"
+run_test "float64" "mnist"         "20" "cex" "hybrid-meas"
 
 run_test "float32" "fashion_mnist" "13" "cex" "standard"
 run_test "float32" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float32" "fashion_mnist" "13" "cex" "hybrid-meas"
 run_test "float16" "fashion_mnist" "13" "cex" "standard"
 run_test "float16" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float16" "fashion_mnist" "13" "cex" "hybrid-meas"
 run_test "float64" "fashion_mnist" "13" "cex" "standard"
 run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
 
 run_test "float32" "cifar10"       "12" "cex" "standard"
 run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
+run_test "float32" "cifar10"       "12" "cex" "hybrid-meas"
 run_test "float64" "cifar10"       "12" "cex" "standard"
 run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
+run_test "float64" "cifar10"       "12" "cex" "hybrid-meas"
 # NOTE: we don't run float16 cifar10 tests since n*u>=1 for that instance
 
 run_test "float32" "mnist_biased_1e6_end" "20" "cex" "standard"
 run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-only"
+run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-meas"
 
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
 
 run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
 run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
 
 run_test "float32" "mnist"         "11" "all" "standard"
 run_test "float32" "mnist"         "11" "all" "hybrid-only"
+run_test "float32" "mnist"         "11" "all" "hybrid-meas"
 #run_test "float32" "mnist"         "20" "all" "standard"
 #run_test "float32" "mnist"         "20" "all" "hybrid-only"
+#run_test "float32" "mnist"         "20" "all" "hybrid-meas"
 run_test "float32" "fashion_mnist" "12" "all" "standard"
 run_test "float32" "fashion_mnist" "12" "all" "hybrid-only"
+run_test "float32" "fashion_mnist" "12" "all" "hybrid-meas"
 #run_test "float32" "fashion_mnist" "13" "all" "standard"
 #run_test "float32" "fashion_mnist" "13" "all" "hybrid-only"
+#run_test "float32" "fashion_mnist" "13" "all" "hybrid-meas"
 run_test "float32" "cifar10"       "12" "all" "standard"
 run_test "float32" "cifar10"       "12" "all" "hybrid-only"
+run_test "float32" "cifar10"       "12" "all" "hybrid-meas"
 
 run_test "float32" "mnist_biased_1e6_end" "11" "all" "standard"
 run_test "float32" "mnist_biased_1e6_end" "11" "all" "hybrid-only"
+run_test "float32" "mnist_biased_1e6_end" "11" "all" "hybrid-meas"
 
 run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "standard"
 run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-meas"
 
 run_test "float32" "cifar10_biased_4e6_end" "12" "all" "standard"
 run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-only"
+run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-meas"
