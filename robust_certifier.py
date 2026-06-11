@@ -14,10 +14,14 @@ from nn import (
     forward_numpy_float32,
     convert_network_to_numpy64, convert_network_to_numpy32, convert_network_to_numpy16,
     measure_center_diff_norm,
+    forward_layerwise_float64_optimized, forward_layerwise_float32_optimized,
+    forward_layerwise_float16_optimized,
 )
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
-from hybrid_measured import compute_D_hi_all_layers, compute_D_hybrid_center
+from hybrid_measured import (
+    compute_D_hi_all_layers, compute_D_hybrid_center, build_measured_comp_inputs,
+)
 
 
 @dataclass(frozen=True)
@@ -316,10 +320,14 @@ def compute_bias_norms(biases):
     return l2_norms, inf_norms
 
 def main():
-    # Check for --hybrid-only flag
+    # Check for --hybrid-only / --hybrid-meas flag (mutually exclusive)
     hybrid_only_mode = False
+    hybrid_meas_mode = False
     if len(sys.argv) > 1 and sys.argv[1] == "--hybrid-only":
         hybrid_only_mode = True
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
+    elif len(sys.argv) > 1 and sys.argv[1] == "--hybrid-meas":
+        hybrid_meas_mode = True
         sys.argv = [sys.argv[0]] + sys.argv[2:]
 
     # Check for --json-output flag
@@ -341,8 +349,8 @@ def main():
         sys.argv = [sys.argv[0]] + sys.argv[3:]
 
     if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} [--hybrid-only] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-        print(f"Usage: {sys.argv[0]} [--hybrid-only] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
+        print(f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -447,12 +455,12 @@ def main():
     W_last = net[-1]
     L_pairs,S_pairs = compute_L_and_S(W_last)
 
-    # Pre-convert network weights for optimized forward passes in hybrid-only mode
+    # Pre-convert network weights for optimized forward passes in hybrid modes
     weights_np64 = None
     weights_np_target = None  # target-format weights; None means target IS fp64
     fmt_hi = None
-    if hybrid_only_mode:
-        print("Pre-converting network for hybrid-only mode...")
+    if hybrid_only_mode or hybrid_meas_mode:
+        print("Pre-converting network for hybrid mode...")
         weights_np64 = convert_network_to_numpy64(net)
         if fmt.name == "float16":
             weights_np_target = convert_network_to_numpy16(net)
@@ -594,44 +602,75 @@ def main():
         # ===== Step 3: Build components and certify =====
         t4 = time.perf_counter()
 
-        # ===== STANDARD / HYBRID-ONLY CERTIFICATION PATH =====
+        # ===== STANDARD / HYBRID CERTIFICATION PATH =====
 
-        comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms)
+        if hybrid_meas_mode:
+            # ===== HYBRID-MEASURED PATH =====
+            # Measured radii for BOTH the centre and the ball (from the fp64 activation
+            # norms) together with the hybrid centre deviation. This reuses the standard
+            # certify_mode_b_theorem4 via synthetic ModeBComponents that carry only DLm1
+            # and final_pairs: E = alpha_L * DLm1 + beta_L(r_{L-1}). Overflow checking
+            # still uses the conservative theoretical radii (sound; see paper §hybrid).
+            z_hi = forward_layerwise_float64_optimized(weights_np64, x)
+            if fmt.name == "float16":
+                z_fp = forward_layerwise_float16_optimized(weights_np_target, x)
+            elif fmt.name == "float32":
+                z_fp = forward_layerwise_float32_optimized(weights_np_target, x)
+            else:  # float64 target: the target pass IS the high-precision pass
+                z_fp = z_hi
 
-        if hybrid_only_mode:
-            # Compute D^hybrid = ||z^fp_{H-1}(x) - z^hi_{H-1}(x)|| + D^hi_{H-1}.
-            # Use the specialised combined forward pass that stops at the final hidden
-            # layer (H layers) without storing any intermediate activations.
-            # weights_np_target is None when target == fp64, which signals return 0.
-            measured_diff_f = measure_center_diff_norm(
-                weights_np64,
-                weights_np64 if weights_np_target is None else weights_np_target,
-                x,
-                H,
+            D_hybrid_center, r_Lm1_center, D_meas_ball, r_Lm1_ball = build_measured_comp_inputs(
+                net, x, epsilon, op2_norms, op2_abs_norms, z_hi, z_fp, sqrt_m_ells, fmt, H
             )
-            measured_diff = float_to_q(measured_diff_f)
-            D_hi_list = compute_D_hi_all_layers(
-                net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H
-            )
-            D_hi_final = D_hi_list[H-1] if H > 0 else Q(0)
-            D_hybrid = compute_D_hybrid_center(measured_diff, D_hi_final)
-            D_hybrid_all.append(float(D_hybrid))
+            D_hybrid_all.append(float(D_hybrid_center))
 
-            # Build comp_ctr cheaply: only r_{L-1} at ε=0 and final_pairs are needed.
-            # Skip the full hidden-stack recursion (DLm1 is replaced by D_hybrid).
-            r_ctr_last = radii(op2_norms, x, Q(0), bias_l2_norms=bias_l2_norms)[-1]
-            final_pairs_ctr = compute_final_pair_params(
-                net[-1], r_ctr_last, fmt, L_pairs, S_pairs
-            )
             comp_ctr = ModeBComponents(
                 r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
-                DLm1=D_hybrid, right_products=[], contribs=[],
-                final_pairs=final_pairs_ctr,
+                DLm1=D_hybrid_center, right_products=[], contribs=[],
+                final_pairs=compute_final_pair_params(net[-1], r_Lm1_center, fmt, L_pairs, S_pairs),
+            )
+            comp_ball = ModeBComponents(
+                r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
+                DLm1=D_meas_ball, right_products=[], contribs=[],
+                final_pairs=compute_final_pair_params(net[-1], r_Lm1_ball, fmt, L_pairs, S_pairs),
             )
         else:
-            comp_ctr = build_modeb_components(
-                net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms
-            )
+            comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms)
+
+            if hybrid_only_mode:
+                # Compute D^hybrid = ||z^fp_{H-1}(x) - z^hi_{H-1}(x)|| + D^hi_{H-1}.
+                # Use the specialised combined forward pass that stops at the final hidden
+                # layer (H layers) without storing any intermediate activations.
+                # weights_np_target is None when target == fp64, which signals return 0.
+                measured_diff_f = measure_center_diff_norm(
+                    weights_np64,
+                    weights_np64 if weights_np_target is None else weights_np_target,
+                    x,
+                    H,
+                )
+                measured_diff = float_to_q(measured_diff_f)
+                D_hi_list = compute_D_hi_all_layers(
+                    net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H
+                )
+                D_hi_final = D_hi_list[H-1] if H > 0 else Q(0)
+                D_hybrid = compute_D_hybrid_center(measured_diff, D_hi_final)
+                D_hybrid_all.append(float(D_hybrid))
+
+                # Build comp_ctr cheaply: only r_{L-1} at ε=0 and final_pairs are needed.
+                # Skip the full hidden-stack recursion (DLm1 is replaced by D_hybrid).
+                r_ctr_last = radii(op2_norms, x, Q(0), bias_l2_norms=bias_l2_norms)[-1]
+                final_pairs_ctr = compute_final_pair_params(
+                    net[-1], r_ctr_last, fmt, L_pairs, S_pairs
+                )
+                comp_ctr = ModeBComponents(
+                    r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
+                    DLm1=D_hybrid, right_products=[], contribs=[],
+                    final_pairs=final_pairs_ctr,
+                )
+            else:
+                comp_ctr = build_modeb_components(
+                    net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms
+                )
 
         t5 = time.perf_counter()
         modeb = certify_mode_b_theorem4(y_f32, epsilon, L_real, comp_ctr, comp_ball)
@@ -657,8 +696,8 @@ def main():
         # essentials
         DLm1s.append(float(comp_ball.DLm1))
 
-        # layerwise stats (only in standard mode — hybrid-only comp_ctr has empty recursion fields)
-        if not hybrid_only_mode:
+        # layerwise stats (only in standard mode — hybrid comp_ball has empty recursion fields)
+        if not hybrid_only_mode and not hybrid_meas_mode:
             for ell in range(H):
                 layer_alpha_sum[ell]    += float(comp_ball.alphas[ell])
                 layer_kappa_sum[ell]    += float(comp_ball.kappas[ell])
@@ -700,13 +739,16 @@ def main():
     print(f"  float_conservatism / real_RHS:    {pct_fc}")
 
     print(f"\nD_(L-1) mean: {stats_D.mean}")
-    if hybrid_only_mode and D_hybrid_all:
+    if (hybrid_only_mode or hybrid_meas_mode) and D_hybrid_all:
         stats_Dh = compute_stats(D_hybrid_all)
-        print(f"D_hybrid mean: {stats_Dh.mean}  (used for E_ctr; D_(L-1) above is D^std used for E_ball)")
+        if hybrid_meas_mode:
+            print(f"D_hybrid mean: {stats_Dh.mean}  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)")
+        else:
+            print(f"D_hybrid mean: {stats_Dh.mean}  (used for E_ctr; D_(L-1) above is D^std used for E_ball)")
     print(f"r0 (per example) mean: {stats_r0.mean}")
 
     # layerwise spotlight (first 2 layers) + top-3 contributors (standard mode only)
-    if layer_count > 0 and H > 0 and not hybrid_only_mode:
+    if layer_count > 0 and H > 0 and not hybrid_only_mode and not hybrid_meas_mode:
         mean_alpha    = [a/layer_count for a in layer_alpha_sum]
         mean_kappa    = [k/layer_count for k in layer_kappa_sum]
         mean_r_in     = [r/layer_count for r in layer_r_input_sum]
@@ -742,7 +784,7 @@ def main():
     # Write JSON output if requested
     if json_output_file:
         # Build output array with placeholder first element (will be skipped by processing script)
-        mode_label = "hybrid_only" if hybrid_only_mode else "standard"
+        mode_label = "hybrid_meas" if hybrid_meas_mode else ("hybrid_only" if hybrid_only_mode else "standard")
         json_output = [
             {"certifier": f"python_certifier_{mode_label}", "format": float_format, "gram_iterations": gram_iters}
         ] + json_results

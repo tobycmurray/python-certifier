@@ -176,7 +176,8 @@ run_test() {
   case "$mode" in
     standard)    mode_flag="";              mode_tag="standard"     ;;
     hybrid-only) mode_flag="--hybrid-only"; mode_tag="hybrid_only"  ;;
-    *) die "Unrecognised mode '$mode'. Should be 'standard' or 'hybrid-only'." ;;
+    hybrid-meas) mode_flag="--hybrid-meas"; mode_tag="hybrid_meas"  ;;
+    *) die "Unrecognised mode '$mode'. Should be 'standard', 'hybrid-only' or 'hybrid-meas'." ;;
   esac
 
   local bias_flag=""
