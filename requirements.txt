@@ -1,11 +1,22 @@
 # Core certifier dependencies
-numpy>=1.24,<2
 gmpy2>=2.1,<3
+
+# TensorFlow is a CORE dependency: the certifier runs the actual Keras model
+# (via doitlib) to compute logits and the hybrid-mode forward-pass deviation, so
+# that what it certifies is exactly the model that executes. The version is
+# pinned to *exactly* match the environment in which the cav2025 models were
+# built and the counter-examples / y1 logits were generated
+# (verified-certified-robustness/scripts/cav2025-artifact-venv). A different TF
+# version could change the float32 reduction order and therefore the logits,
+# breaking the bit-for-bit reproducibility that the soundness-by-construction
+# argument relies on. numpy is pinned to the version TF 2.13 ships with.
+tensorflow==2.13.0      # pulls tensorflow-macos==2.13.0 on Apple Silicon
+keras==2.13.1
+numpy==1.24.3
 
 # Dependencies for counter-example generation (attack_verified_certifier_nat.py)
 # and VRA computation (test_verified_certified_robust_accuracy.py)
-tensorflow>=2.13,<2.16
 mpmath>=1.3,<2
 Pillow>=9.0,<11
 adversarial-robustness-toolbox>=1.15,<2
-tensorflow_datasets>=4.9,<5
+tensorflow_datasets==4.9.3   # pinned to match cav2025-artifact-venv (doitlib imports it)

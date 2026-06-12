@@ -31,9 +31,11 @@ FASHION_MNIST_RESULTS_GRAM_13="results_epsilon_0.26_[256,128,128,128,128,128,128
 CIFAR10_RESULTS_GRAM_12="results_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800_eval_0.141_gram_12.json"
 Z3_RESULTS_GRAM_10="z3_certifier_results_gram_10.json"
 
-MNIST_NEURAL_NET="neural_net_mnist_epsilon_0.45_[128,128,128,128,128,128,128,128]_500.txt"
-FASHION_MNIST_NEURAL_NET="neural_net_mnist_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500.txt"
-CIFAR10_NEURAL_NET="neural_net_mnist_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800.txt"
+# Sound-by-construction model weight files live in ../models/ (regenerated via
+# models/regenerate.sh; gitignored). They replace the old 5-dp tests/*.txt.
+MNIST_NEURAL_NET="../models/neural_net_mnist_epsilon_0.45_[128,128,128,128,128,128,128,128]_500.txt"
+FASHION_MNIST_NEURAL_NET="../models/neural_net_mnist_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500.txt"
+CIFAR10_NEURAL_NET="../models/neural_net_mnist_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800.txt"
 Z3_NEURAL_NET="z3_neural_network.txt"
 
 ALL_MNIST_TEST_INPUTS="all_mnist_test_inputs/test_inputs_epsilon_0.3.json"
