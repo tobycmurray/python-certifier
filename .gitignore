@@ -212,3 +212,34 @@ __marimo__/
 # regenerated from the cav2025 CSV weights via models/regenerate.sh (the
 # committed source of truth). See models/README.md.
 models/*.txt
+
+# Transient certifier norm caches written to the run dir (cwd / tests/).
+# Precious, expensive-to-compute norms are committed under models/precomputed/.
+/*.norms.json
+/tests/*.norms.json
+*.norms.json.backup
+*.norms.json.*.backup
+norms.json~
+
+# Editor / scratch / build leftovers
+\#*\#
+.\#*
+*.backup
+*.bak
+*.new
+*.current
+/patch
+/patch2
+/blah*.txt
+/log.txt
+/input.txt
+
+# Counter-example search visualisations (the .npy data is the artifact; .png are renders)
+tests/cex_*/*.png
+# Test-run logs, LaTeX table scratch, and regenerable JSON output dirs
+tests/log.*.txt
+tests/table.*
+tests/json_results/
+tests/json_results-old/
+tests/z3_certifier_inputs.txt
+/z3_input.txt
