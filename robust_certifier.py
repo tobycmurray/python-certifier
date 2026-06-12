@@ -21,7 +21,12 @@ from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
 from hybrid_measured import (
     compute_D_hi_all_layers, compute_D_hybrid_center, build_measured_comp_inputs,
+    compute_measured_center_diff,
 )
+# hybrid-meas runs the actual Keras model (not a numpy re-simulation) for the
+# measured forward pass: sound by construction (same execution as the deployed
+# logits) and handles biases natively. Imported lazily inside main() so non-hybrid
+# runs don't pay the TensorFlow import cost.
 
 
 @dataclass(frozen=True)
@@ -469,6 +474,26 @@ def main():
         # float64 target: weights_np_target stays None; measure_center_diff_norm returns 0
         fmt_hi = get_float_format("float64")
 
+    # Both hybrid modes measure a center deviation D^hybrid from the ACTUAL Keras
+    # execution (high-precision fp64 reference vs the target-format model), with
+    # biases when present, instead of a numpy re-simulation. This makes the
+    # measured term sound by construction (same execution that produces the
+    # deployed logits) and bias-aware. hybrid-meas additionally measures the
+    # per-layer activation norms for the E_ball radii.
+    keras_model_hi = None
+    keras_model_fp = None
+    keras_fp_policy = None
+    if hybrid_only_mode or hybrid_meas_mode:
+        from keras_forward import build_activation_model, forward_activations
+        if fmt.name not in ("float32", "float64"):
+            sys.exit(f"hybrid-mode Keras forward pass not yet supported for {fmt.name} "
+                     f"(only float32/float64)")
+        keras_fp_policy = fmt.name
+        print(f"Building Keras forward-pass models (fp64 ref + {keras_fp_policy} target)"
+              + (" with biases" if biases is not None else "") + "...")
+        keras_model_hi = build_activation_model(net, biases, "float64")
+        keras_model_fp = build_activation_model(net, biases, keras_fp_policy)
+
     L = len(net)      # total layers
     H = L - 1         # hidden layers (L - 1)
     layer_fanins = [dims(net[ell])[1] for ell in range(H)]
@@ -611,16 +636,14 @@ def main():
             # certify_mode_b_theorem4 via synthetic ModeBComponents that carry only DLm1
             # and final_pairs: E = alpha_L * DLm1 + beta_L(r_{L-1}). Overflow checking
             # still uses the conservative theoretical radii (sound; see paper §hybrid).
-            z_hi = forward_layerwise_float64_optimized(weights_np64, x)
-            if fmt.name == "float16":
-                z_fp = forward_layerwise_float16_optimized(weights_np_target, x)
-            elif fmt.name == "float32":
-                z_fp = forward_layerwise_float32_optimized(weights_np_target, x)
-            else:  # float64 target: the target pass IS the high-precision pass
-                z_fp = z_hi
+            # Measured forward passes from the ACTUAL Keras model (bias-aware,
+            # same execution as the deployed logits), not a numpy re-simulation.
+            z_hi = forward_activations(keras_model_hi, x, "float64")
+            z_fp = forward_activations(keras_model_fp, x, keras_fp_policy)
 
             D_hybrid_center, r_Lm1_center, D_meas_ball, r_Lm1_ball = build_measured_comp_inputs(
-                net, x, epsilon, op2_norms, op2_abs_norms, z_hi, z_fp, sqrt_m_ells, fmt, H
+                net, x, epsilon, op2_norms, op2_abs_norms, z_hi, z_fp, sqrt_m_ells, fmt, H,
+                bias_l2_norms=bias_l2_norms,
             )
             D_hybrid_all.append(float(D_hybrid_center))
 
@@ -639,16 +662,13 @@ def main():
 
             if hybrid_only_mode:
                 # Compute D^hybrid = ||z^fp_{H-1}(x) - z^hi_{H-1}(x)|| + D^hi_{H-1}.
-                # Use the specialised combined forward pass that stops at the final hidden
-                # layer (H layers) without storing any intermediate activations.
-                # weights_np_target is None when target == fp64, which signals return 0.
-                measured_diff_f = measure_center_diff_norm(
-                    weights_np64,
-                    weights_np64 if weights_np_target is None else weights_np_target,
-                    x,
-                    H,
-                )
-                measured_diff = float_to_q(measured_diff_f)
+                # The measured center diff is taken from the ACTUAL Keras execution
+                # (fp64 ref vs target format), the same as hybrid-meas, so it is sound
+                # by construction and bias-aware -- a numpy re-simulation is not
+                # guaranteed to upper-bound the deployed model's center deviation.
+                z_hi = forward_activations(keras_model_hi, x, "float64")
+                z_fp = forward_activations(keras_model_fp, x, keras_fp_policy)
+                measured_diff = compute_measured_center_diff(z_fp, z_hi)
                 D_hi_list = compute_D_hi_all_layers(
                     net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H
                 )

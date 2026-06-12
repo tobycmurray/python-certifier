@@ -169,11 +169,14 @@ def compute_D_meas_with_input(
     sqrt_m_dict: Dict[int, Q],
     fmt: FloatFormat,
     num_hidden_layers: Optional[int] = None,
+    bias_l2_norms: Optional[List[Q]] = None,
 ) -> Tuple[Q, List[Q]]:
     """D^meas over the ε-ball, using the deviation recursion driven by measured radii.
 
     D_ℓ^meas = α_ℓ · D_{ℓ-1}^meas + β_ℓ(r_{ℓ-1}^meas), where layer ℓ uses the input
     radius r_{ℓ-1}: for ℓ=0 that is input_radius = ||x||+ε, otherwise r_meas[ℓ-1].
+    The β_ℓ also includes the u·||b_ℓ|| bias term (matching the Coq
+    compute_beta_with_type), via bias_l2_norms.
 
     Returns (D^meas_{H-1}, [D^meas_0, ..., D^meas_{H-1}]) where H = num_hidden_layers
     (default: L-1, i.e. through the hidden layers only).
@@ -195,6 +198,7 @@ def compute_D_meas_with_input(
             output_dim=m_ell,
             sqrt_m=sqrt_m,
             fmt=fmt,
+            bias_l2_norm=bias_l2_norms[ell] if bias_l2_norms is not None else Q(0),
         )
         D_ell = compute_deviation_bound(D_prev, params)
         D_all.append(D_ell)
@@ -213,6 +217,7 @@ def build_measured_comp_inputs(
     sqrt_m_dict: Dict[int, Q],
     fmt: FloatFormat,
     H: int,
+    bias_l2_norms: Optional[List[Q]] = None,
 ) -> Tuple[Q, Q, Q, Q]:
     """Compute the four scalars the certifier needs to build the measured comp_ctr/comp_ball.
 
@@ -242,7 +247,8 @@ def build_measured_comp_inputs(
 
     input_radius = l2_norm_upper_bound_vec(x) + epsilon
     D_meas_ball, _ = compute_D_meas_with_input(
-        network, op2_norms, op2_abs_norms, input_radius, r_meas_ball, sqrt_m_dict, fmt
+        network, op2_norms, op2_abs_norms, input_radius, r_meas_ball, sqrt_m_dict, fmt,
+        bias_l2_norms=bias_l2_norms,
     )
 
     r_Lm1_center = r_meas_center[H - 1] if H > 0 else r_meas_center[-1]
