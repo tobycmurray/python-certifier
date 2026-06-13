@@ -60,10 +60,10 @@ CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
 CEX_Z3_FLOAT32="z3_counter_examples.json"
 
 MNIST_BIASED_1E6_END_BIASES="cex_mnist_float32_biased_1e6_end/biases.txt"   # regenerated
-FASHION_MNIST_BIASED_3E6_END_BIASES="fashion_mnist_biased_3e6_end/biases.txt"
+FASHION_MNIST_BIASED_3E6_END_BIASES="cex_fashion_mnist_float32_biased_3e6_end/biases.txt"   # regenerated (B=3e6)
 CIFAR10_BIASED_4E6_END_BIASES="cifar10_biased_4e6_end/biases.txt"
 CEX_MNIST_BIASED_1E6_END_FLOAT32="cex_mnist_float32_biased_1e6_end/counter_examples.json"   # regenerated against corrected norms
-CEX_FASHION_MNIST_BIASED_3E6_END_FLOAT32="cex_fashion_mnist_biased_3e6_end_float32/counter_examples.json"
+CEX_FASHION_MNIST_BIASED_3E6_END_FLOAT32="cex_fashion_mnist_float32_biased_3e6_end/counter_examples.json"   # regenerated against corrected Dafny ref
 CEX_CIFAR10_BIASED_4E6_END_FLOAT32="cex_cifar10_biased_4e6_end_float32/counter_examples.json"
 
 # --- declarative tables ----------------------------------------------------
