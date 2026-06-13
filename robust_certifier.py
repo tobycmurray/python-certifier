@@ -10,13 +10,7 @@ from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
 from overflow import certify_no_overflow_normwise, check_overflow_single_layer
 from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
-from nn import (
-    forward_numpy_float32,
-    convert_network_to_numpy64, convert_network_to_numpy32, convert_network_to_numpy16,
-    measure_center_diff_norm,
-    forward_layerwise_float64_optimized, forward_layerwise_float32_optimized,
-    forward_layerwise_float16_optimized,
-)
+from nn import forward_numpy_float32
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
 from hybrid_measured import (
@@ -460,18 +454,9 @@ def main():
     W_last = net[-1]
     L_pairs,S_pairs = compute_L_and_S(W_last)
 
-    # Pre-convert network weights for optimized forward passes in hybrid modes
-    weights_np64 = None
-    weights_np_target = None  # target-format weights; None means target IS fp64
+    # fp64 reference format for the D^hi recursion used by both hybrid modes.
     fmt_hi = None
     if hybrid_only_mode or hybrid_meas_mode:
-        print("Pre-converting network for hybrid mode...")
-        weights_np64 = convert_network_to_numpy64(net)
-        if fmt.name == "float16":
-            weights_np_target = convert_network_to_numpy16(net)
-        elif fmt.name == "float32":
-            weights_np_target = convert_network_to_numpy32(net)
-        # float64 target: weights_np_target stays None; measure_center_diff_norm returns 0
         fmt_hi = get_float_format("float64")
 
     # Both hybrid modes measure a center deviation D^hybrid from the ACTUAL Keras

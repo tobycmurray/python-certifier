@@ -83,7 +83,8 @@ def compute_D_hybrid_center(measured_center_diff: Q, D_hi_final: Q) -> Q:
 
     Args:
         measured_center_diff: ||z^fp_{L-2}(x) - z^hi_{L-2}(x)||_2 (from
-                              measure_center_diff_norm in nn.py).
+                              compute_measured_center_diff on the Keras
+                              fp64/target activations).
         D_hi_final:           D^hi_{L-2}(x,0) from compute_D_hi_all_layers[-1].
 
     Returns:
