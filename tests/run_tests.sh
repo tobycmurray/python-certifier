@@ -32,6 +32,9 @@ MNIST_RESULTS_GRAM_20="results_epsilon_0.45_[128,128,128,128,128,128,128,128]_50
 # run (no per-instance test-set certification), so the "all" cross-check below is
 # disabled — see run_test().
 MNIST_DAFNY_REF="../models/precomputed/dafny_mnist_gram20.json"
+# Verified Dafny reference for the CORRECTED Fashion model (gram 13); same shape as
+# the MNIST one (norms-only run, so the per-instance "all" cross-check is disabled).
+FASHION_DAFNY_REF="../models/precomputed/dafny_fashion_gram13.json"
 FASHION_MNIST_RESULTS_GRAM_12="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_12.json"
 FASHION_MNIST_RESULTS_GRAM_13="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_13.json"
 CIFAR10_RESULTS_GRAM_12="results_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800_eval_0.141_gram_12.json"
@@ -90,10 +93,10 @@ declare -A REF_RESULTS=(
   ["mnist_biased_1e6_end:11"]="$MNIST_RESULTS_GRAM_11"
   ["mnist_biased_1e6_end:20"]="$MNIST_DAFNY_REF"
   ["fashion_mnist_biased_3e6_end:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
-  ["fashion_mnist_biased_3e6_end:13"]="$FASHION_MNIST_RESULTS_GRAM_13"
+  ["fashion_mnist_biased_3e6_end:13"]="$FASHION_DAFNY_REF"
   ["cifar10_biased_4e6_end:12"]="$CIFAR10_RESULTS_GRAM_12"
   ["fashion_mnist:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
-  ["fashion_mnist:13"]="$FASHION_MNIST_RESULTS_GRAM_13"
+  ["fashion_mnist:13"]="$FASHION_DAFNY_REF"
   ["cifar10:12"]="$CIFAR10_RESULTS_GRAM_12"
   ["z3:10"]="$Z3_RESULTS_GRAM_10"
 )
@@ -273,16 +276,16 @@ run_test "float64" "mnist"         "20" "cex" "standard"
 run_test "float64" "mnist"         "20" "cex" "hybrid-only"
 run_test "float64" "mnist"         "20" "cex" "hybrid-meas"
 
-# Fashion-MNIST cex — disabled (pending corrected norms + regenerated cexs)
-#run_test "float32" "fashion_mnist" "13" "cex" "standard"
-#run_test "float32" "fashion_mnist" "13" "cex" "hybrid-only"
-#run_test "float32" "fashion_mnist" "13" "cex" "hybrid-meas"
-#run_test "float16" "fashion_mnist" "13" "cex" "standard"
-#run_test "float16" "fashion_mnist" "13" "cex" "hybrid-only"
-#run_test "float16" "fashion_mnist" "13" "cex" "hybrid-meas"
-#run_test "float64" "fashion_mnist" "13" "cex" "standard"
-#run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
-#run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
+# ===== Fashion-MNIST natural — cex (gram 13; corrected norms + Dafny ref) =====
+run_test "float32" "fashion_mnist" "13" "cex" "standard"
+run_test "float32" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float32" "fashion_mnist" "13" "cex" "hybrid-meas"
+run_test "float16" "fashion_mnist" "13" "cex" "standard"
+run_test "float16" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float16" "fashion_mnist" "13" "cex" "hybrid-meas"
+run_test "float64" "fashion_mnist" "13" "cex" "standard"
+run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
+run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
 
 # CIFAR-10 cex — disabled (pending corrected norms + regenerated cexs)
 #run_test "float32" "cifar10"       "12" "cex" "standard"
@@ -298,10 +301,11 @@ run_test "float32" "mnist_biased_1e6_end" "20" "cex" "standard"
 run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-only"
 run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-meas"
 
-# Fashion / CIFAR biased cex — disabled
-#run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
-#run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
-#run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
+# ===== Fashion-MNIST adversarially-biased (3e6-end) — cex (gram 13) =====
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
+# CIFAR biased cex — disabled (pending CIFAR norms/Dafny @11)
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
@@ -311,10 +315,11 @@ run_test "float32" "mnist"         "20" "all" "standard"
 run_test "float32" "mnist"         "20" "all" "hybrid-only"
 run_test "float32" "mnist"         "20" "all" "hybrid-meas"
 
-# Fashion / CIFAR all — disabled
-#run_test "float32" "fashion_mnist" "12" "all" "standard"
-#run_test "float32" "fashion_mnist" "12" "all" "hybrid-only"
-#run_test "float32" "fashion_mnist" "12" "all" "hybrid-meas"
+# ===== Fashion-MNIST natural — all (gram 13) =====
+run_test "float32" "fashion_mnist" "13" "all" "standard"
+run_test "float32" "fashion_mnist" "13" "all" "hybrid-only"
+run_test "float32" "fashion_mnist" "13" "all" "hybrid-meas"
+# CIFAR all — disabled (pending CIFAR norms/Dafny @11)
 #run_test "float32" "cifar10"       "12" "all" "standard"
 #run_test "float32" "cifar10"       "12" "all" "hybrid-only"
 #run_test "float32" "cifar10"       "12" "all" "hybrid-meas"
@@ -324,10 +329,11 @@ run_test "float32" "mnist_biased_1e6_end" "20" "all" "standard"
 run_test "float32" "mnist_biased_1e6_end" "20" "all" "hybrid-only"
 run_test "float32" "mnist_biased_1e6_end" "20" "all" "hybrid-meas"
 
-# Fashion / CIFAR biased all — disabled
-#run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "standard"
-#run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-only"
-#run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-meas"
+# ===== Fashion-MNIST adversarially-biased (3e6-end) — all (gram 13) =====
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "all" "standard"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "all" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "all" "hybrid-meas"
+# CIFAR biased all — disabled (pending CIFAR norms/Dafny @11)
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "standard"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-only"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-meas"
