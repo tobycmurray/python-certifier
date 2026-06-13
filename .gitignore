@@ -234,8 +234,6 @@ norms.json~
 /log.txt
 /input.txt
 
-# Counter-example search visualisations (the .npy data is the artifact; .png are renders)
-tests/cex_*/*.png
 # Test-run logs, LaTeX table scratch, and regenerable JSON output dirs
 tests/log.*.txt
 tests/table.*
