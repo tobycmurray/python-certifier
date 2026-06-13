@@ -470,9 +470,9 @@ def main():
     keras_fp_policy = None
     if hybrid_only_mode or hybrid_meas_mode:
         from keras_forward import build_activation_model, forward_activations
-        if fmt.name not in ("float32", "float64"):
-            sys.exit(f"hybrid-mode Keras forward pass not yet supported for {fmt.name} "
-                     f"(only float32/float64)")
+        if fmt.name not in ("float16", "float32", "float64"):
+            sys.exit(f"hybrid-mode Keras forward pass not supported for {fmt.name} "
+                     f"(only float16/float32/float64)")
         keras_fp_policy = fmt.name
         print(f"Building Keras forward-pass models (fp64 ref + {keras_fp_policy} target)"
               + (" with biases" if biases is not None else "") + "...")

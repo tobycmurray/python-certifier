@@ -49,8 +49,8 @@ ALL_FASHION_MNIST_TEST_INPUTS="all_fashion_mnist_test_inputs/test_inputs_epsilon
 ALL_CIFAR10_TEST_INPUTS="all_cifar10_test_inputs/all_test_inputs.json"
 
 CEX_MNIST_FLOAT32="cex_mnist_float32/counter_examples.json"   # regenerated against corrected norms
-CEX_MNIST_FLOAT16="cex_mnist_deepfool_float16/counter_examples.json"   # TODO: regenerate against corrected norms
-CEX_MNIST_FLOAT64="cex_mnist_deepfool_float64/counter_examples.json"   # TODO: regenerate against corrected norms
+CEX_MNIST_FLOAT16="cex_mnist_float16/counter_examples.json"   # regenerated against corrected norms (dafny_mnist_gram20)
+CEX_MNIST_FLOAT64="cex_mnist_float64/counter_examples.json"   # regenerated against corrected norms (dafny_mnist_gram20)
 CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_deepfool/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_deepfool_float16/counter_examples.json"
 CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_deepfool_float64/counter_examples.json"
@@ -263,13 +263,15 @@ cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
 run_test "float32" "mnist"         "20" "cex" "standard"
 run_test "float32" "mnist"         "20" "cex" "hybrid-only"
 run_test "float32" "mnist"         "20" "cex" "hybrid-meas"
-# float16/float64 MNIST cex: re-enable once regenerated against the corrected norms
-#run_test "float16" "mnist"         "20" "cex" "standard"
-#run_test "float16" "mnist"         "20" "cex" "hybrid-only"
-#run_test "float16" "mnist"         "20" "cex" "hybrid-meas"
-#run_test "float64" "mnist"         "20" "cex" "standard"
-#run_test "float64" "mnist"         "20" "cex" "hybrid-only"
-#run_test "float64" "mnist"         "20" "cex" "hybrid-meas"
+# float16/float64 MNIST cex: regenerated against the corrected norms (dafny_mnist_gram20).
+# float16 hybrid uses the Keras pure-float16 policy forward; verified to reproduce the
+# deployed float16 logits bit-for-bit (30/30 cexs), so it is sound by construction.
+run_test "float16" "mnist"         "20" "cex" "standard"
+run_test "float16" "mnist"         "20" "cex" "hybrid-only"
+run_test "float16" "mnist"         "20" "cex" "hybrid-meas"
+run_test "float64" "mnist"         "20" "cex" "standard"
+run_test "float64" "mnist"         "20" "cex" "hybrid-only"
+run_test "float64" "mnist"         "20" "cex" "hybrid-meas"
 
 # Fashion-MNIST cex — disabled (pending corrected norms + regenerated cexs)
 #run_test "float32" "fashion_mnist" "13" "cex" "standard"

@@ -27,7 +27,7 @@ from linear_algebra import Matrix, Vector
 from arithmetic import Q
 
 # Policy -> numpy dtype for the executed weights/compute.
-_POLICY_DTYPE = {"float32": np.float32, "float64": np.float64}
+_POLICY_DTYPE = {"float16": np.float16, "float32": np.float32, "float64": np.float64}
 
 
 def _kernel(W: Matrix, npdt) -> np.ndarray:
