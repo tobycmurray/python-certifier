@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from arithmetic import Q, sqrt_upper_bound, round_up, round_down, qstr
 
 Matrix = List[List[Q]]
@@ -53,8 +53,6 @@ def mtm(M: Matrix) -> Matrix:
     out = zeros(n, n)
     # compute upper triangle, reuse symmetry
     for i in range(n):
-        if i%10==0:
-            print(f"[DBG] mtm i={i}")
         for j in range(i, n):
             s = Q(0)
             for r in range(m):
@@ -116,12 +114,28 @@ def l2_norm_upper_bound_vec(v: Vector) -> Q:
         sq_sum += x * x
     return sqrt_upper_bound(sq_sum)
 
-def gram_iteration(M: Matrix, n: int) -> Q:
+def _gram_unwind(s0: Q, a: List[Tuple[Q, Q]]) -> Q:
+    """Backward pass of the Gram iteration: recover the spectral-norm upper
+    bound from the final Frobenius norm s0 and the stored (scale, error) pairs."""
+    ret = s0
+    for (r, e) in a:
+        ret = sqrt_upper_bound(r * (ret + e))
+    return ret
+
+
+def gram_iteration(M: Matrix, n: int, trace: Optional[List[Q]] = None) -> Q:
+    """Spectral-norm upper bound of M via n Gram iterations.
+
+    If `trace` is given (a list), the bound after each iteration k=1..n is
+    appended to it. trace[k-1] is exactly what gram_iteration(M, k) returns
+    (the iteration is sequential, so a length-n run passes through every
+    shorter run's state) -- so one run yields the whole convergence curve.
+    The trace uses the same _gram_unwind as the final result, so it is faithful.
+    """
     M_cur = [row[:] for row in M]
     a: List[Tuple[Q, Q]] = []
     i = 0
     while i != n:
-        print(f"[DBG] gram iteration {i}")
         Mp = mtm(M_cur)
         r = Q(1) if is_zero_matrix(Mp) else frobenius_norm_upper_bound(Mp)
         Mn = matrix_div_scalar(Mp, r)
@@ -129,15 +143,10 @@ def gram_iteration(M: Matrix, n: int) -> Q:
         a = [(r, e)] + a
         M_cur = M_trunc
         i += 1
+        if trace is not None:
+            trace.append(_gram_unwind(frobenius_norm_upper_bound(M_cur), a))
 
-    s0 = frobenius_norm_upper_bound(M_cur)
-
-    ret = s0
-    for (r, e) in a:
-        arg = r * (ret + e)
-        ret = sqrt_upper_bound(arg)
-
-    return ret
+    return _gram_unwind(frobenius_norm_upper_bound(M_cur), a)
 
 def layer_opnorm_upper_bound(W: Matrix, gram_iters: int) -> Q:
     return gram_iteration(W, gram_iters)
