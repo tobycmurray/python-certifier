@@ -1,3 +1,4 @@
+import time
 from typing import List, Tuple, Optional
 from arithmetic import Q, sqrt_upper_bound, round_up, round_down, qstr
 
@@ -123,7 +124,9 @@ def _gram_unwind(s0: Q, a: List[Tuple[Q, Q]]) -> Q:
     return ret
 
 
-def gram_iteration(M: Matrix, n: int, trace: Optional[List[Q]] = None) -> Q:
+def gram_iteration(M: Matrix, n: int,
+                   trace: Optional[List[Q]] = None,
+                   time_trace: Optional[List[float]] = None) -> Q:
     """Spectral-norm upper bound of M via n Gram iterations.
 
     If `trace` is given (a list), the bound after each iteration k=1..n is
@@ -131,9 +134,17 @@ def gram_iteration(M: Matrix, n: int, trace: Optional[List[Q]] = None) -> Q:
     (the iteration is sequential, so a length-n run passes through every
     shorter run's state) -- so one run yields the whole convergence curve.
     The trace uses the same _gram_unwind as the final result, so it is faithful.
+
+    If `time_trace` is given, the *cumulative* wall-clock seconds spent on the
+    core iteration work (mtm + normalisation + truncation) up to and including
+    iteration k is appended -- recorded BEFORE the optional bound-trace unwind,
+    so it reflects a plain gram_iteration(M, k) run (the per-iteration unwind
+    overhead, ~0.2% of the matrix product, is excluded). Lets one run also yield
+    the per-gram norm-computation cost.
     """
     M_cur = [row[:] for row in M]
     a: List[Tuple[Q, Q]] = []
+    t0 = time.perf_counter() if time_trace is not None else 0.0
     i = 0
     while i != n:
         Mp = mtm(M_cur)
@@ -143,6 +154,8 @@ def gram_iteration(M: Matrix, n: int, trace: Optional[List[Q]] = None) -> Q:
         a = [(r, e)] + a
         M_cur = M_trunc
         i += 1
+        if time_trace is not None:
+            time_trace.append(time.perf_counter() - t0)
         if trace is not None:
             trace.append(_gram_unwind(frobenius_norm_upper_bound(M_cur), a))
 
