@@ -24,6 +24,12 @@ set -euo pipefail
 
 CERTIFIER=../robust_certifier.py
 
+# Optional first arg: restrict to models whose name starts with it
+# (e.g. "mnist" -> mnist + mnist_biased_*; "fashion_mnist" -> fashion + its biased).
+# Lets us run one model's suite at a time (single-threaded, low contention with
+# any concurrent norm computation). Empty -> run everything.
+MODEL_FILTER="${1:-}"
+
 MNIST_RESULTS_GRAM_11="results_epsilon_0.45_[128,128,128,128,128,128,128,128]_500_eval_0.3_gram_11.json"
 MNIST_RESULTS_GRAM_20="results_epsilon_0.45_[128,128,128,128,128,128,128,128]_500_eval_0.3_gram_20.json"
 # Verified Dafny reference for the CORRECTED MNIST model (computed over the sound
@@ -35,6 +41,15 @@ MNIST_DAFNY_REF="../models/precomputed/dafny_mnist_gram20.json"
 # Verified Dafny reference for the CORRECTED Fashion model (gram 13); same shape as
 # the MNIST one (norms-only run, so the per-instance "all" cross-check is disabled).
 FASHION_DAFNY_REF="../models/precomputed/dafny_fashion_gram13.json"
+# Gram-12 Dafny norms refs (corrected models). The RQ2/RQ3 "all" runs are evaluated
+# at a UNIFORM gram 12 across all three models (past the data-independent norm-
+# convergence point; cross-comparable). RQ1 "cex" runs stay at the per-model tightest
+# gram (20/13/12). All are norms-only runs, so the per-instance "all" cross-check is
+# disabled (see run_test()); the ref supplies the lipschitz_bounds the certifier
+# cross-checks its computed norms against.
+MNIST_DAFNY_REF_12="../models/precomputed/dafny_mnist_gram12.json"
+FASHION_DAFNY_REF_12="../models/precomputed/dafny_fashion_mnist_gram12.json"
+CIFAR_DAFNY_REF_12="../models/precomputed/dafny_cifar10_gram12.json"
 FASHION_MNIST_RESULTS_GRAM_12="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_12.json"
 FASHION_MNIST_RESULTS_GRAM_13="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_13.json"
 CIFAR10_RESULTS_GRAM_12="results_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800_eval_0.141_gram_12.json"
@@ -88,16 +103,21 @@ declare -A BIASES_FILE=(
 )
 
 declare -A REF_RESULTS=(
-  ["mnist:11"]="$MNIST_RESULTS_GRAM_11"
+  # RQ1 cex grams (per-model tightest): mnist 20, fashion 13, cifar 12
   ["mnist:20"]="$MNIST_DAFNY_REF"
-  ["mnist_biased_1e6_end:11"]="$MNIST_RESULTS_GRAM_11"
   ["mnist_biased_1e6_end:20"]="$MNIST_DAFNY_REF"
-  ["fashion_mnist_biased_3e6_end:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
-  ["fashion_mnist_biased_3e6_end:13"]="$FASHION_DAFNY_REF"
-  ["cifar10_biased_4e6_end:12"]="$CIFAR10_RESULTS_GRAM_12"
-  ["fashion_mnist:12"]="$FASHION_MNIST_RESULTS_GRAM_12"
   ["fashion_mnist:13"]="$FASHION_DAFNY_REF"
-  ["cifar10:12"]="$CIFAR10_RESULTS_GRAM_12"
+  ["fashion_mnist_biased_3e6_end:13"]="$FASHION_DAFNY_REF"
+  # RQ2/RQ3 "all" grams (uniform 12) -- corrected-model Dafny norms refs @ gram 12
+  ["mnist:12"]="$MNIST_DAFNY_REF_12"
+  ["mnist_biased_1e6_end:12"]="$MNIST_DAFNY_REF_12"
+  ["fashion_mnist:12"]="$FASHION_DAFNY_REF_12"
+  ["fashion_mnist_biased_3e6_end:12"]="$FASHION_DAFNY_REF_12"
+  ["cifar10:12"]="$CIFAR_DAFNY_REF_12"
+  ["cifar10_biased_4e6_end:12"]="$CIFAR_DAFNY_REF_12"
+  # legacy / misc
+  ["mnist:11"]="$MNIST_RESULTS_GRAM_11"
+  ["mnist_biased_1e6_end:11"]="$MNIST_RESULTS_GRAM_11"
   ["z3:10"]="$Z3_RESULTS_GRAM_10"
 )
 
@@ -149,6 +169,9 @@ grabnum() {
 
 run_test() {
   local format="$1" model="$2" gram="$3" kind="$4" mode="$5"
+
+  # optional model filter (run one model's suite at a time)
+  if [[ -n "$MODEL_FILTER" && "$model" != "$MODEL_FILTER"* ]]; then return 0; fi
 
   # lookups (use presence check that works on bash >= 4.0)
   [[ -n ${NN_FILE[$model]+x} ]] || die "Unknown model '$model'. Known: ${!NN_FILE[*]}"
@@ -252,10 +275,14 @@ cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
 # the "cex" runs are soundness checks (the tightest mode, hybrid-measured, must
 # still reject every counter-example).
 #
-# CURRENTLY MNIST-ONLY. We use gram 20 uniformly for MNIST (our own choice; we
-# no longer match Tobler's gram counts since we compute norms over the corrected
-# model). Fashion/CIFAR and the float16/float64 MNIST cex are commented out
-# pending their corrected norms + regenerated cexs.
+# GRAM SCHEME (corrected models):
+#   RQ1 "cex" runs   -> per-model tightest gram: MNIST 20, Fashion 13, CIFAR 12
+#                       (most stringent soundness test; E smallest there; each cex
+#                        is certified at the gram its dafny ref/cexs were made at).
+#   RQ2/RQ3 "all"    -> uniform gram 12 across all three models (past the data-
+#                       independent norm-convergence point; cross-comparable).
+# CIFAR is still commented out pending its corrected norms (convergence sweep) +
+# regenerated cexs; everything else (MNIST + Fashion) is active.
 
 # z3 (synthetic; not MNIST) — disabled
 #run_test "float32" "z3"            "10" "cex" "standard"
@@ -310,29 +337,29 @@ run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
 
-# ===== MNIST natural — all (gram 20; reuses the JSON y1) =====
-run_test "float32" "mnist"         "20" "all" "standard"
-run_test "float32" "mnist"         "20" "all" "hybrid-only"
-run_test "float32" "mnist"         "20" "all" "hybrid-meas"
+# ===== MNIST natural — all (gram 12; RQ2/RQ3 uniform) =====
+run_test "float32" "mnist"         "12" "all" "standard"
+run_test "float32" "mnist"         "12" "all" "hybrid-only"
+run_test "float32" "mnist"         "12" "all" "hybrid-meas"
 
-# ===== Fashion-MNIST natural — all (gram 13) =====
-run_test "float32" "fashion_mnist" "13" "all" "standard"
-run_test "float32" "fashion_mnist" "13" "all" "hybrid-only"
-run_test "float32" "fashion_mnist" "13" "all" "hybrid-meas"
+# ===== Fashion-MNIST natural — all (gram 12; RQ2/RQ3 uniform) =====
+run_test "float32" "fashion_mnist" "12" "all" "standard"
+run_test "float32" "fashion_mnist" "12" "all" "hybrid-only"
+run_test "float32" "fashion_mnist" "12" "all" "hybrid-meas"
 # CIFAR all — disabled (pending CIFAR norms/Dafny @11)
 #run_test "float32" "cifar10"       "12" "all" "standard"
 #run_test "float32" "cifar10"       "12" "all" "hybrid-only"
 #run_test "float32" "cifar10"       "12" "all" "hybrid-meas"
 
-# ===== MNIST adversarially-biased (1e6-end) — all (gram 20) =====
-run_test "float32" "mnist_biased_1e6_end" "20" "all" "standard"
-run_test "float32" "mnist_biased_1e6_end" "20" "all" "hybrid-only"
-run_test "float32" "mnist_biased_1e6_end" "20" "all" "hybrid-meas"
+# ===== MNIST adversarially-biased (1e6-end) — all (gram 12) =====
+run_test "float32" "mnist_biased_1e6_end" "12" "all" "standard"
+run_test "float32" "mnist_biased_1e6_end" "12" "all" "hybrid-only"
+run_test "float32" "mnist_biased_1e6_end" "12" "all" "hybrid-meas"
 
-# ===== Fashion-MNIST adversarially-biased (3e6-end) — all (gram 13) =====
-run_test "float32" "fashion_mnist_biased_3e6_end" "13" "all" "standard"
-run_test "float32" "fashion_mnist_biased_3e6_end" "13" "all" "hybrid-only"
-run_test "float32" "fashion_mnist_biased_3e6_end" "13" "all" "hybrid-meas"
+# ===== Fashion-MNIST adversarially-biased (3e6-end) — all (gram 12) =====
+run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "standard"
+run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-meas"
 # CIFAR biased all — disabled (pending CIFAR norms/Dafny @11)
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "standard"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-only"
