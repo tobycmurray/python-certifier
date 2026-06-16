@@ -130,6 +130,16 @@ declare -A ALL_INPUTS=(
   [cifar10]="$ALL_CIFAR10_TEST_INPUTS"
 )
 
+# First 100 test points (= ERAN's 100; indices 0-99) for the same-100-point ERAN
+# comparison (RQ3 Table 3b). Kind "first100" runs these and writes to
+# json_results_first100/ (named *_all.json so compute_vra consumes them when
+# pointed at that dir).
+declare -A ALL_INPUTS_100=(
+  [mnist]="all_mnist_test_inputs/test_inputs_epsilon_0.3_first100.json"
+  [fashion_mnist]="all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_first100.json"
+  [cifar10]="all_cifar10_test_inputs/all_test_inputs_first100.json"
+)
+
 declare -A CEX=(
   ["mnist:float32"]="$CEX_MNIST_FLOAT32"
   ["mnist:float16"]="$CEX_MNIST_FLOAT16"
@@ -196,13 +206,18 @@ run_test() {
       [[ -n ${ALL_INPUTS[$model]+x} ]] || die "No ALL inputs configured for '$model'"
       cex_file="${ALL_INPUTS[$model]}"
       ;;
+    first100)
+      [[ "$format" == "float32" ]] || die "Only float32 format supported when running kind 'first100'"
+      [[ -n ${ALL_INPUTS_100[$model]+x} ]] || die "No first-100 inputs configured for '$model'"
+      cex_file="${ALL_INPUTS_100[$model]}"
+      ;;
     cex)
       local key_cex="$model:$format"
       [[ -n ${CEX[$key_cex]+x} ]] || die "Unsupported format '$format' for '$model' and kind 'cex'"
       cex_file="${CEX[$key_cex]}"
       ;;
     *)
-      die "Unrecognised kind '$kind'. Should be either 'all' or 'cex'."
+      die "Unrecognised kind '$kind'. Should be 'all', 'first100' or 'cex'."
       ;;
   esac
 
@@ -219,8 +234,12 @@ run_test() {
     bias_flag="--biases ${BIASES_FILE[$model]}"
   fi
 
-  local json_output="json_results/${mode_tag}_${model}_${format}_gram${gram}_${kind}.json"
-  mkdir -p json_results
+  # first100 results go in their own dir, named *_all.json so compute_vra (pointed
+  # at json_results_first100/) consumes them with no changes.
+  local out_dir="json_results" out_kind="$kind"
+  if [[ "$kind" == "first100" ]]; then out_dir="json_results_first100"; out_kind="all"; fi
+  local json_output="$out_dir/${mode_tag}_${model}_${format}_gram${gram}_${out_kind}.json"
+  mkdir -p "$out_dir"
 
   echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
   # shellcheck disable=SC2086
@@ -364,3 +383,18 @@ run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-meas"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "standard"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-only"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-meas"
+
+# ===== first-100 (same-100 ERAN comparison; RQ3 Table 3b) — natural, gram 12 =====
+# Runs the gram-12 "all" certification over just the first 100 test points (= ERAN's
+# 100; indices 0-99), into json_results_first100/. Quick (100 pts). Consume with:
+#   compute_vra.py json_results_first100/ <cav2025-models> <out>
+run_test "float32" "mnist"         "12" "first100" "standard"
+run_test "float32" "mnist"         "12" "first100" "hybrid-only"
+run_test "float32" "mnist"         "12" "first100" "hybrid-meas"
+run_test "float32" "fashion_mnist" "12" "first100" "standard"
+run_test "float32" "fashion_mnist" "12" "first100" "hybrid-only"
+run_test "float32" "fashion_mnist" "12" "first100" "hybrid-meas"
+# CIFAR first100 — disabled (pending CIFAR norms)
+#run_test "float32" "cifar10"       "12" "first100" "standard"
+#run_test "float32" "cifar10"       "12" "first100" "hybrid-only"
+#run_test "float32" "cifar10"       "12" "first100" "hybrid-meas"
