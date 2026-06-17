@@ -4,6 +4,7 @@ import hashlib
 import json
 
 from arithmetic import Q, qstr
+import linear_algebra
 from linear_algebra import layer_infinity_norm, layer_opnorm_upper_bound, abs_matrix, max_row_l2_norm, Matrix
 import time
 
@@ -27,24 +28,30 @@ def compute_norms(net: List[Matrix], gram_iters: int) -> Norms:
     times["op2_abs"] = 0.0
     times["max_row_l2"] = 0.0
 
+    # This is the expensive path (CIFAR-10 gram 12 ~= 43h, almost all in layer 0's
+    # 3072x3072 Gram). Turn on per-iteration / per-mtm-row progress tracing.
+    linear_algebra.PROGRESS = True
+
+    n_layers = len(net)
     for i, W in enumerate(net):
-        print(f"Computing norms for layer {i}, ...")
-        print(f"  max row inf norm (for M_layer)...")
+        rows = len(W); cols = len(W[0]) if W else 0
+        print(f"Computing norms for layer {i}/{n_layers-1} ({rows}x{cols}, Gram is {cols}x{cols})...", flush=True)
+        print(f"  max row inf norm (for M_layer)...", flush=True)
         start = time.perf_counter()
         max_row_inf = layer_infinity_norm(W)
         time_max_row_inf = time.perf_counter() - start
 
-        print(f"  max row L2 norm (for S_layer)...")
+        print(f"  max row L2 norm (for S_layer)...", flush=True)
         start = time.perf_counter()
         max_row_l2 = max_row_l2_norm(W)
         time_max_row_l2 = time.perf_counter() - start
 
-        print(f"  operator norm...")
+        print(f"  operator norm ||W||_2 ({gram_iters} gram iters)...", flush=True)
         start = time.perf_counter()
         op2_norm = layer_opnorm_upper_bound(W, gram_iters)
         time_op2 = time.perf_counter() - start
 
-        print(f"  operator norm of abs (for deviation)...")
+        print(f"  operator norm of abs |||W|||_2 (for deviation, {gram_iters} gram iters)...", flush=True)
         start = time.perf_counter()
         op2_abs_norm = layer_opnorm_upper_bound(abs_matrix(W), gram_iters)
         time_op2_abs = time.perf_counter() - start
@@ -53,6 +60,10 @@ def compute_norms(net: List[Matrix], gram_iters: int) -> Norms:
         times["op2"] += time_op2
         times["op2_abs"] += time_op2_abs
         times["max_row_l2"] += time_max_row_l2
+
+        print(f"  layer {i} done: ||W||_2 op2 {time_op2/60:.1f}min, |||W|||_2 op2_abs "
+              f"{time_op2_abs/60:.1f}min  (cumulative op2 {times['op2']/3600:.2f}h, "
+              f"op2_abs {times['op2_abs']/3600:.2f}h)", flush=True)
 
         max_row_inf_norms_list.append(max_row_inf)
         op2_norms.append(op2_norm)

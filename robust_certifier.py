@@ -329,6 +329,16 @@ def main():
         hybrid_meas_mode = True
         sys.argv = [sys.argv[0]] + sys.argv[2:]
 
+    # Check for --skip-ref-check flag. Skips the EXACT Dafny lipschitz cross-check.
+    # Only for the float64-approximate gram-sensitivity experiment, where op2 norms
+    # are sound upper bounds derived (rounded up) from the convergence sweep's
+    # float64 trace rather than the exact rationals Dafny computed, so they cannot
+    # match the reference exactly. NOT for paper-grade runs.
+    skip_ref_check = False
+    if len(sys.argv) > 1 and sys.argv[1] == "--skip-ref-check":
+        skip_ref_check = True
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
+
     # Check for --json-output flag
     json_output_file = None
     if len(sys.argv) > 1 and sys.argv[1] == "--json-output":
@@ -418,8 +428,12 @@ def main():
 
     print("Computing margin Lipschitz bounds...")
     L_real = margin_lipschitz_bounds(net, op2_norms)
-    check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
-    print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
+    if skip_ref_check:
+        print("WARNING: --skip-ref-check set; NOT verifying margin Lipschitz bounds "
+              "against the Dafny reference (approximate-norm experiment only).")
+    else:
+        check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
+        print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
 
     fmt = get_float_format(float_format)
     check_rounding_preconditions(net, fmt)

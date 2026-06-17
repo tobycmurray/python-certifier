@@ -46,12 +46,25 @@ def mm_product(A: Matrix, B: Matrix) -> Matrix:
             out[i][j] = s
     return out
 
+# Optional progress tracing for the very expensive norm computation. compute_norms
+# turns this on; it is off by default so ordinary (cheap) cert runs stay quiet.
+# The CIFAR-10 gram-12 norm computation is ~43h (almost all in layer 0's 3072x3072
+# Gram), so without this the run is a silent black box.
+PROGRESS = False
+_PROGRESS_MIN_N = 200  # only trace mtm for matrices at least this wide (skip tiny layers)
+
+
 def mtm(M: Matrix) -> Matrix:
     """
     Specialised MTM: returns M^T * M using symmetry, row-wise scanning.
     """
     m, n = dims(M)  # m rows, n cols
     out = zeros(n, n)
+    _prog = PROGRESS and n >= _PROGRESS_MIN_N
+    if _prog:
+        _t0 = time.perf_counter()
+        _step = max(1, n // 50)
+        print(f"      [mtm] {n}x{n} Gram (inner length {m})...", flush=True)
     # compute upper triangle, reuse symmetry
     for i in range(n):
         for j in range(i, n):
@@ -61,6 +74,14 @@ def mtm(M: Matrix) -> Matrix:
             out[i][j] = s
             if j != i:
                 out[j][i] = s
+        if _prog and (i % _step == 0 or i == n - 1):
+            el = time.perf_counter() - _t0
+            # upper-triangle work done after row i is proportional to (2i*n - i^2)/n^2
+            done = i + 1
+            frac = (2 * done * n - done * done) / (n * n)
+            eta = (el / frac - el) if frac > 0 else 0.0
+            print(f"      [mtm] row {done}/{n}  {frac*100:5.1f}%  "
+                  f"elapsed {el/60:6.1f}min  eta {eta/60:6.1f}min", flush=True)
     return out
 
 def matrix_div_scalar(M: Matrix, r: Q) -> Matrix:
@@ -144,7 +165,8 @@ def gram_iteration(M: Matrix, n: int,
     """
     M_cur = [row[:] for row in M]
     a: List[Tuple[Q, Q]] = []
-    t0 = time.perf_counter() if time_trace is not None else 0.0
+    t0 = time.perf_counter() if (time_trace is not None or PROGRESS) else 0.0
+    t_iter = t0
     i = 0
     while i != n:
         Mp = mtm(M_cur)
@@ -156,6 +178,11 @@ def gram_iteration(M: Matrix, n: int,
         i += 1
         if time_trace is not None:
             time_trace.append(time.perf_counter() - t0)
+        if PROGRESS:
+            now = time.perf_counter()
+            print(f"    [gram] iter {i}/{n} done: {(now-t_iter)/60:.1f}min "
+                  f"(cumulative {(now-t0)/60:.1f}min)", flush=True)
+            t_iter = now
         if trace is not None:
             trace.append(_gram_unwind(frobenius_norm_upper_bound(M_cur), a))
 
