@@ -5,18 +5,30 @@ import gmpy2
 Q = gmpy2.mpq
 
 def float_to_q(v: float) -> Q:
-    """Convert a float to Q with high precision (150 decimal places).
+    """Convert a float to its EXACT rational value (lossless).
 
-    This ensures minimal loss of precision when converting IEEE-754 floats
-    to exact rational representations.
+    Every finite IEEE-754 float is exactly a dyadic rational; gmpy2.mpq reads
+    the value's bits and returns that exact rational. This is fully lossless
+    for all finite floats, including subnormals. (float() first widens any
+    numpy float to a Python float losslessly; gmpy2.mpq rejects numpy floats.)
+
+    NOTE: the previous implementation, Q(format(v, '.150f')), rounds to 150
+    decimal places. That is exact for values needing <=150 dp (magnitude
+    >~ 2^-98) but LOSSY -- and it undershoots -- for smaller magnitudes. The
+    concrete hazard was fp64 denorm_min = 2^-1074, which rounds to 0, silently
+    zeroing the subnormal error term a_mul = denorm_min/2 in the fp64
+    deviation/overflow bounds (deviation.py, robust_certifier.py, overflow.py)
+    -- a latent unsoundness. The exact conversion removes it. (Separately,
+    float32 weight serialisation via '%.150f' is still lossless, because every
+    float32 value needs at most 149 dp.)
 
     Args:
         v: Float value to convert
 
     Returns:
-        Q rational number representing v with 150 decimal places of precision
+        Q exactly equal to v
     """
-    return Q(format(v, '.150f'))
+    return Q(float(v))
 
 def qstr(q: Q) -> str:
     """
