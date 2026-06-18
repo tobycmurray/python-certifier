@@ -78,10 +78,10 @@ CEX_Z3_FLOAT32="z3_counter_examples.json"
 
 MNIST_BIASED_1E6_END_BIASES="cex_mnist_float32_biased_1e6_end/biases.txt"   # regenerated
 FASHION_MNIST_BIASED_3E6_END_BIASES="cex_fashion_mnist_float32_biased_3e6_end/biases.txt"   # regenerated (B=3e6)
-CIFAR10_BIASED_4E6_END_BIASES="cifar10_biased_4e6_end/biases.txt"
+CIFAR10_BIASED_4E6_END_BIASES="cex_cifar10_float32_biased_4e6_end/biases.txt"
 CEX_MNIST_BIASED_1E6_END_FLOAT32="cex_mnist_float32_biased_1e6_end/counter_examples.json"   # regenerated against corrected norms
 CEX_FASHION_MNIST_BIASED_3E6_END_FLOAT32="cex_fashion_mnist_float32_biased_3e6_end/counter_examples.json"   # regenerated against corrected Dafny ref
-CEX_CIFAR10_BIASED_4E6_END_FLOAT32="cex_cifar10_biased_4e6_end_float32/counter_examples.json"
+CEX_CIFAR10_BIASED_4E6_END_FLOAT32="cex_cifar10_float32_biased_4e6_end/counter_examples.json"   # regenerated vs gram-12 Dafny norms
 
 # --- declarative tables ----------------------------------------------------
 
@@ -355,10 +355,11 @@ run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-meas"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
-# CIFAR-10 biased — cex: DISABLED pending cex regeneration vs gram-12 Dafny norms
-#run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
-#run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
-#run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
+# ===== CIFAR-10 adversarially-biased (4e6-end) — cex (gram 12) =====
+# cexs regenerated vs gram-12 Dafny norms; FP rejects all 30, real certifies all 30.
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
 
 # ===== MNIST natural — all (gram 12; RQ2/RQ3 uniform) =====
 run_test "float32" "mnist"         "12" "all" "standard"
