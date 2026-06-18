@@ -73,7 +73,7 @@ CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_float32/counter_examples.json"   # 
 CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_float16/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
 CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_float64/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
 CEX_CIFAR10_FLOAT32="cex_cifar10_float32/counter_examples.json"   # regenerated vs gram-12 Dafny norms
-CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
+CEX_CIFAR10_FLOAT64="cex_cifar10_float64/counter_examples.json"   # regenerated vs gram-12 Dafny norms
 CEX_Z3_FLOAT32="z3_counter_examples.json"
 
 MNIST_BIASED_1E6_END_BIASES="cex_mnist_float32_biased_1e6_end/biases.txt"   # regenerated
@@ -336,14 +336,14 @@ run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
 run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
 
 # ===== CIFAR-10 natural — cex (gram 12) =====
-# float32 active (cexs regenerated vs gram-12 Dafny norms; FP rejects all 30, real
-# certifies all 30). float64 still DISABLED pending its regeneration.
+# float32 + float64 active (cexs regenerated vs gram-12 Dafny norms; FP rejects all
+# 30, real certifies all 30, all modes). float16 omitted (n*u >= 1, not certifiable).
 run_test "float32" "cifar10"       "12" "cex" "standard"
 run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
 run_test "float32" "cifar10"       "12" "cex" "hybrid-meas"
-#run_test "float64" "cifar10"       "12" "cex" "standard"
-#run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
-#run_test "float64" "cifar10"       "12" "cex" "hybrid-meas"
+run_test "float64" "cifar10"       "12" "cex" "standard"
+run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
+run_test "float64" "cifar10"       "12" "cex" "hybrid-meas"
 # NOTE: we don't run float16 cifar10 tests since n*u>=1 for that instance
 
 # ===== MNIST adversarially-biased (1e6-end) — cex (gram 20) =====
