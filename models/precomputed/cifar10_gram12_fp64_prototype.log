@@ -1,0 +1,32 @@
+model: models/neural_net_cifar10_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800.txt  gram: 12  layers: 9
+[layer 0/8] W 512x3072 -> Gram 3072x3072
+           ||W||_2     = 5.6163011118   (267.1s, cum op2 4.5min)
+           |||W|||_2   = 60.1374802325   (253.4s, cum op2_abs 4.2min)
+[layer 1/8] W 256x512 -> Gram 512x512
+           ||W||_2     = 1.9001422772   (7.3s, cum op2 4.6min)
+           |||W|||_2   = 19.9310955712   (7.0s, cum op2_abs 4.3min)
+[layer 2/8] W 128x256 -> Gram 256x256
+           ||W||_2     = 1.4973348199   (2.2s, cum op2 4.6min)
+           |||W|||_2   = 12.2486672379   (2.2s, cum op2_abs 4.4min)
+[layer 3/8] W 128x128 -> Gram 128x128
+           ||W||_2     = 1.2840373857   (0.5s, cum op2 4.6min)
+           |||W|||_2   = 8.3274918159   (0.5s, cum op2_abs 4.4min)
+[layer 4/8] W 128x128 -> Gram 128x128
+           ||W||_2     = 1.2371158569   (0.5s, cum op2 4.6min)
+           |||W|||_2   = 6.8412436980   (0.6s, cum op2_abs 4.4min)
+[layer 5/8] W 128x128 -> Gram 128x128
+           ||W||_2     = 1.1871266799   (0.6s, cum op2 4.6min)
+           |||W|||_2   = 5.7494263479   (0.6s, cum op2_abs 4.4min)
+[layer 6/8] W 128x128 -> Gram 128x128
+           ||W||_2     = 1.1982748020   (0.6s, cum op2 4.6min)
+           |||W|||_2   = 5.4208135212   (0.5s, cum op2_abs 4.4min)
+[layer 7/8] W 128x128 -> Gram 128x128
+           ||W||_2     = 1.1285192310   (0.6s, cum op2 4.7min)
+           |||W|||_2   = 4.4504024822   (0.5s, cum op2_abs 4.4min)
+[layer 8/8] W 10x128 -> Gram 128x128
+           ||W||_2     = 1.5528521060   (0.6s, cum op2 4.7min)
+           |||W|||_2   = 1.6413000132   (0.5s, cum op2_abs 4.4min)
+
+TOTAL fp64 norm-compute time: 546.5s = 9.11min
+  op2 4.67min + op2_abs 4.43min + max_row 0.6s
+saved norms -> /tmp/cifar_fp64_gram12.norms.json  (hash c4d0cf1873293791...)
