@@ -73,7 +73,7 @@ CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_float32/counter_examples.json"   # 
 CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_float16/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
 CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_float64/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
 CEX_CIFAR10_FLOAT16="cex_cifar10_deepfool_float16/counter_examples.json"
-CEX_CIFAR10_FLOAT32="cex_cifar10_deepfool/counter_examples.json"
+CEX_CIFAR10_FLOAT32="cex_cifar10_float32/counter_examples.json"   # regenerated vs gram-12 Dafny norms
 CEX_CIFAR10_FLOAT64="cex_cifar10_deepfool_float64/counter_examples.json"
 CEX_Z3_FLOAT32="z3_counter_examples.json"
 
@@ -301,9 +301,10 @@ cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
 #   RQ2/RQ3 "all"    -> uniform gram 12 across all three models (past the data-
 #                       independent norm-convergence point; cross-comparable).
 # fp64-sound Gram norms make CIFAR's norm precompute cheap (~9 min), so its "all"
-# and first100 tests are now active. CIFAR "cex" tests remain disabled pending
-# regeneration of the CIFAR counter-examples against the gram-12 Dafny norms (the
-# old deepfool cexs are not counter-examples to the current verified certifier).
+# and first100 tests are now active, as is the CIFAR float32 "cex" test (cexs
+# regenerated against the gram-12 Dafny norms). Still disabled pending their own
+# regeneration: CIFAR float64 cex and CIFAR biased cex (the old deepfool cexs are
+# not counter-examples to the current verified certifier).
 
 # ===== z3 (synthetic soundness check; gram 10) =====
 run_test "float32" "z3"            "10" "cex" "standard"
@@ -335,10 +336,12 @@ run_test "float64" "fashion_mnist" "13" "cex" "standard"
 run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
 run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
 
-# CIFAR-10 natural — cex: DISABLED pending cex regeneration vs gram-12 Dafny norms
-#run_test "float32" "cifar10"       "12" "cex" "standard"
-#run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
-#run_test "float32" "cifar10"       "12" "cex" "hybrid-meas"
+# ===== CIFAR-10 natural — cex (gram 12) =====
+# float32 active (cexs regenerated vs gram-12 Dafny norms; FP rejects all 30, real
+# certifies all 30). float64 still DISABLED pending its regeneration.
+run_test "float32" "cifar10"       "12" "cex" "standard"
+run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
+run_test "float32" "cifar10"       "12" "cex" "hybrid-meas"
 #run_test "float64" "cifar10"       "12" "cex" "standard"
 #run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
 #run_test "float64" "cifar10"       "12" "cex" "hybrid-meas"
