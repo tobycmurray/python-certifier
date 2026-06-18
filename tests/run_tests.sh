@@ -305,10 +305,10 @@ cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
 # regeneration of the CIFAR counter-examples against the gram-12 Dafny norms (the
 # old deepfool cexs are not counter-examples to the current verified certifier).
 
-# z3 (synthetic; not MNIST) — disabled
-#run_test "float32" "z3"            "10" "cex" "standard"
-#run_test "float32" "z3"            "10" "cex" "hybrid-only"
-#run_test "float32" "z3"            "10" "cex" "hybrid-meas"
+# ===== z3 (synthetic soundness check; gram 10) =====
+run_test "float32" "z3"            "10" "cex" "standard"
+run_test "float32" "z3"            "10" "cex" "hybrid-only"
+run_test "float32" "z3"            "10" "cex" "hybrid-meas"
 
 # ===== MNIST natural — cex (gram 20) =====
 run_test "float32" "mnist"         "20" "cex" "standard"
