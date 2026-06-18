@@ -1,6 +1,7 @@
 {
   "hash": "d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f",
   "gram_iters": 12,
+  "method": "exact",
   "times_secs": {
     "max_row_inf": 0.031265083000354466,
     "op2": 1226.1816935839988,

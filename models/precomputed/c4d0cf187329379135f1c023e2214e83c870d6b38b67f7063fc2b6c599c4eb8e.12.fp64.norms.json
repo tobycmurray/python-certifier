@@ -1,6 +1,7 @@
 {
   "hash": "c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e",
   "gram_iters": 12,
+  "method": "fp64",
   "times_secs": {
     "max_row_inf": 0.24119899899996255,
     "op2": 279.97693529099985,
