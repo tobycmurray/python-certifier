@@ -300,8 +300,10 @@ cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
 #                        is certified at the gram its dafny ref/cexs were made at).
 #   RQ2/RQ3 "all"    -> uniform gram 12 across all three models (past the data-
 #                       independent norm-convergence point; cross-comparable).
-# CIFAR is still commented out pending its corrected norms (convergence sweep) +
-# regenerated cexs; everything else (MNIST + Fashion) is active.
+# fp64-sound Gram norms make CIFAR's norm precompute cheap (~9 min), so its "all"
+# and first100 tests are now active. CIFAR "cex" tests remain disabled pending
+# regeneration of the CIFAR counter-examples against the gram-12 Dafny norms (the
+# old deepfool cexs are not counter-examples to the current verified certifier).
 
 # z3 (synthetic; not MNIST) — disabled
 #run_test "float32" "z3"            "10" "cex" "standard"
@@ -333,7 +335,7 @@ run_test "float64" "fashion_mnist" "13" "cex" "standard"
 run_test "float64" "fashion_mnist" "13" "cex" "hybrid-only"
 run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
 
-# CIFAR-10 cex — disabled (pending corrected norms + regenerated cexs)
+# CIFAR-10 natural — cex: DISABLED pending cex regeneration vs gram-12 Dafny norms
 #run_test "float32" "cifar10"       "12" "cex" "standard"
 #run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
 #run_test "float32" "cifar10"       "12" "cex" "hybrid-meas"
@@ -351,7 +353,7 @@ run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-meas"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
 run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
-# CIFAR biased cex — disabled (pending CIFAR norms/Dafny @11)
+# CIFAR-10 biased — cex: DISABLED pending cex regeneration vs gram-12 Dafny norms
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
 #run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
@@ -365,10 +367,10 @@ run_test "float32" "mnist"         "12" "all" "hybrid-meas"
 run_test "float32" "fashion_mnist" "12" "all" "standard"
 run_test "float32" "fashion_mnist" "12" "all" "hybrid-only"
 run_test "float32" "fashion_mnist" "12" "all" "hybrid-meas"
-# CIFAR all — disabled (pending CIFAR norms/Dafny @11)
-#run_test "float32" "cifar10"       "12" "all" "standard"
-#run_test "float32" "cifar10"       "12" "all" "hybrid-only"
-#run_test "float32" "cifar10"       "12" "all" "hybrid-meas"
+# ===== CIFAR-10 natural — all (gram 12; RQ2/RQ3 uniform) =====
+run_test "float32" "cifar10"       "12" "all" "standard"
+run_test "float32" "cifar10"       "12" "all" "hybrid-only"
+run_test "float32" "cifar10"       "12" "all" "hybrid-meas"
 
 # ===== MNIST adversarially-biased (1e6-end) — all (gram 12) =====
 run_test "float32" "mnist_biased_1e6_end" "12" "all" "standard"
@@ -379,10 +381,10 @@ run_test "float32" "mnist_biased_1e6_end" "12" "all" "hybrid-meas"
 run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "standard"
 run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-only"
 run_test "float32" "fashion_mnist_biased_3e6_end" "12" "all" "hybrid-meas"
-# CIFAR biased all — disabled (pending CIFAR norms/Dafny @11)
-#run_test "float32" "cifar10_biased_4e6_end" "12" "all" "standard"
-#run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-only"
-#run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-meas"
+# ===== CIFAR-10 adversarially-biased (4e6-end) — all (gram 12) =====
+run_test "float32" "cifar10_biased_4e6_end" "12" "all" "standard"
+run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-only"
+run_test "float32" "cifar10_biased_4e6_end" "12" "all" "hybrid-meas"
 
 # ===== first-100 (same-100 ERAN comparison; RQ3 Table 3b) — natural, gram 12 =====
 # Runs the gram-12 "all" certification over just the first 100 test points (= ERAN's
@@ -394,7 +396,7 @@ run_test "float32" "mnist"         "12" "first100" "hybrid-meas"
 run_test "float32" "fashion_mnist" "12" "first100" "standard"
 run_test "float32" "fashion_mnist" "12" "first100" "hybrid-only"
 run_test "float32" "fashion_mnist" "12" "first100" "hybrid-meas"
-# CIFAR first100 — disabled (pending CIFAR norms)
-#run_test "float32" "cifar10"       "12" "first100" "standard"
-#run_test "float32" "cifar10"       "12" "first100" "hybrid-only"
-#run_test "float32" "cifar10"       "12" "first100" "hybrid-meas"
+# ===== CIFAR-10 natural — first100 (gram 12; ERAN comparison) =====
+run_test "float32" "cifar10"       "12" "first100" "standard"
+run_test "float32" "cifar10"       "12" "first100" "hybrid-only"
+run_test "float32" "cifar10"       "12" "first100" "hybrid-meas"

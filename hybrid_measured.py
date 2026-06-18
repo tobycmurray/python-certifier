@@ -1,11 +1,17 @@
 """Helper functions for the hybrid-only and hybrid-measured certification modes.
 
-Provides:
-  - compute_D_hi_all_layers   : theoretical fp64 deviation bound at each hidden layer
-  - compute_D_hybrid_center   : D^hybrid(x,0) = measured_diff + D^hi_{L-2}
-  - measured-radii machinery for the hybrid-measured E_ball bound
-    (compute_z_hi_norms, compute_cumulative_lipschitz, compute_r_meas[_all_layers],
-     compute_D_meas_with_input) and the high-level helper build_measured_comp_inputs.
+Shared by BOTH hybrid modes (the hybrid centre deviation D^hybrid(x,0)):
+  - compute_D_hi_all_layers     : theoretical fp64 deviation bound at each hidden layer
+  - compute_D_hybrid_center     : D^hybrid(x,0) = measured_diff + D^hi_{L-2}
+  - compute_measured_center_diff: ||z_fp - z_hi|| from the Keras forward passes
+
+HYBRID-MEASURED ONLY (the optional, marginal appendix mode -- measured E_ball
+radii; see writeup). Kept because its incremental TCB is small (~6 pure-rational
+functions, no new dependency) and its soundness is the Coq theorem
+mode_B_hybrid_robust_nlayer:
+  - compute_z_hi_norms, compute_cumulative_lipschitz,
+    compute_r_meas[_all_layers], compute_D_meas_with_input
+  - build_measured_comp_inputs  : high-level entry assembling the above
 """
 
 from typing import List, Dict, Tuple, Optional

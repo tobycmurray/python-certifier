@@ -4,7 +4,6 @@ import hashlib
 import json
 
 from arithmetic import Q, qstr
-import linear_algebra
 from linear_algebra import layer_infinity_norm, layer_opnorm_upper_bound, abs_matrix, max_row_l2_norm, Matrix
 import time
 
@@ -27,12 +26,6 @@ def compute_norms(net: List[Matrix], gram_iters: int, method: str = "fp64") -> N
     times["op2"] = 0.0
     times["op2_abs"] = 0.0
     times["max_row_l2"] = 0.0
-
-    # Progress tracing. With the default fp64 method the Gram product runs in
-    # binary64 (BLAS), so this is cheap (CIFAR-10 gram 12 ~= 9 min). PROGRESS only
-    # traces the exact-rational mtm (method="exact"), which is the slow path
-    # (CIFAR-10 gram 12 ~= 43h, almost all in layer 0's 3072x3072 Gram).
-    linear_algebra.PROGRESS = (method == "exact")
 
     n_layers = len(net)
     for i, W in enumerate(net):
@@ -81,10 +74,11 @@ class QEncoder(json.JSONEncoder):
             return qstr(obj)
         return super().default(obj)
 
-def save_norms(hsh: str, gram_iters: int, norms: Norms, filename: str):
+def save_norms(hsh: str, gram_iters: int, method: str, norms: Norms, filename: str):
     summary = {}
     summary["hash"] = hsh
     summary["gram_iters"] = gram_iters
+    summary["method"] = method
     summary["times_secs"] = norms.times
     summary["max_row_inf_norms"] = norms.max_row_inf_norms
     summary["op2_norms"] = norms.op2_norms
@@ -96,13 +90,18 @@ def save_norms(hsh: str, gram_iters: int, norms: Norms, filename: str):
         f.flush()
 
 
-def load_norms(hsh: str, gram_iters: int, filename: str) -> Norms:
+def load_norms(hsh: str, gram_iters: int, method: str, filename: str) -> Norms:
     with open(filename, "r") as f:
         summary = json.load(f)
     if hsh != summary["hash"]:
         raise Exception(f"hash value {summary['hash']} doesn't match expected hash {hsh}")
     if gram_iters != summary["gram_iters"]:
         raise Exception(f"gram iters {summary['gram_iters']} doesn't match expected gram iters {gram_iters}")
+    # Guard against silently reusing norms computed by a different method (e.g. an
+    # exact-arithmetic cache for an fp64 run). Files predating the method field are
+    # rejected so they get recomputed under the requested method.
+    if summary.get("method") != method:
+        raise Exception(f"norms method {summary.get('method')!r} doesn't match expected {method!r}")
 
     op2_norms = [Q(n) for n in summary["op2_norms"]]
     op2_abs_norms = [Q(n) for n in summary["op2_abs_norms"]]

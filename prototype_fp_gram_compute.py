@@ -54,7 +54,7 @@ if __name__ == "__main__":
     norms = compute_norms_fp64(net, gram)
     elapsed = time.perf_counter() - t_all
     h = hash_file_contents(model_path)
-    save_norms(h, gram, norms, out)
+    save_norms(h, gram, "fp64", norms, out)
     print(f"\nTOTAL fp64 norm-compute time: {elapsed:.1f}s = {elapsed/60:.2f}min", flush=True)
     print(f"  op2 {norms.times['op2']/60:.2f}min + op2_abs {norms.times['op2_abs']/60:.2f}min "
           f"+ max_row {(norms.times['max_row_inf']+norms.times['max_row_l2']):.1f}s", flush=True)

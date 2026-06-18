@@ -4,13 +4,12 @@ from dataclasses import dataclass
 
 import sys, os, json, time, math
 
-from parsing import load_network_from_file, ParseError, load_vector_from_file, load_vector_from_npy_file, load_biases_from_file
+from parsing import load_network_from_file, ParseError, load_vector_from_npy_file, load_biases_from_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
 from linear_algebra import Matrix, Vector, l2_norm_upper_bound_vec, dims
 from overflow import certify_no_overflow_normwise, check_overflow_single_layer
 from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
-from nn import forward_numpy_float32
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
 from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
 from hybrid_measured import (
@@ -128,6 +127,7 @@ def certify_mode_b_theorem4(
     L_real: List[List[Q]],
     comp_ctr: ModeBComponents,
     comp_ball: ModeBComponents,
+    L_ref: List[List[Q]],
 ) -> ModeBReport:
     if not y_f32:
         return ModeBReport(ok=False, ok_real=False, xstar=-1, pairs=[], first_failure=None, max_lhs=Q(0))
@@ -148,8 +148,12 @@ def certify_mode_b_theorem4(
         E_ball = E_for_pair(comp_ball, xstar, j)
         float_cons = round_up(E_ctr + E_ball)
 
-        rhs_real = epsilon * L_real[xstar][j]
-        rhs = rhs_real + float_cons
+        # Real verdict uses the verified Dafny exact bounds (L_ref): this faithfully
+        # reports the verified real-arithmetic certifier (the artifact our cexs are
+        # counter-examples to). The FP verdict uses our own (e.g. fp64) L_real + E,
+        # which is sound and >= L_ref, so certified_fp ⊆ certified_real always.
+        rhs_real = epsilon * L_ref[xstar][j]
+        rhs = epsilon * L_real[xstar][j] + float_cons
         ok_real = lhs > rhs_real
         ok = lhs > rhs
         results.append(
@@ -329,15 +333,17 @@ def main():
         hybrid_meas_mode = True
         sys.argv = [sys.argv[0]] + sys.argv[2:]
 
-    # Check for --skip-ref-check flag. Skips the EXACT Dafny lipschitz cross-check.
-    # Only for the float64-approximate gram-sensitivity experiment, where op2 norms
-    # are sound upper bounds derived (rounded up) from the convergence sweep's
-    # float64 trace rather than the exact rationals Dafny computed, so they cannot
-    # match the reference exactly. NOT for paper-grade runs.
-    skip_ref_check = False
-    if len(sys.argv) > 1 and sys.argv[1] == "--skip-ref-check":
-        skip_ref_check = True
-        sys.argv = [sys.argv[0]] + sys.argv[2:]
+    # Check for --norm-method flag (how the spectral norms are computed). Default
+    # fp64 (numpy's own binary64 sum-of-products; scalable + sound). The method is
+    # recorded in the norms filename and file, so an exact-arithmetic norms cache is
+    # never silently reused for an fp64 run (or vice versa).
+    norm_method = "fp64"
+    if len(sys.argv) > 1 and sys.argv[1] == "--norm-method":
+        if len(sys.argv) < 3 or sys.argv[2] not in ("fp64", "fp64_blas", "exact"):
+            print("Error: --norm-method requires one of: fp64, fp64_blas, exact")
+            sys.exit(1)
+        norm_method = sys.argv[2]
+        sys.argv = [sys.argv[0]] + sys.argv[3:]
 
     # Check for --json-output flag
     json_output_file = None
@@ -357,9 +363,10 @@ def main():
         biases_file = sys.argv[2]
         sys.argv = [sys.argv[0]] + sys.argv[3:]
 
+    usage = (f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--json-output <file.json>] "
+             f"format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
     if len(sys.argv) != 7:
-        print(f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-        print(f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--json-output <file.json>] format <neural_network_input.txt> <GRAM_ITERATIONS> <input_x_file> <epsilon> <dafny-ref-json-file>")
+        print(usage)
         sys.exit(1)
 
     float_format = sys.argv[1]
@@ -371,16 +378,13 @@ def main():
         print("Error: <GRAM_ITERATIONS> must be an integer.")
         sys.exit(1)
 
-    cex_file, input_file = None, None
-    if sys.argv[3] == "--cex":
-        cex_file = sys.argv[4]
-    else:
-        input_file = sys.argv[3]
-        try:
-            epsilon = Q(sys.argv[4])
-        except ValueError:
-            print("Error: <epsilon> must be a float.")
-            sys.exit(1)
+    # The certifier only certifies the deployed model's logits (Keras-computed,
+    # supplied as 'y1' in the cex/test JSON); it never re-simulates the forward
+    # pass itself. Hence the --cex form is the only invocation.
+    if sys.argv[3] != "--cex":
+        print(usage)
+        sys.exit(1)
+    cex_file = sys.argv[4]
 
     dafny_json_file = sys.argv[5]
 
@@ -410,13 +414,16 @@ def main():
                 print(f"  Layer {ell}: ||b||_2 = {float(bias_l2_norms[ell]):.6e}, ||b||_inf = {float(bias_inf_norms[ell]):.6e}, dim = {len(b)}")
 
     hsh = hash_file_contents(network_file)
-    norms_file = hsh+f".{gram_iters}.norms.json"
+    # Norms filename encodes the computation method so an exact-arithmetic cache is
+    # never silently reused for an fp64 run (or vice versa).
+    norms_file = hsh+f".{gram_iters}.{norm_method}.norms.json"
+    print(f"Computing norms via method='{norm_method}'...")
     try:
-        norms = load_norms(hsh, gram_iters, norms_file)
+        norms = load_norms(hsh, gram_iters, norm_method, norms_file)
     except Exception as e:
         print(f"Failed to load pre-computed norms. Got error: {e}")
-        norms = compute_norms(net, gram_iters)
-        save_norms(hsh, gram_iters, norms, norms_file)
+        norms = compute_norms(net, gram_iters, method=norm_method)
+        save_norms(hsh, gram_iters, norm_method, norms, norms_file)
 
     max_row_inf_norms = norms.max_row_inf_norms
     op2_norms = norms.op2_norms
@@ -428,40 +435,31 @@ def main():
 
     print("Computing margin Lipschitz bounds...")
     L_real = margin_lipschitz_bounds(net, op2_norms)
-    if skip_ref_check:
-        print("WARNING: --skip-ref-check set; NOT verifying margin Lipschitz bounds "
-              "against the Dafny reference (approximate-norm experiment only).")
-    else:
-        check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
+    # L_ref = the verified Dafny exact margin-Lipschitz bounds; used for the real
+    # verdict (our FP verdict uses L_real, which the check confirms is >= L_ref).
+    L_ref = check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
 
     fmt = get_float_format(float_format)
     check_rounding_preconditions(net, fmt)
 
-    # inputs to certify
+    # inputs to certify (from the cex/test JSON; logits come from the deployed
+    # Keras model as the 'y1' field -- the certifier never re-simulates them).
     to_certify = []
-    if cex_file is not None:
-        with open(cex_file, "r") as f:
-            cexs = json.load(f)
-        for cex in cexs:
-            if "x1_file" not in cex:
-                continue
-            d = os.path.dirname(cex_file)
-            x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
-            x = load_vector_from_npy_file(x1_file)
-            epsilon = Q(cex["max_eps"])
-            y_f32 = cex.get("y1", None)
-            if y_f32 is None:
-                print("Simulating neural network forward pass...")
-                y_f32 = forward_numpy_float32(net, x, biases=biases)
-            to_certify.append((x,epsilon,y_f32))
-    if input_file is not None:
-        if input_file.endswith(".npy"):
-            x = load_vector_from_npy_file(input_file)
-        else:
-            x = load_vector_from_file(input_file)
-        print("Simulating neural network forward pass...")
-        y_f32 = forward_numpy_float32(net, x, biases=biases)
-        to_certify.append((x,epsilon,y_f32))
+    with open(cex_file, "r") as f:
+        cexs = json.load(f)
+    for cex in cexs:
+        if "x1_file" not in cex:
+            continue
+        d = os.path.dirname(cex_file)
+        x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
+        x = load_vector_from_npy_file(x1_file)
+        epsilon = Q(cex["max_eps"])
+        y_f32 = cex.get("y1", None)
+        if y_f32 is None:
+            sys.exit(f"Input record {cex.get('index', '?')} has no 'y1' logits. The certifier "
+                     f"certifies the deployed model's logits and does not re-simulate the forward "
+                     f"pass; regenerate the input JSON with the Keras-computed y1.")
+        to_certify.append((x, epsilon, y_f32))
 
     sqrt_m_ells = compute_sqrt_m_ells(net)
     W_last = net[-1]
@@ -691,7 +689,7 @@ def main():
                 )
 
         t5 = time.perf_counter()
-        modeb = certify_mode_b_theorem4(y_f32, epsilon, L_real, comp_ctr, comp_ball)
+        modeb = certify_mode_b_theorem4(y_f32, epsilon, L_real, comp_ctr, comp_ball, L_ref)
         t6 = time.perf_counter()
 
         times["components"] += (t5 - t4)

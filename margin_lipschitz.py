@@ -76,3 +76,4 @@ def check_margin_lipschitz_bounds(L_real: List[List[Q]], gram_iters: int, dafny_
     else:
         print(f"Computed margin Lipschitz bounds are >= Dafny reference (sound): "
               f"{n_greater} entries strictly greater, max relative excess {float(max_rel_excess):.3e}.")
+    return L_ref

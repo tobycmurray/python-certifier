@@ -1,4 +1,3 @@
-import time
 from typing import List, Tuple, Optional
 from arithmetic import Q, sqrt_upper_bound, round_up, round_down, qstr
 
@@ -46,25 +45,12 @@ def mm_product(A: Matrix, B: Matrix) -> Matrix:
             out[i][j] = s
     return out
 
-# Optional progress tracing for the very expensive norm computation. compute_norms
-# turns this on; it is off by default so ordinary (cheap) cert runs stay quiet.
-# The CIFAR-10 gram-12 norm computation is ~43h (almost all in layer 0's 3072x3072
-# Gram), so without this the run is a silent black box.
-PROGRESS = False
-_PROGRESS_MIN_N = 200  # only trace mtm for matrices at least this wide (skip tiny layers)
-
-
 def mtm(M: Matrix) -> Matrix:
     """
     Specialised MTM: returns M^T * M using symmetry, row-wise scanning.
     """
     m, n = dims(M)  # m rows, n cols
     out = zeros(n, n)
-    _prog = PROGRESS and n >= _PROGRESS_MIN_N
-    if _prog:
-        _t0 = time.perf_counter()
-        _step = max(1, n // 50)
-        print(f"      [mtm] {n}x{n} Gram (inner length {m})...", flush=True)
     # compute upper triangle, reuse symmetry
     for i in range(n):
         for j in range(i, n):
@@ -74,14 +60,6 @@ def mtm(M: Matrix) -> Matrix:
             out[i][j] = s
             if j != i:
                 out[j][i] = s
-        if _prog and (i % _step == 0 or i == n - 1):
-            el = time.perf_counter() - _t0
-            # upper-triangle work done after row i is proportional to (2i*n - i^2)/n^2
-            done = i + 1
-            frac = (2 * done * n - done * done) / (n * n)
-            eta = (el / frac - el) if frac > 0 else 0.0
-            print(f"      [mtm] row {done}/{n}  {frac*100:5.1f}%  "
-                  f"elapsed {el/60:6.1f}min  eta {eta/60:6.1f}min", flush=True)
     return out
 
 def matrix_div_scalar(M: Matrix, r: Q) -> Matrix:
@@ -145,28 +123,14 @@ def _gram_unwind(s0: Q, a: List[Tuple[Q, Q]]) -> Q:
     return ret
 
 
-def gram_iteration(M: Matrix, n: int,
-                   trace: Optional[List[Q]] = None,
-                   time_trace: Optional[List[float]] = None) -> Q:
-    """Spectral-norm upper bound of M via n Gram iterations.
+def gram_iteration(M: Matrix, n: int) -> Q:
+    """Spectral-norm upper bound of M via n Gram iterations, exact-rational mtm.
 
-    If `trace` is given (a list), the bound after each iteration k=1..n is
-    appended to it. trace[k-1] is exactly what gram_iteration(M, k) returns
-    (the iteration is sequential, so a length-n run passes through every
-    shorter run's state) -- so one run yields the whole convergence curve.
-    The trace uses the same _gram_unwind as the final result, so it is faithful.
-
-    If `time_trace` is given, the *cumulative* wall-clock seconds spent on the
-    core iteration work (mtm + normalisation + truncation) up to and including
-    iteration k is appended -- recorded BEFORE the optional bound-trace unwind,
-    so it reflects a plain gram_iteration(M, k) run (the per-iteration unwind
-    overhead, ~0.2% of the matrix product, is excluded). Lets one run also yield
-    the per-gram norm-computation cost.
+    The original exact-arithmetic Gram iteration. The default certifier norm path
+    uses the faster gram_iteration_fp64; this is retained for method="exact".
     """
     M_cur = [row[:] for row in M]
     a: List[Tuple[Q, Q]] = []
-    t0 = time.perf_counter() if (time_trace is not None or PROGRESS) else 0.0
-    t_iter = t0
     i = 0
     while i != n:
         Mp = mtm(M_cur)
@@ -176,31 +140,23 @@ def gram_iteration(M: Matrix, n: int,
         a = [(r, e)] + a
         M_cur = M_trunc
         i += 1
-        if time_trace is not None:
-            time_trace.append(time.perf_counter() - t0)
-        if PROGRESS:
-            now = time.perf_counter()
-            print(f"    [gram] iter {i}/{n} done: {(now-t_iter)/60:.1f}min "
-                  f"(cumulative {(now-t0)/60:.1f}min)", flush=True)
-            t_iter = now
-        if trace is not None:
-            trace.append(_gram_unwind(frobenius_norm_upper_bound(M_cur), a))
-
     return _gram_unwind(frobenius_norm_upper_bound(M_cur), a)
 
 # ============================================================================
-# PROTOTYPE: floating-point-sound Gram iteration (writeup.tex sec:fp-gram).
+# Floating-point-sound Gram iteration (writeup.tex sec:fp-gram) -- the DEFAULT
+# norm path (layer_opnorm_upper_bound method="fp64").
 #
-# Runs each Gram product A^T A in binary64 (BLAS gemm) instead of exact rational
-# arithmetic, bounding the rounding error via the paper's Higham dot-product model
-# and folding it into the unwind as delta_k = t_k + eps_k / r_k. The dominant
-# O(d^3) work becomes a binary64 matmul; all error tracking stays exact-rational
-# but O(d^2) on format-bounded-bit-length numbers.
+# Runs each Gram product A^T A in binary64 instead of exact rational arithmetic,
+# bounding the rounding error via the paper's Higham dot-product model and folding
+# it into the unwind as delta_k = t_k + eps_k / r_k. The dominant O(d^3) work
+# becomes a binary64 matmul; all error tracking stays exact-rational but O(d^2) on
+# format-bounded-bit-length numbers.
 #
 # Soundness assumes binary64 round-to-nearest dot products with gradual underflow
 # (the same model used for the network's matvecs), valid for any conventional
 # O(d^3) summation order incl. FMA/blocked gemm, but NOT fast-matrix-multiply
-# (Strassen). PROTOTYPE: not yet wired into the certification path.
+# (Strassen). The default uses numpy's own fp64 sum-of-products (no BLAS trust);
+# blas=True opts into the faster BLAS gemm.
 # ============================================================================
 
 def truncate_to_fp64_with_error(M: Matrix) -> Tuple[Matrix, Q]:
@@ -243,12 +199,11 @@ def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix
     add/mul. By default (blas=False) the product is computed with numpy's own
     sum-of-products (np.einsum(optimize=False) -- NOT a BLAS call), so the bound
     follows from numpy's documented binary64 summation with no dependence on any
-    BLAS implementation. blas=True uses the (faster) BLAS gemm A.T@A instead;
-    that is also conventional O(d^3) IEEE-754 fp64 on the supported BLAS libs
-    (validated separately in validate_higham_compliance.py), but it asks the
-    reader to trust the BLAS is non-Strassen/full-precision. The matmul is only
-    ~1% of the runtime (the exact-rational normalise/truncate dominates), so
-    blas=False costs only ~30% more -- worth it to drop the BLAS trust.
+    BLAS implementation. blas=True uses the (faster) BLAS gemm A.T@A instead --
+    use at your own risk: it asks the reader to trust the BLAS is a conventional
+    non-Strassen/full-precision O(d^3) IEEE-754 fp64 gemm. The matmul is only ~1%
+    of the runtime (the exact-rational normalise/truncate dominates), so blas=False
+    costs only ~30% more -- worth it to drop the BLAS trust, hence the default.
 
     Precondition: A's entries are binary64 values (held as exact rationals), so
     the conversion to np.float64 is lossless.
@@ -315,8 +270,8 @@ def layer_opnorm_upper_bound(W: Matrix, gram_iters: int, method: str = "fp64") -
       exact-rational ones (a part in ~1e12 above), so still sound w.r.t. the
       verified certifier.
     method="fp64_blas": same, but the Gram product uses the faster BLAS gemm
-      (~30% faster overall; relies on the BLAS being conventional non-Strassen
-      fp64 -- see validate_higham_compliance.py).
+      (~30% faster overall; use at your own risk -- relies on the BLAS being a
+      conventional non-Strassen full-precision fp64 gemm).
     method="exact": exact-rational mtm (gram_iteration); reproduces the Dafny
       reference exactly but is O(d^3) in bignum arithmetic (infeasible for CIFAR).
     """
