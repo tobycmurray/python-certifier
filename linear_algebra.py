@@ -188,6 +188,106 @@ def gram_iteration(M: Matrix, n: int,
 
     return _gram_unwind(frobenius_norm_upper_bound(M_cur), a)
 
+# ============================================================================
+# PROTOTYPE: floating-point-sound Gram iteration (writeup.tex sec:fp-gram).
+#
+# Runs each Gram product A^T A in binary64 (BLAS gemm) instead of exact rational
+# arithmetic, bounding the rounding error via the paper's Higham dot-product model
+# and folding it into the unwind as delta_k = t_k + eps_k / r_k. The dominant
+# O(d^3) work becomes a binary64 matmul; all error tracking stays exact-rational
+# but O(d^2) on format-bounded-bit-length numbers.
+#
+# Soundness assumes binary64 round-to-nearest dot products with gradual underflow
+# (the same model used for the network's matvecs), valid for any conventional
+# O(d^3) summation order incl. FMA/blocked gemm, but NOT fast-matrix-multiply
+# (Strassen). PROTOTYPE: not yet wired into the certification path.
+# ============================================================================
+
+def truncate_to_fp64_with_error(M: Matrix) -> Tuple[Matrix, Q]:
+    """Round each rational entry of M to the nearest binary64 value.
+
+    Returns (T, t) where T is the binary64 matrix (entries read back as exact
+    rationals; Q(float(x)) is lossless since every binary64 is a rational) and
+    t >= ||M - T||_F is a sound rational Frobenius bound on the rounding error.
+
+    This is the binary64 analogue of truncate_with_error (which rounds to a
+    16-dp rational). Soundness needs only that each T[i][j] is some binary64 and
+    that t bounds ||M - T||_F; round-to-nearest just makes t as small as possible.
+    """
+    m, n = dims(M)
+    T = zeros(m, n)
+    sq_sum = Q(0)
+    for i in range(m):
+        for j in range(n):
+            x = M[i][j]
+            t = Q(float(x))          # round-to-nearest binary64, lossless read-back
+            T[i][j] = t
+            e = t - x
+            sq_sum += e * e
+    return T, sqrt_upper_bound(sq_sum)
+
+
+def mtm_fp64_with_error(A: Matrix, fmt=None) -> Tuple[Matrix, Q]:
+    """Binary64 Gram product A^T A with a sound Frobenius error bound (MTMFP64).
+
+    Returns (Ntil, eps) where:
+      - Ntil = fl(A^T A) computed in binary64 (numpy/BLAS gemm), read back as an
+        exact rational matrix (lossless),
+      - eps >= ||Ntil - A^T A||_F, via the closed form
+            ||E||_F <= gamma_m * ||A||_F^2 + a_dot_fwd(m) * n,
+        where m = rows(A) is the contraction length and n = cols(A) the Gram
+        dimension. (Aggregates the entrywise Higham bound
+        E_ij = gamma_m (|A|^T|A|)_ij + a_dot_fwd(m); see writeup Lemma 1.)
+
+    Precondition: A's entries are binary64 values (held as exact rationals), so
+    the conversion to np.float64 is lossless.
+    """
+    import numpy as np
+    from formats import get_float_format, gamma_n, a_dot_fwd
+    if fmt is None:
+        fmt = get_float_format("float64")
+    m, n = dims(A)                      # m = contraction length, n = Gram dim
+    Af = np.array([[float(x) for x in row] for row in A], dtype=np.float64)
+    Ntil_f = Af.T @ Af                  # binary64 BLAS gemm
+    if not np.all(np.isfinite(Ntil_f)):
+        # overflow/non-finite: refuse (writeup Remark on overflow)
+        raise OverflowError("non-finite value in fp64 Gram product; refusing to certify")
+    Ntil = [[Q(float(Ntil_f[i, j])) for j in range(n)] for i in range(n)]
+    u = Q(fmt.u)
+    amul = Q(fmt.denorm_min) / 2
+    gamma_m = gamma_n(m, u)
+    frob_A = frobenius_norm_upper_bound(A)        # exact, >= ||A||_F
+    eps = gamma_m * frob_A * frob_A + a_dot_fwd(m, u, amul) * Q(n)
+    return Ntil, eps
+
+
+def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
+                        trace: Optional[List[Q]] = None) -> Q:
+    """FP-sound spectral-norm upper bound via Gram iteration with binary64 mtm.
+
+    Mirrors gram_iteration() exactly, except each Gram product is computed in
+    binary64 (mtm_fp64_with_error) and the per-iteration error fed to the unwind
+    is delta_k = t_k + eps_k / r_k (Truncate error + fp Gram error / rescale).
+    Returns s >= ||M||_2 (writeup Theorem). `trace` (if given) collects the bound
+    after each iteration, as in gram_iteration.
+    """
+    M_cur = [row[:] for row in M]       # iterate kept binary64 (weights are binary32 subset)
+    a: List[Tuple[Q, Q]] = []
+    i = 0
+    while i != n:
+        Ntil, eps = mtm_fp64_with_error(M_cur, fmt)
+        r = Q(1) if is_zero_matrix(Ntil) else frobenius_norm_upper_bound(Ntil)
+        Mn = matrix_div_scalar(Ntil, r)
+        M_trunc, t = truncate_to_fp64_with_error(Mn)
+        delta = t + eps / r
+        a = [(r, delta)] + a
+        M_cur = M_trunc
+        i += 1
+        if trace is not None:
+            trace.append(_gram_unwind(frobenius_norm_upper_bound(M_cur), a))
+    return _gram_unwind(frobenius_norm_upper_bound(M_cur), a)
+
+
 def layer_opnorm_upper_bound(W: Matrix, gram_iters: int) -> Q:
     return gram_iteration(W, gram_iters)
 
