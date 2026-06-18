@@ -49,5 +49,30 @@ def check_margin_lipschitz_bounds(L_real: List[List[Q]], gram_iters: int, dafny_
     if len(L_ref) != len(L_real) or len(L_ref[0]) != len(L_real[0]):
         raise ValueError(f"Dimensions of reference Lipschitz bounds don't match actual dimensions")
 
-    if L_ref != L_real:
-        raise ValueError(f"Reference Lipschitz constants differ from computed ones")
+    # Soundness cross-check against the formally-verified Dafny certifier.
+    # The margin-Lipschitz constant is used so that LARGER = MORE CONSERVATIVE
+    # (the certification condition is margin > eps*L + E). So it suffices that our
+    # computed bounds are everywhere >= the verified reference: then our condition
+    # is stricter than Dafny's, hence every instance we certify the verified
+    # certifier would also certify -> our "robust" verdicts stay sound w.r.t. the
+    # proof. With exact-rational norms the two are identical; with the binary64
+    # Gram iteration ours sit a part in ~1e12 ABOVE exact, which this >= accepts.
+    n_greater = 0
+    max_rel_excess = Q(0)
+    for i in range(len(L_real)):
+        for j in range(len(L_real[i])):
+            if L_real[i][j] < L_ref[i][j]:
+                raise ValueError(
+                    f"Computed margin Lipschitz bound L[{i}][{j}]={L_real[i][j]} is BELOW the "
+                    f"verified Dafny reference {L_ref[i][j]}: not sound w.r.t. the verified certifier")
+            if L_real[i][j] > L_ref[i][j]:
+                n_greater += 1
+                if L_ref[i][j] != 0:
+                    rel = (L_real[i][j] - L_ref[i][j]) / L_ref[i][j]
+                    if rel > max_rel_excess:
+                        max_rel_excess = rel
+    if n_greater == 0:
+        print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
+    else:
+        print(f"Computed margin Lipschitz bounds are >= Dafny reference (sound): "
+              f"{n_greater} entries strictly greater, max relative excess {float(max_rel_excess):.3e}.")

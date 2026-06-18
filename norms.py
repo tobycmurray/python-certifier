@@ -16,7 +16,7 @@ class Norms:
   max_row_l2_norms: List[Q]    # max_r ||W_r||_2 = max row L2 norm per layer (for S_layer overflow check)
   times: Dict[str,float]
 
-def compute_norms(net: List[Matrix], gram_iters: int) -> Norms:
+def compute_norms(net: List[Matrix], gram_iters: int, method: str = "fp64") -> Norms:
     max_row_inf_norms_list = []
     op2_norms = []
     op2_abs_norms = []
@@ -28,9 +28,11 @@ def compute_norms(net: List[Matrix], gram_iters: int) -> Norms:
     times["op2_abs"] = 0.0
     times["max_row_l2"] = 0.0
 
-    # This is the expensive path (CIFAR-10 gram 12 ~= 43h, almost all in layer 0's
-    # 3072x3072 Gram). Turn on per-iteration / per-mtm-row progress tracing.
-    linear_algebra.PROGRESS = True
+    # Progress tracing. With the default fp64 method the Gram product runs in
+    # binary64 (BLAS), so this is cheap (CIFAR-10 gram 12 ~= 9 min). PROGRESS only
+    # traces the exact-rational mtm (method="exact"), which is the slow path
+    # (CIFAR-10 gram 12 ~= 43h, almost all in layer 0's 3072x3072 Gram).
+    linear_algebra.PROGRESS = (method == "exact")
 
     n_layers = len(net)
     for i, W in enumerate(net):
@@ -48,12 +50,12 @@ def compute_norms(net: List[Matrix], gram_iters: int) -> Norms:
 
         print(f"  operator norm ||W||_2 ({gram_iters} gram iters)...", flush=True)
         start = time.perf_counter()
-        op2_norm = layer_opnorm_upper_bound(W, gram_iters)
+        op2_norm = layer_opnorm_upper_bound(W, gram_iters, method=method)
         time_op2 = time.perf_counter() - start
 
         print(f"  operator norm of abs |||W|||_2 (for deviation, {gram_iters} gram iters)...", flush=True)
         start = time.perf_counter()
-        op2_abs_norm = layer_opnorm_upper_bound(abs_matrix(W), gram_iters)
+        op2_abs_norm = layer_opnorm_upper_bound(abs_matrix(W), gram_iters, method=method)
         time_op2_abs = time.perf_counter() - start
 
         times["max_row_inf"] += time_max_row_inf

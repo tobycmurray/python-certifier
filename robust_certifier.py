@@ -433,7 +433,6 @@ def main():
               "against the Dafny reference (approximate-norm experiment only).")
     else:
         check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
-        print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
 
     fmt = get_float_format(float_format)
     check_rounding_preconditions(net, fmt)

@@ -288,8 +288,22 @@ def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
     return _gram_unwind(frobenius_norm_upper_bound(M_cur), a)
 
 
-def layer_opnorm_upper_bound(W: Matrix, gram_iters: int) -> Q:
-    return gram_iteration(W, gram_iters)
+def layer_opnorm_upper_bound(W: Matrix, gram_iters: int, method: str = "fp64") -> Q:
+    """Spectral-norm upper bound on W via Gram iteration.
+
+    method="fp64" (default): binary64-mtm Gram iteration (gram_iteration_fp64) --
+      the scalable path; the O(d^3) Gram product runs in binary64 (BLAS) with its
+      rounding error soundly tracked. Bounds are >= the exact-rational ones (a part
+      in ~1e12 above), so still sound w.r.t. the verified certifier.
+    method="exact": exact-rational mtm (gram_iteration); reproduces the Dafny
+      reference exactly but is O(d^3) in bignum arithmetic (infeasible for CIFAR).
+    """
+    if method == "fp64":
+        return gram_iteration_fp64(W, gram_iters)
+    elif method == "exact":
+        return gram_iteration(W, gram_iters)
+    else:
+        raise ValueError(f"unknown opnorm method {method!r} (expected 'fp64' or 'exact')")
 
 def layer_infinity_norm(W: Matrix) -> Q:
     """Compute max absolute entry = max_r max_k |W[r,k]| (rational exact).
