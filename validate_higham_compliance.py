@@ -2,6 +2,13 @@
    |fl(A^T A)_ij - (A^T A)_ij| <= gamma_m (|A|^T|A|)_ij + a_dot_fwd(m),  m = rows(A).
 Compares the actual BLAS error (vs exact rational A^T A) to our bound; the bound must
 never be exceeded. Reports the worst-case ratio actual_error / bound across trials.
+
+NOTE: this validates the OPT-IN BLAS gemm path (method="fp64_blas"). The DEFAULT
+norm method ("fp64") computes the Gram product with numpy's own fp64 sum-of-products
+(np.einsum(optimize=False), not BLAS), for which the gamma_m bound follows from
+numpy's documented binary64 summation with no dependence on any BLAS internals --
+so the default needs no empirical BLAS check. This script remains useful to justify
+the faster fp64_blas mode and as a cross-implementation sanity check.
 """
 import numpy as np
 from arithmetic import Q
