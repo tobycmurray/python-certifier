@@ -107,6 +107,62 @@ def frobenius_norm_upper_bound(M: Matrix) -> Q:
             sq_sum += x * x
     return sqrt_upper_bound(sq_sum)
 
+
+def _fp64_frob_from_array(Mf, fmt=None) -> Q:
+    """Fast FP-sound Frobenius upper bound from a binary64 numpy array (FrobUB_fast).
+
+    Mirrors the Coq FrobUB_fast / frobUB_fast_sound (gram_iteration.v): compute the
+    sum of squares in binary64 (numpy's own fp64 sum-of-products, NOT a BLAS call),
+    then bound the EXACT sum of squares by the dot-product forward-error model
+        sum_sq_exact <= (fl(sum_sq) + g1bar) / (1 - gbar),
+    and return sqrt_upper_bound of that.  Here N = #entries and
+        gbar  >= g_N      = (1+u)^N - 1                 (relative term, the denom)
+        g1bar >= g1(N,N-1) = (1 + gamma_{N-1}) N a_mul  (absolute/underflow term)
+    are the Higham dot-product forward-error constants.  We use the SMALL-BIT
+    closed forms
+        gbar  = N u / (1 - N u)                  >= (1+u)^N - 1
+        g1bar = (1 + (N-1)u/(1-(N-1)u)) N a_mul  >= (1+gamma_{N-1}) N a_mul
+    rather than the exact (1+u)^N, which is an ~N-digit bignum for N in the millions
+    (materialising it cost 600s+ on CIFAR layer 0 -- the whole point of avoiding it).
+    The result is >= the exact frobenius_norm_upper_bound (a part in ~1e12 above),
+    hence still sound.  Benefit over the exact sum-of-squares is modest (~1.1x), but
+    it keeps the fp64 path faithful to the Coq formalisation.
+    """
+    import math
+    import numpy as np
+    from formats import get_float_format
+    if fmt is None:
+        fmt = get_float_format("float64")
+    flat = np.asarray(Mf, dtype=np.float64).reshape(-1)
+    N = int(flat.size)
+    ss_f = float(np.einsum('i,i->', flat, flat, optimize=False))  # fl(sum x_i^2), no BLAS
+    if not math.isfinite(ss_f):
+        raise OverflowError("non-finite fp64 sum of squares; refusing to certify")
+    ss = Q(ss_f)
+    u = Q(fmt.u)
+    amul = Q(fmt.denorm_min) / 2
+    Nu = Q(N) * u
+    assert Nu < 1, "N*u >= 1: precision cannot soundly support this Gram dimension"
+    gbar = Nu / (1 - Nu)                                  # >= (1+u)^N - 1 = g_N
+    if N <= 1:
+        g1bar = Q(N) * amul
+    else:
+        Nm1u = Q(N - 1) * u
+        gam_nm1 = Nm1u / (1 - Nm1u)                       # >= (1+u)^{N-1} - 1
+        g1bar = (Q(1) + gam_nm1) * Q(N) * amul           # >= (1+gamma_{N-1}) N a_mul
+    ss_ub = (ss + g1bar) / (1 - gbar)
+    return sqrt_upper_bound(ss_ub)
+
+
+def frobenius_norm_upper_bound_fp64(M: Matrix, fmt=None) -> Q:
+    """Fast FP-sound Frobenius upper bound for a binary64 matrix (entries are exact
+    rationals holding binary64 values, so the numpy conversion is lossless).  One
+    np conversion, then _fp64_frob_from_array.  >= frobenius_norm_upper_bound, hence
+    sound.  Used in the binary64 Gram iteration."""
+    import numpy as np
+    Mf = np.array([[float(x) for x in row] for row in M], dtype=np.float64)
+    return _fp64_frob_from_array(Mf, fmt)
+
 def l2_norm_upper_bound_vec(v: Vector) -> Q:
     # Exact sum of squares, then sqrt_upper_bound
     sq_sum = Q(0)
@@ -183,17 +239,27 @@ def truncate_to_fp64_with_error(M: Matrix) -> Tuple[Matrix, Q]:
     return T, sqrt_upper_bound(sq_sum)
 
 
-def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix, Q]:
+def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix, Q, Q]:
     """Binary64 Gram product A^T A with a sound Frobenius error bound (MTMFP64).
 
-    Returns (Ntil, eps) where:
+    Returns (Ntil, eps, r) where:
       - Ntil = fl(A^T A) computed in binary64, read back as an exact rational
-        matrix (lossless),
-      - eps >= ||Ntil - A^T A||_F, via the closed form
+        matrix (lossless)                                          -- algorithm L3,
+      - eps >= ||Ntil - A^T A||_F, via the closed form                       (L4)
             ||E||_F <= gamma_m * ||A||_F^2 + a_dot_fwd(m) * n,
         where m = rows(A) is the contraction length and n = cols(A) the Gram
         dimension. (Aggregates the entrywise Higham bound
         E_ij = gamma_m (|A|^T|A|)_ij + a_dot_fwd(m); see writeup Lemma 1.)
+      - r = FrobUB(Ntil) >= ||Ntil||_F, the next-iterate RESCALE factor   (L5).
+        r is NOT an error term -- it is the scale used to form B = (1/r) Ntil;
+        the error terms are eps and (later) delta.
+
+    Both FrobUB values -- the ||A||_F in eps (= FrobUB(A)) and r (= FrobUB(Ntil))
+    -- are computed with the fast FrobUB DIRECTLY from the binary64 arrays this
+    routine already builds (Af, Ntil_f), so we never reconvert Ntil from exact
+    rational back to float64. They correspond to the abstract FrobUB of the Coq
+    proof (gram_iteration.v), discharged for this implementation by
+    frobUB_fast_sound. (r is L5; bundling it here is purely to reuse Ntil_f.)
 
     The Higham gamma_m bound holds for ANY order of binary64 round-to-nearest
     add/mul. By default (blas=False) the product is computed with numpy's own
@@ -227,9 +293,10 @@ def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix
     u = Q(fmt.u)
     amul = Q(fmt.denorm_min) / 2
     gamma_m = gamma_n(m, u)
-    frob_A = frobenius_norm_upper_bound(A)        # exact, >= ||A||_F
+    frob_A = _fp64_frob_from_array(Af, fmt)       # FrobUB(A) >= ||A||_F in eps (L4); reuses Af
     eps = gamma_m * frob_A * frob_A + a_dot_fwd(m, u, amul) * Q(n)
-    return Ntil, eps
+    r = Q(1) if not Ntil_f.any() else _fp64_frob_from_array(Ntil_f, fmt)  # r = FrobUB(Ntil) (L5); reuses Ntil_f
+    return Ntil, eps, r
 
 
 def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
@@ -247,8 +314,7 @@ def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
     a: List[Tuple[Q, Q]] = []
     i = 0
     while i != n:
-        Ntil, eps = mtm_fp64_with_error(M_cur, fmt, blas=blas)
-        r = Q(1) if is_zero_matrix(Ntil) else frobenius_norm_upper_bound(Ntil)
+        Ntil, eps, r = mtm_fp64_with_error(M_cur, fmt, blas=blas)  # r = FrobUB(Ntil), L5 rescale
         Mn = matrix_div_scalar(Ntil, r)
         M_trunc, t = truncate_to_fp64_with_error(Mn)
         delta = t + eps / r
@@ -256,8 +322,8 @@ def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
         M_cur = M_trunc
         i += 1
         if trace is not None:
-            trace.append(_gram_unwind(frobenius_norm_upper_bound(M_cur), a))
-    return _gram_unwind(frobenius_norm_upper_bound(M_cur), a)
+            trace.append(_gram_unwind(frobenius_norm_upper_bound_fp64(M_cur, fmt), a))
+    return _gram_unwind(frobenius_norm_upper_bound_fp64(M_cur, fmt), a)
 
 
 def layer_opnorm_upper_bound(W: Matrix, gram_iters: int, method: str = "fp64") -> Q:
@@ -274,13 +340,27 @@ def layer_opnorm_upper_bound(W: Matrix, gram_iters: int, method: str = "fp64") -
       conventional non-Strassen full-precision fp64 gemm).
     method="exact": exact-rational mtm (gram_iteration); reproduces the Dafny
       reference exactly but is O(d^3) in bignum arithmetic (infeasible for CIFAR).
+
+    Min-dimension orientation (fp64 paths): ||W||_2 = ||W^T||_2 (the spectral norm
+    is transpose-invariant -- A and A^T share singular values), so we run the Gram
+    iteration on whichever of W, W^T has the SMALLER Gram dimension, min(rows,cols)^2.
+    For a layer with out < in (e.g. CIFAR layer 0, 512 x 3072) this iterates on the
+    out x out Gram (512^2) instead of in x in (3072^2) -- an (in/out)^2 reduction
+    (~36x on layer 0, the dominant layer). Coq-justified by gram_iter_fp_sound_trmx
+    (gram_iteration.v): GramRun(W^T) bounds ||W||_2. The Dafny reference does NOT do
+    this, and the smaller Gram accumulates less rounding so the bound is TIGHTER --
+    which would sit BELOW the (looser) Dafny margin-Lipschitz reference. We therefore
+    keep method="exact" non-transposed so it still reproduces the Dafny reference for
+    the small-model cross-check; the transpose applies only to the fp64 paths.
     """
+    if method == "exact":
+        return gram_iteration(W, gram_iters)   # non-transposed: reproduces Dafny reference
+    rows, cols = dims(W)
+    M = transpose(W) if rows < cols else W     # iterate on the min(rows,cols)^2 Gram
     if method == "fp64":
-        return gram_iteration_fp64(W, gram_iters, blas=False)
+        return gram_iteration_fp64(M, gram_iters, blas=False)
     elif method == "fp64_blas":
-        return gram_iteration_fp64(W, gram_iters, blas=True)
-    elif method == "exact":
-        return gram_iteration(W, gram_iters)
+        return gram_iteration_fp64(M, gram_iters, blas=True)
     else:
         raise ValueError(f"unknown opnorm method {method!r} (expected 'fp64', 'fp64_blas', or 'exact')")
 

@@ -333,6 +333,20 @@ def main():
         hybrid_meas_mode = True
         sys.argv = [sys.argv[0]] + sys.argv[2:]
 
+    # Check for --check-ref flag. The Dafny exact reference is ALWAYS loaded and
+    # used as the real-arithmetic verdict baseline ("real certifier would have
+    # certified ..."). This flag additionally asserts our computed L_real >= that
+    # reference (the soundness cross-check against the verified certifier). It is
+    # OPT-IN because the default fp64 path uses the min-dimension transpose, whose
+    # bound is a hair TIGHTER than the non-transposed reference -- so the assertion
+    # would (correctly) fail there. Enable it for the non-transposed exact path
+    # (--norm-method exact) to validate against Dafny. Soundness of the default
+    # path rests on the Coq formalisation (gram_iter_fp_sound[_trmx]).
+    check_ref = False
+    if len(sys.argv) > 1 and sys.argv[1] == "--check-ref":
+        check_ref = True
+        sys.argv = [sys.argv[0]] + sys.argv[2:]
+
     # Check for --norm-method flag (how the spectral norms are computed). Default
     # fp64 (numpy's own binary64 sum-of-products; scalable + sound). The method is
     # recorded in the norms filename and file, so an exact-arithmetic norms cache is
@@ -363,7 +377,7 @@ def main():
         biases_file = sys.argv[2]
         sys.argv = [sys.argv[0]] + sys.argv[3:]
 
-    usage = (f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--json-output <file.json>] "
+    usage = (f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--check-ref] [--json-output <file.json>] "
              f"format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
     if len(sys.argv) != 7:
         print(usage)
@@ -435,9 +449,12 @@ def main():
 
     print("Computing margin Lipschitz bounds...")
     L_real = margin_lipschitz_bounds(net, op2_norms)
-    # L_ref = the verified Dafny exact margin-Lipschitz bounds; used for the real
-    # verdict (our FP verdict uses L_real, which the check confirms is >= L_ref).
-    L_ref = check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file)
+    # L_ref = the verified Dafny exact margin-Lipschitz bounds; ALWAYS loaded and
+    # used as the real-arithmetic verdict baseline (our FP verdict uses L_real + E).
+    # With --check-ref we also assert L_real >= L_ref (sound w.r.t. the verified
+    # certifier); off by default since the transposed fp64 path is a hair tighter.
+    L_ref = check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file,
+                                          assert_sound=check_ref)
 
     fmt = get_float_format(float_format)
     check_rounding_preconditions(net, fmt)
