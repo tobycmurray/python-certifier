@@ -248,7 +248,7 @@ run_test() {
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
   count_ok=$(    grabnum 'Certified [0-9]+ instances as robust'                           )
   count_failed=$(grabnum 'Failed to certify [0-9]+ instances as robust'                   )
-  count_ok_real=$(grabnum 'Real certifier would have certified [0-9]+ instances as robust' )
+  count_ok_real=$(grabnum 'Dafny certifier would have certified [0-9]+ instances as robust' )
 
   (( count_ok + count_failed == count )) || die "Internal error: counts don't add up (ok=$count_ok failed=$count_failed total=$count)"
 
