@@ -14,9 +14,12 @@ Two kinds of file per (model, gram-iteration):
   loads (it looks for `<hash>.<gram>.norms.json` in its working directory, so to
   use a committed one, copy it into the run directory — e.g. `tests/` — first).
 - `dafny_<model>_gram<gram>.json` — the **verified Dafny certifier**'s output
-  over the *same* corrected model, used as the trusted cross-check by
-  `check_margin_lipschitz_bounds`. python and Dafny agreeing on these norms is
-  what makes the corrected-model certification "sound *and* verified".
+  over the *same* corrected model. Its `lipschitz_bounds` are loaded by
+  `load_margin_lipschitz_reference` as the real-arithmetic verdict baseline
+  (L_ref). Since the norm computation now uses the min-dimension transpose
+  (||W||_2 = ||W^T||_2), our bound is a hair tighter than this non-transposed
+  reference, so we no longer cross-check equality; soundness rests on the Coq
+  formalisation (gram_iter_fp_sound / gram_iter_fp_sound_trmx).
 
 ## Current contents
 

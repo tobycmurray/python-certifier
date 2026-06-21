@@ -220,11 +220,11 @@ run_test() {
       ;;
   esac
 
-  local mode_flag mode_tag
+  local mode_tag
   case "$mode" in
-    standard)    mode_flag="";              mode_tag="standard"     ;;
-    hybrid-only) mode_flag="--hybrid-only"; mode_tag="hybrid_only"  ;;
-    hybrid-meas) mode_flag="--hybrid-meas"; mode_tag="hybrid_meas"  ;;
+    standard)    mode_tag="standard"     ;;
+    hybrid-only) mode_tag="hybrid_only"  ;;
+    hybrid-meas) mode_tag="hybrid_meas"  ;;
     *) die "Unrecognised mode '$mode'. Should be 'standard', 'hybrid-only' or 'hybrid-meas'." ;;
   esac
 
@@ -242,7 +242,7 @@ run_test() {
 
   echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
   # shellcheck disable=SC2086
-  python "$CERTIFIER" $mode_flag --json-output "$json_output" $bias_flag "$format" "$nn_file" "$gram" --cex "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  python "$CERTIFIER" --mode "$mode" --json-output "$json_output" $bias_flag "$format" "$nn_file" "$gram" "$cex_file" "$ref_results_file" > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
@@ -256,12 +256,12 @@ run_test() {
     (( count_ok == 0 )) || die "Certifier certified $count_ok counter-examples!"
     (( count_ok_real == count )) || die "Real-arithmetic certifier would not have certified all counter-examples!"
   else
-    # kind is "all": the per-instance cross-check against Dafny is DISABLED for
-    # the corrected models. We did not run Dafny over the test set (it would
-    # unconditionally recompute the norms, >1h), and it is redundant anyway: the
-    # certifier's check_margin_lipschitz_bounds already verifies our norms equal
-    # the verified Dafny lipschitz_bounds exactly, so the real-mode count here is
-    # identical to what Dafny would have produced.
+    # kind is "all": no per-instance cross-check against Dafny. We did not run
+    # Dafny over the test set (it would unconditionally recompute the norms, >1h).
+    # The real-mode count uses the Dafny reference's lipschitz_bounds (L_ref) as
+    # its baseline, so it reflects what the verified certifier would produce; our
+    # own (transposed) norms are a hair tighter and their soundness rests on the
+    # Coq formalisation (gram_iter_fp_sound / gram_iter_fp_sound_trmx).
     #
     # (Old check, re-enable if a per-instance Dafny test-set run is available:)
     #   local ref_num; ref_num=$(grep -c true "$ref_results_file")

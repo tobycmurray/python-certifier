@@ -31,19 +31,19 @@ def margin_lipschitz_bounds(network: List[Matrix], op2_norms: List[Q]) -> List[L
             L[i][j] = prod * r
     return L
 
-def check_margin_lipschitz_bounds(L_real: List[List[Q]], gram_iters: int, dafny_json_file: str,
-                                  assert_sound: bool = True):
+def load_margin_lipschitz_reference(L_real: List[List[Q]], gram_iters: int, dafny_json_file: str):
     """Load the verified Dafny exact margin-Lipschitz reference (returned as L_ref,
-    the real-arithmetic verdict baseline).
+    the real-arithmetic verdict baseline) and print an informational comparison
+    against the computed L_real.
 
-    If assert_sound (the --check-ref cross-check), additionally require L_real >=
-    L_ref everywhere and RAISE if not -- this validates our computed bounds against
-    the formally-verified certifier. It is opt-in because the default fp64 norm path
-    uses the min-dimension transpose (||W||_2 = ||W^T||_2 on the smaller Gram), whose
-    bound is a hair TIGHTER than the non-transposed reference, so the assertion would
-    correctly fail there; that path's soundness rests on the Coq formalisation
-    (gram_iter_fp_sound / gram_iter_fp_sound_trmx) instead. Use --check-ref with
-    --norm-method exact to reproduce-and-validate against Dafny.
+    We no longer ASSERT L_real >= L_ref. That cross-check made sense only when the
+    norms were computed non-transposed (then L_real reproduced the Dafny reference
+    exactly). With the min-dimension transpose (||W||_2 = ||W^T||_2 on the smaller
+    Gram), our bound is a hair TIGHTER than the non-transposed reference, so the two
+    are no longer directly comparable and a >= check would spuriously fail.
+    Soundness now rests on the Coq formalisation (gram_iter_fp_sound /
+    gram_iter_fp_sound_trmx). The file-validity checks (presence, gram, dimensions)
+    are kept since a wrong reference file is a genuine error.
     """
     L_ref = None
     with open(dafny_json_file, mode="r") as f:
@@ -62,43 +62,23 @@ def check_margin_lipschitz_bounds(L_real: List[List[Q]], gram_iters: int, dafny_
     if len(L_ref) != len(L_real) or len(L_ref[0]) != len(L_real[0]):
         raise ValueError(f"Dimensions of reference Lipschitz bounds don't match actual dimensions")
 
-    # Soundness cross-check against the formally-verified Dafny certifier.
-    # The margin-Lipschitz constant is used so that LARGER = MORE CONSERVATIVE
-    # (the certification condition is margin > eps*L + E). So it suffices that our
-    # computed bounds are everywhere >= the verified reference: then our condition
-    # is stricter than Dafny's, hence every instance we certify the verified
-    # certifier would also certify -> our "robust" verdicts stay sound w.r.t. the
-    # proof. With exact-rational norms the two are identical; with the binary64
-    # Gram iteration ours sit a part in ~1e12 ABOVE exact, which this >= accepts.
-    n_greater = 0
-    n_below = 0
-    max_rel_excess = Q(0)
-    max_rel_deficit = Q(0)
+    # Informational only: how the computed L_real sits relative to the (non-
+    # transposed) Dafny reference. Both bound the same true margin-Lipschitz
+    # constant; the transposed Gram is a hair tighter, so some entries sit below.
+    n_greater = n_below = 0
+    max_rel_excess = max_rel_deficit = Q(0)
     for i in range(len(L_real)):
         for j in range(len(L_real[i])):
-            if L_real[i][j] < L_ref[i][j]:
-                if assert_sound:
-                    raise ValueError(
-                        f"Computed margin Lipschitz bound L[{i}][{j}]={L_real[i][j]} is BELOW the "
-                        f"verified Dafny reference {L_ref[i][j]}: not sound w.r.t. the verified certifier")
-                n_below += 1
-                if L_ref[i][j] != 0:
-                    rel = (L_ref[i][j] - L_real[i][j]) / L_ref[i][j]
-                    if rel > max_rel_deficit:
-                        max_rel_deficit = rel
+            if L_ref[i][j] == 0:
+                continue
             if L_real[i][j] > L_ref[i][j]:
                 n_greater += 1
-                if L_ref[i][j] != 0:
-                    rel = (L_real[i][j] - L_ref[i][j]) / L_ref[i][j]
-                    if rel > max_rel_excess:
-                        max_rel_excess = rel
-    if not assert_sound:
-        print(f"Loaded Dafny reference (real-verdict baseline); cross-check NOT asserted "
-              f"(--check-ref off). vs computed L_real: {n_greater} above (max +{float(max_rel_excess):.3e}), "
-              f"{n_below} below (max -{float(max_rel_deficit):.3e}; expected for the transposed fp64 path).")
-    elif n_greater == 0:
-        print("Computed margin Lipschitz bounds match Dafny reference numbers exactly.")
-    else:
-        print(f"Computed margin Lipschitz bounds are >= Dafny reference (sound): "
-              f"{n_greater} entries strictly greater, max relative excess {float(max_rel_excess):.3e}.")
+                max_rel_excess = max(max_rel_excess, (L_real[i][j] - L_ref[i][j]) / L_ref[i][j])
+            elif L_real[i][j] < L_ref[i][j]:
+                n_below += 1
+                max_rel_deficit = max(max_rel_deficit, (L_ref[i][j] - L_real[i][j]) / L_ref[i][j])
+    print(f"Loaded Dafny reference (real-verdict baseline). vs computed L_real: "
+          f"{n_greater} above (max +{float(max_rel_excess):.3e}), "
+          f"{n_below} below (max -{float(max_rel_deficit):.3e}) -- expected: the "
+          f"transposed Gram is a hair tighter than the non-transposed reference.")
     return L_ref

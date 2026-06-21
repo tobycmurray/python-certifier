@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Tuple, Dict, Optional
 from dataclasses import dataclass
 
-import sys, os, json, time, math
+import sys, os, json, time, math, argparse
 
 from parsing import load_network_from_file, ParseError, load_vector_from_npy_file, load_biases_from_file
 from arithmetic import Q, qstr, sqrt_upper_bound, round_up, float_to_q
@@ -11,7 +11,7 @@ from overflow import certify_no_overflow_normwise, check_overflow_single_layer
 from deviation import compute_layer_deviation_params, compute_deviation_bound
 from formats import get_float_format, FloatFormat, gamma_n, a_dot
 from norms import compute_norms, load_norms, save_norms, hash_file_contents
-from margin_lipschitz import margin_lipschitz_bounds, check_margin_lipschitz_bounds
+from margin_lipschitz import margin_lipschitz_bounds, load_margin_lipschitz_reference
 from hybrid_measured import (
     compute_D_hi_all_layers, compute_D_hybrid_center, build_measured_comp_inputs,
     compute_measured_center_diff,
@@ -322,85 +322,63 @@ def compute_bias_norms(biases):
         inf_norms.append(linf)
     return l2_norms, inf_norms
 
+def build_parser():
+    p = argparse.ArgumentParser(
+        prog="robust_certifier.py",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=(
+            "Floating-point-sound robustness certifier. Certifies the deployed "
+            "model's logits (supplied as 'y1' per record in CEX); it never "
+            "re-simulates the forward pass."))
+    p.add_argument("format", metavar="FORMAT",
+                   help="target float format: float16 | float32 | float64 "
+                        "(bfloat16 and aliases also accepted)")
+    p.add_argument("network", metavar="NETWORK",
+                   help="neural-network weights (.txt)")
+    p.add_argument("gram", metavar="GRAM", type=int,
+                   help="Gram iterations per layer")
+    p.add_argument("cex", metavar="CEX",
+                   help="inputs to certify (JSON; each record has x1_file, max_eps, y1)")
+    p.add_argument("dafny_ref", metavar="DAFNY_REF",
+                   help="Dafny exact reference JSON; its lipschitz_bounds are the "
+                        "real-arithmetic verdict baseline (L_ref)")
+    p.add_argument("--mode", choices=["standard", "hybrid-only", "hybrid-meas"],
+                   default="standard",
+                   help="certification mode. hybrid-* add a high-precision "
+                        "pre-deployment pass measuring the centre deviation; "
+                        "hybrid-meas additionally tightens E_ball with measured "
+                        "per-layer radii")
+    p.add_argument("--norm-method", dest="norm_method",
+                   choices=["fp64", "exact"], default="fp64",
+                   help="spectral-norm computation: fp64 (numpy's own binary64 "
+                        "sum-of-products, scalable and sound) or exact (rational "
+                        "arithmetic, the ground-truth bound)")
+    p.add_argument("--biases", metavar="FILE", default=None,
+                   help="per-layer bias vectors (.txt); enables bias-aware certification")
+    p.add_argument("--json-output", metavar="FILE", dest="json_output", default=None,
+                   help="write per-instance results as JSON")
+    return p
+
+
 def main():
-    # Check for --hybrid-only / --hybrid-meas flag (mutually exclusive)
-    hybrid_only_mode = False
-    hybrid_meas_mode = False
-    if len(sys.argv) > 1 and sys.argv[1] == "--hybrid-only":
-        hybrid_only_mode = True
-        sys.argv = [sys.argv[0]] + sys.argv[2:]
-    elif len(sys.argv) > 1 and sys.argv[1] == "--hybrid-meas":
-        hybrid_meas_mode = True
-        sys.argv = [sys.argv[0]] + sys.argv[2:]
+    args = build_parser().parse_args()
+    hybrid_only_mode = (args.mode == "hybrid-only")
+    hybrid_meas_mode = (args.mode == "hybrid-meas")
+    norm_method = args.norm_method
+    json_output_file = args.json_output
+    biases_file = args.biases
+    float_format = args.format
+    network_file = args.network
+    gram_iters = args.gram
+    cex_file = args.cex
+    dafny_json_file = args.dafny_ref
 
-    # Check for --check-ref flag. The Dafny exact reference is ALWAYS loaded and
-    # used as the real-arithmetic verdict baseline ("real certifier would have
-    # certified ..."). This flag additionally asserts our computed L_real >= that
-    # reference (the soundness cross-check against the verified certifier). It is
-    # OPT-IN because the default fp64 path uses the min-dimension transpose, whose
-    # bound is a hair TIGHTER than the non-transposed reference -- so the assertion
-    # would (correctly) fail there. Enable it for the non-transposed exact path
-    # (--norm-method exact) to validate against Dafny. Soundness of the default
-    # path rests on the Coq formalisation (gram_iter_fp_sound[_trmx]).
-    check_ref = False
-    if len(sys.argv) > 1 and sys.argv[1] == "--check-ref":
-        check_ref = True
-        sys.argv = [sys.argv[0]] + sys.argv[2:]
-
-    # Check for --norm-method flag (how the spectral norms are computed). Default
-    # fp64 (numpy's own binary64 sum-of-products; scalable + sound). The method is
-    # recorded in the norms filename and file, so an exact-arithmetic norms cache is
-    # never silently reused for an fp64 run (or vice versa).
-    norm_method = "fp64"
-    if len(sys.argv) > 1 and sys.argv[1] == "--norm-method":
-        if len(sys.argv) < 3 or sys.argv[2] not in ("fp64", "fp64_blas", "exact"):
-            print("Error: --norm-method requires one of: fp64, fp64_blas, exact")
-            sys.exit(1)
-        norm_method = sys.argv[2]
-        sys.argv = [sys.argv[0]] + sys.argv[3:]
-
-    # Check for --json-output flag
-    json_output_file = None
-    if len(sys.argv) > 1 and sys.argv[1] == "--json-output":
-        if len(sys.argv) < 3:
-            print("Error: --json-output requires a filename argument")
-            sys.exit(1)
-        json_output_file = sys.argv[2]
-        sys.argv = [sys.argv[0]] + sys.argv[3:]
-
-    # Check for --biases flag
-    biases_file = None
-    if len(sys.argv) > 1 and sys.argv[1] == "--biases":
-        if len(sys.argv) < 3:
-            print("Error: --biases requires a file argument")
-            sys.exit(1)
-        biases_file = sys.argv[2]
-        sys.argv = [sys.argv[0]] + sys.argv[3:]
-
-    usage = (f"Usage: {sys.argv[0]} [--hybrid-only|--hybrid-meas] [--check-ref] [--json-output <file.json>] "
-             f"format <neural_network_input.txt> <GRAM_ITERATIONS> --cex <cex_file.json> <dafny-ref-json-file>")
-    if len(sys.argv) != 7:
-        print(usage)
-        sys.exit(1)
-
-    float_format = sys.argv[1]
-    sys.argv = sys.argv[1:]
-    network_file = sys.argv[1]
+    # Validate the target format up front with a clean error (instead of a late
+    # NotImplementedError traceback from get_float_format deeper in main).
     try:
-        gram_iters = int(sys.argv[2])
-    except ValueError:
-        print("Error: <GRAM_ITERATIONS> must be an integer.")
-        sys.exit(1)
-
-    # The certifier only certifies the deployed model's logits (Keras-computed,
-    # supplied as 'y1' in the cex/test JSON); it never re-simulates the forward
-    # pass itself. Hence the --cex form is the only invocation.
-    if sys.argv[3] != "--cex":
-        print(usage)
-        sys.exit(1)
-    cex_file = sys.argv[4]
-
-    dafny_json_file = sys.argv[5]
+        get_float_format(float_format)
+    except NotImplementedError as e:
+        build_parser().error(str(e))
 
     # load network & norms
     try:
@@ -449,12 +427,14 @@ def main():
 
     print("Computing margin Lipschitz bounds...")
     L_real = margin_lipschitz_bounds(net, op2_norms)
-    # L_ref = the verified Dafny exact margin-Lipschitz bounds; ALWAYS loaded and
-    # used as the real-arithmetic verdict baseline (our FP verdict uses L_real + E).
-    # With --check-ref we also assert L_real >= L_ref (sound w.r.t. the verified
-    # certifier); off by default since the transposed fp64 path is a hair tighter.
-    L_ref = check_margin_lipschitz_bounds(L_real, gram_iters, dafny_json_file,
-                                          assert_sound=check_ref)
+    # L_ref = the verified Dafny exact margin-Lipschitz bounds; loaded as the
+    # real-arithmetic verdict baseline (our FP verdict uses L_real + E). We no
+    # longer assert L_real >= L_ref: with the min-dimension transpose our bound is
+    # a hair tighter than the non-transposed Dafny reference, so the two are no
+    # longer directly comparable. Soundness rests on the Coq formalisation
+    # (gram_iter_fp_sound / gram_iter_fp_sound_trmx); an informational comparison
+    # is still printed.
+    L_ref = load_margin_lipschitz_reference(L_real, gram_iters, dafny_json_file)
 
     fmt = get_float_format(float_format)
     check_rounding_preconditions(net, fmt)
@@ -756,7 +736,7 @@ def main():
     print(f"Of {len(results)} instances we attempted to certify:")
     print(f"  Certified {len(results_ok)} instances as robust")
     print(f"  Failed to certify {len(results_fail)} instances as robust")
-    print(f"  Real certifier would have certified {len(results_ok_real)} instances as robust")
+    print(f"  Dafny certifier would have certified {len(results_ok_real)} instances as robust")
 
     # essentials summary
     stats_fc  = compute_stats(float_cons_all)

@@ -30,10 +30,9 @@ def compute_norms(net: List[Matrix], gram_iters: int, method: str = "fp64") -> N
     n_layers = len(net)
     for i, W in enumerate(net):
         rows = len(W); cols = len(W[0]) if W else 0
-        # The fp64 paths run the Gram iteration on the min-dimension orientation
-        # (||W||_2 = ||W^T||_2), so the Gram is min(rows,cols)^2; the exact path
-        # uses the cols^2 Gram (non-transposed, matches Dafny).
-        gdim = min(rows, cols) if method in ("fp64", "fp64_blas") else cols
+        # Both paths run the Gram iteration on the min-dimension orientation
+        # (||W||_2 = ||W^T||_2), so the Gram is min(rows,cols)^2.
+        gdim = min(rows, cols)
         print(f"Computing norms for layer {i}/{n_layers-1} ({rows}x{cols}, Gram is {gdim}x{gdim})...", flush=True)
         print(f"  max row inf norm (for M_layer)...", flush=True)
         start = time.perf_counter()

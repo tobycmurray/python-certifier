@@ -211,8 +211,8 @@ def gram_iteration(M: Matrix, n: int) -> Q:
 # Soundness assumes binary64 round-to-nearest dot products with gradual underflow
 # (the same model used for the network's matvecs), valid for any conventional
 # O(d^3) summation order incl. FMA/blocked gemm, but NOT fast-matrix-multiply
-# (Strassen). The default uses numpy's own fp64 sum-of-products (no BLAS trust);
-# blas=True opts into the faster BLAS gemm.
+# (Strassen). The Gram product uses numpy's own fp64 sum-of-products (np.einsum,
+# NOT a BLAS call), so the Higham bound needs no BLAS-implementation trust.
 # ============================================================================
 
 def truncate_to_fp64_with_error(M: Matrix) -> Tuple[Matrix, Q]:
@@ -239,7 +239,7 @@ def truncate_to_fp64_with_error(M: Matrix) -> Tuple[Matrix, Q]:
     return T, sqrt_upper_bound(sq_sum)
 
 
-def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix, Q, Q]:
+def mtm_fp64_with_error(A: Matrix, fmt=None) -> Tuple[Matrix, Q, Q]:
     """Binary64 Gram product A^T A with a sound Frobenius error bound (MTMFP64).
 
     Returns (Ntil, eps, r) where:
@@ -262,14 +262,12 @@ def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix
     frobUB_fast_sound. (r is L5; bundling it here is purely to reuse Ntil_f.)
 
     The Higham gamma_m bound holds for ANY order of binary64 round-to-nearest
-    add/mul. By default (blas=False) the product is computed with numpy's own
-    sum-of-products (np.einsum(optimize=False) -- NOT a BLAS call), so the bound
-    follows from numpy's documented binary64 summation with no dependence on any
-    BLAS implementation. blas=True uses the (faster) BLAS gemm A.T@A instead --
-    use at your own risk: it asks the reader to trust the BLAS is a conventional
-    non-Strassen/full-precision O(d^3) IEEE-754 fp64 gemm. The matmul is only ~1%
-    of the runtime (the exact-rational normalise/truncate dominates), so blas=False
-    costs only ~30% more -- worth it to drop the BLAS trust, hence the default.
+    add/mul. The product is computed with numpy's own sum-of-products
+    (np.einsum(optimize=False) -- NOT a BLAS call), so the bound follows from
+    numpy's documented binary64 summation with no dependence on any BLAS
+    implementation. (The matmul is only ~1% of the runtime -- the exact-rational
+    normalise/truncate dominate -- so there is no reason to trade that BLAS-free
+    guarantee for a gemm.)
 
     Precondition: A's entries are binary64 values (held as exact rationals), so
     the conversion to np.float64 is lossless.
@@ -281,10 +279,7 @@ def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix
     m, n = dims(A)                      # m = contraction length, n = Gram dim
     Af = np.array([[float(x) for x in row] for row in A], dtype=np.float64)
     assert Af.dtype == np.float64       # guarantee binary64 (no silent downcast)
-    if blas:
-        Ntil_f = Af.T @ Af                                   # BLAS gemm
-    else:
-        Ntil_f = np.einsum('ri,rj->ij', Af, Af, optimize=False)  # numpy's own fp64 sum-of-products
+    Ntil_f = np.einsum('ri,rj->ij', Af, Af, optimize=False)  # numpy's own fp64 sum-of-products (no BLAS)
     assert Ntil_f.dtype == np.float64
     if not np.all(np.isfinite(Ntil_f)):
         # overflow/non-finite: refuse (writeup Remark on overflow)
@@ -300,21 +295,20 @@ def mtm_fp64_with_error(A: Matrix, fmt=None, blas: bool = False) -> Tuple[Matrix
 
 
 def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
-                        trace: Optional[List[Q]] = None, blas: bool = False) -> Q:
+                        trace: Optional[List[Q]] = None) -> Q:
     """FP-sound spectral-norm upper bound via Gram iteration with binary64 mtm.
 
     Mirrors gram_iteration() exactly, except each Gram product is computed in
     binary64 (mtm_fp64_with_error) and the per-iteration error fed to the unwind
     is delta_k = t_k + eps_k / r_k (Truncate error + fp Gram error / rescale).
     Returns s >= ||M||_2 (writeup Theorem). `trace` (if given) collects the bound
-    after each iteration, as in gram_iteration. blas=False (default) uses numpy's
-    own fp64 summation (no BLAS trust); blas=True uses the faster BLAS gemm.
+    after each iteration, as in gram_iteration.
     """
     M_cur = [row[:] for row in M]       # iterate kept binary64 (weights are binary32 subset)
     a: List[Tuple[Q, Q]] = []
     i = 0
     while i != n:
-        Ntil, eps, r = mtm_fp64_with_error(M_cur, fmt, blas=blas)  # r = FrobUB(Ntil), L5 rescale
+        Ntil, eps, r = mtm_fp64_with_error(M_cur, fmt)  # r = FrobUB(Ntil), L5 rescale
         Mn = matrix_div_scalar(Ntil, r)
         M_trunc, t = truncate_to_fp64_with_error(Mn)
         delta = t + eps / r
@@ -335,34 +329,31 @@ def layer_opnorm_upper_bound(W: Matrix, gram_iters: int, method: str = "fp64") -
       from numpy's documented summation, no BLAS trust). Bounds are >= the
       exact-rational ones (a part in ~1e12 above), so still sound w.r.t. the
       verified certifier.
-    method="fp64_blas": same, but the Gram product uses the faster BLAS gemm
-      (~30% faster overall; use at your own risk -- relies on the BLAS being a
-      conventional non-Strassen full-precision fp64 gemm).
-    method="exact": exact-rational mtm (gram_iteration); reproduces the Dafny
-      reference exactly but is O(d^3) in bignum arithmetic (infeasible for CIFAR).
+    method="exact": exact-rational mtm (gram_iteration); the ground-truth rational
+      bound. O(d^3) in bignum arithmetic, but the min-dimension transpose below
+      shrinks the Gram (e.g. CIFAR layer 0 to 512^2), making it far more tractable.
 
-    Min-dimension orientation (fp64 paths): ||W||_2 = ||W^T||_2 (the spectral norm
+    Min-dimension orientation (BOTH paths): ||W||_2 = ||W^T||_2 (the spectral norm
     is transpose-invariant -- A and A^T share singular values), so we run the Gram
     iteration on whichever of W, W^T has the SMALLER Gram dimension, min(rows,cols)^2.
     For a layer with out < in (e.g. CIFAR layer 0, 512 x 3072) this iterates on the
     out x out Gram (512^2) instead of in x in (3072^2) -- an (in/out)^2 reduction
-    (~36x on layer 0, the dominant layer). Coq-justified by gram_iter_fp_sound_trmx
-    (gram_iteration.v): GramRun(W^T) bounds ||W||_2. The Dafny reference does NOT do
-    this, and the smaller Gram accumulates less rounding so the bound is TIGHTER --
-    which would sit BELOW the (looser) Dafny margin-Lipschitz reference. We therefore
-    keep method="exact" non-transposed so it still reproduces the Dafny reference for
-    the small-model cross-check; the transpose applies only to the fp64 paths.
+    (~36x on layer 0, the dominant layer). Sound: gram_iteration[_fp64](W^T) bounds
+    ||W^T||_2 = ||W||_2 (Coq gram_iter_fp_sound_trmx for fp64; the Dafny-verified
+    gram_iteration soundness + ||W^T||_2 = ||W||_2 for exact). NOTE: the transposed
+    Gram accumulates less rounding, so the bound is a hair TIGHTER than the
+    non-transposed one -- so neither path reproduces the (non-transposed) Dafny
+    reference byte-for-byte any more; the Dafny ref remains the real-verdict
+    baseline (L_ref), and exact-transposed is the rational ground truth fp64 is
+    validated against.
     """
-    if method == "exact":
-        return gram_iteration(W, gram_iters)   # non-transposed: reproduces Dafny reference
     rows, cols = dims(W)
-    M = transpose(W) if rows < cols else W     # iterate on the min(rows,cols)^2 Gram
+    M = transpose(W) if rows < cols else W   # ||W||_2 = ||W^T||_2; iterate on the min(rows,cols)^2 Gram
     if method == "fp64":
-        return gram_iteration_fp64(M, gram_iters, blas=False)
-    elif method == "fp64_blas":
-        return gram_iteration_fp64(M, gram_iters, blas=True)
-    else:
-        raise ValueError(f"unknown opnorm method {method!r} (expected 'fp64', 'fp64_blas', or 'exact')")
+        return gram_iteration_fp64(M, gram_iters)
+    if method == "exact":
+        return gram_iteration(M, gram_iters)
+    raise ValueError(f"unknown opnorm method {method!r} (expected 'fp64' or 'exact')")
 
 def layer_infinity_norm(W: Matrix) -> Q:
     """Compute max absolute entry = max_r max_k |W[r,k]| (rational exact).
