@@ -144,7 +144,11 @@ def load_vector_from_npy_file(path: str):
     arr = np.load(path, allow_pickle=False).ravel()
     k, isz = arr.dtype.kind, arr.dtype.itemsize
 
-    # Numeric floats: f16/f32/f64
+    # Numeric floats: f16/f32/f64. The dtype is unambiguous, so the values are
+    # exactly what was saved -- no range sanity check is applied. (Image inputs are
+    # normalized to [0,1]; standardized tabular inputs, e.g. HIGGS z-scores, are
+    # legitimately outside [0,1]. The certification math uses the actual loaded x
+    # and assumes no particular input range.)
     if k == 'f' or k == 'g':
         f64 = arr.astype(np.float64, copy=False)
 
@@ -156,11 +160,13 @@ def load_vector_from_npy_file(path: str):
         # place as top 16 bits of IEEE754 float32
         f32 = (u16 << 16).view('<f4')
         f64 = f32.astype(np.float64, copy=False)
+        # This path reinterprets raw bytes, so a [0,1] range check guards against a
+        # mis-parsed payload (the saved bfloat16 counter-examples are normalized
+        # images). It applies ONLY to this ambiguous-dtype branch.
+        if (f64 < 0).any() or (f64 > 1).any():
+            raise ValueError("Loaded values not in [0, 1]; check dtype interpretation.")
     else:
         raise TypeError(f"Unsupported dtype: {arr.dtype!r}")
-
-    if (f64 < 0).any() or (f64 > 1).any():
-        raise ValueError("Loaded values not in [0, 1]; check dtype interpretation.")
 
     out = []
     for x in f64:

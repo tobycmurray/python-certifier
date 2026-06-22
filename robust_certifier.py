@@ -339,9 +339,12 @@ def build_parser():
                    help="Gram iterations per layer")
     p.add_argument("cex", metavar="CEX",
                    help="inputs to certify (JSON; each record has x1_file, max_eps, y1)")
-    p.add_argument("dafny_ref", metavar="DAFNY_REF",
-                   help="Dafny exact reference JSON; its lipschitz_bounds are the "
-                        "real-arithmetic verdict baseline (L_ref)")
+    p.add_argument("dafny_ref", metavar="DAFNY_REF", nargs="?", default=None,
+                   help="(optional) Dafny exact reference JSON; its lipschitz_bounds "
+                        "are the real-arithmetic verdict baseline (L_ref). If omitted, "
+                        "the computed L_real is used as the baseline -- i.e. the real "
+                        "verdict becomes the no-FP-error ceiling (margin > eps*L_real). "
+                        "The FP-sound verdict is unaffected either way.")
     p.add_argument("--mode", choices=["standard", "hybrid-only", "hybrid-meas"],
                    default="standard",
                    help="certification mode. hybrid-* add a high-precision "
@@ -736,7 +739,14 @@ def main():
     print(f"Of {len(results)} instances we attempted to certify:")
     print(f"  Certified {len(results_ok)} instances as robust")
     print(f"  Failed to certify {len(results_fail)} instances as robust")
-    print(f"  Dafny certifier would have certified {len(results_ok_real)} instances as robust")
+    # "Dafny certifier ..." when an exact Dafny reference was supplied (run_tests.sh
+    # greps this exact wording); "Real certifier ..." otherwise, since the baseline
+    # is then the computed real-arithmetic L_real, not an actual Dafny run. Both
+    # wordings are recognised by produce_all_results.py's (?:Real|Dafny) regex; the
+    # "Real certifier" form matches produce_tables.py and the golden test logs.
+    _real_baseline = ("Dafny certifier" if dafny_json_file is not None
+                      else "Real certifier")
+    print(f"  {_real_baseline} would have certified {len(results_ok_real)} instances as robust")
 
     # essentials summary
     stats_fc  = compute_stats(float_cons_all)

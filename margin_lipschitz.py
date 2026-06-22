@@ -45,6 +45,16 @@ def load_margin_lipschitz_reference(L_real: List[List[Q]], gram_iters: int, dafn
     gram_iter_fp_sound_trmx). The file-validity checks (presence, gram, dimensions)
     are kept since a wrong reference file is a genuine error.
     """
+    if dafny_json_file is None:
+        # No exact reference supplied (e.g. a brand-new model with no Dafny run).
+        # Use the computed L_real as the real-arithmetic baseline: the "real"
+        # verdict then becomes the no-FP-error ceiling (margin > eps*L_real), which
+        # isolates the cost of the floating-point error terms. The FP-sound verdict
+        # is unaffected -- it always uses L_real plus the E terms.
+        print("No Dafny reference supplied; using computed L_real as the "
+              "real-arithmetic baseline (real verdict = no-FP-error ceiling).")
+        return L_real
+
     L_ref = None
     with open(dafny_json_file, mode="r") as f:
         data = json.load(f, parse_float=Q)
