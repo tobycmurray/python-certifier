@@ -102,6 +102,7 @@ HIGGS_W256_NET="../models/neural_net_higgs_w256_d5_full.txt"
 HIGGS_W512_NET="../models/neural_net_higgs_w512_d5_full.txt"
 HIGGS_W1024_NET="../models/neural_net_higgs_w1024_d5_full.txt"
 EMNIST_BYCLASS_NET="../models/neural_net_emnistbyc_cifar.txt"
+EMNIST_BALANCED_NET="../models/neural_net_emnistbal_w512_d8_ep500.txt"
 
 declare -A NN_FILE=(
   [mnist]="$MNIST_NEURAL_NET"
@@ -119,6 +120,7 @@ declare -A NN_FILE=(
   [higgs_w1024_50k]="$HIGGS_W1024_NET"
   [emnist_byclass]="$EMNIST_BYCLASS_NET"
   [emnist_byclass_full]="$EMNIST_BYCLASS_NET"
+  [emnist_balanced_full]="$EMNIST_BALANCED_NET"
 )
 
 declare -A BIASES_FILE=(
@@ -161,6 +163,7 @@ declare -A ALL_INPUTS=(
   [higgs_w1024_50k]="inputs_higgs_w1024_n50000/inputs.json"
   [emnist_byclass]="inputs_emnist_byclass_n10000/inputs.json"
   [emnist_byclass_full]="inputs_emnist_byclass_full/inputs.json"
+  [emnist_balanced_full]="inputs_emnist_balanced_full/inputs.json"
 )
 
 # First 100 test points (= ERAN's 100; indices 0-99) for the same-100-point ERAN
@@ -486,3 +489,9 @@ run_test "float32" "emnist_byclass" "12" "all" "standard"
 # ----- RQ3: EMNIST-byclass pre-deployment VRA (full test; hybrid modes) -----
 run_test "float32" "emnist_byclass_full" "12" "all" "hybrid-only"
 run_test "float32" "emnist_byclass_full" "12" "all" "hybrid-meas"
+
+# ----- EMNIST-balanced (47-class): full test (~18.8k), all modes -----
+# RQ2 gap (standard) + RQ3 pre-deployment (hybrid). Balanced, so micro≈macro VRA.
+run_test "float32" "emnist_balanced_full" "12" "all" "standard"
+run_test "float32" "emnist_balanced_full" "12" "all" "hybrid-only"
+run_test "float32" "emnist_balanced_full" "12" "all" "hybrid-meas"
