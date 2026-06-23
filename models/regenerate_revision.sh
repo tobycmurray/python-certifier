@@ -78,7 +78,6 @@ make_inputs "higgs_w1024_d5_full" higgs "[1024,1024,1024,1024,1024]" 1 0.1 \
 # ---- EMNIST byclass (CIFAR architecture; isize 28; eps 0.3) ----
 BYC_L="[512,256,128,128,128,128,128,128]"
 make_net    "emnistbyc_cifar" emnist/byclass "$BYC_L" 28
-make_inputs "emnistbyc_cifar" emnist/byclass "$BYC_L" 28 0.3 "$TESTS/inputs_emnist_byclass_n10000" 10000
 make_inputs "emnistbyc_cifar" emnist/byclass "$BYC_L" 28 0.3 "$TESTS/inputs_emnist_byclass_full"  ""
 
 # ---- EMNIST balanced (47-class, width-512 depth-8; isize 28; eps 0.3) ----

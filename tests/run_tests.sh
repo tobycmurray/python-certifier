@@ -118,7 +118,6 @@ declare -A NN_FILE=(
   [higgs_w512]="$HIGGS_W512_NET"
   [higgs_w1024]="$HIGGS_W1024_NET"
   [higgs_w1024_50k]="$HIGGS_W1024_NET"
-  [emnist_byclass]="$EMNIST_BYCLASS_NET"
   [emnist_byclass_full]="$EMNIST_BYCLASS_NET"
   [emnist_balanced_full]="$EMNIST_BALANCED_NET"
 )
@@ -161,7 +160,6 @@ declare -A ALL_INPUTS=(
   [higgs_w512]="inputs_higgs_w512_n10000/inputs.json"
   [higgs_w1024]="inputs_higgs_w1024_n10000/inputs.json"
   [higgs_w1024_50k]="inputs_higgs_w1024_n50000/inputs.json"
-  [emnist_byclass]="inputs_emnist_byclass_n10000/inputs.json"
   [emnist_byclass_full]="inputs_emnist_byclass_full/inputs.json"
   [emnist_balanced_full]="inputs_emnist_balanced_full/inputs.json"
 )
@@ -483,10 +481,11 @@ done
 run_test "float32" "higgs_w1024_50k" "12" "all" "hybrid-only"
 run_test "float32" "higgs_w1024_50k" "12" "all" "hybrid-meas"
 
-# ----- RQ2: EMNIST-byclass gap (10k; standard) -----
-run_test "float32" "emnist_byclass" "12" "all" "standard"
-
-# ----- RQ3: EMNIST-byclass pre-deployment VRA (full test; hybrid modes) -----
+# ----- EMNIST-byclass (62-class): full test (~116k), all modes -----
+# RQ2 gap (standard) + RQ3 pre-deployment (hybrid). standard@full is cheap; running
+# all modes over the full set keeps byclass consistent with balanced and gives a
+# complete per-instance timing row (§7).
+run_test "float32" "emnist_byclass_full" "12" "all" "standard"
 run_test "float32" "emnist_byclass_full" "12" "all" "hybrid-only"
 run_test "float32" "emnist_byclass_full" "12" "all" "hybrid-meas"
 
