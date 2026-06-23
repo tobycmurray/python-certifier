@@ -18,7 +18,7 @@ from typing import List, Dict, Tuple, Optional
 
 import numpy as np
 
-from arithmetic import Q, float_to_q, sqrt_upper_bound
+from arithmetic import Q, float_to_q, sqrt_upper_bound, round_up
 from linear_algebra import Matrix, Vector, dims, l2_norm_upper_bound_vec
 from formats import FloatFormat, get_float_format
 from deviation import compute_layer_deviation_params, compute_deviation_bound
@@ -260,4 +260,13 @@ def build_measured_comp_inputs(
 
     r_Lm1_center = r_meas_center[H - 1] if H > 0 else r_meas_center[-1]
     r_Lm1_ball = r_meas_ball[H - 1] if H > 0 else r_meas_ball[-1]
-    return D_hybrid_center, r_Lm1_center, D_meas_ball, r_Lm1_ball
+    # Round the four measured scalars UP before they feed the per-class-pair final
+    # step. The deviation term D_hi makes r_meas an exact rational with a ~233k-bit
+    # denominator (float64 gamma_n compounded over layers, unrounded); multiplying
+    # it across all class pairs costs ~0.8s/call. round_up (the certifier's 16-dp
+    # "Dafny-accurate" rounding) collapses it to a ~53-bit rational. Sound by
+    # monotonicity: round_up(v) >= v, and the per-pair RHS E = alpha*D + beta(r) is
+    # monotone increasing in D and r, so the verdict can only become MORE conservative
+    # (never wrongly certify). ~75x faster per call.
+    return (round_up(D_hybrid_center), round_up(r_Lm1_center),
+            round_up(D_meas_ball), round_up(r_Lm1_ball))
