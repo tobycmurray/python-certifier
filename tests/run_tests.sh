@@ -464,8 +464,8 @@ run_test "float32" "cifar10"       "12" "first100" "hybrid-meas"
 # (regime-dependent) measured-E_ball benefit of hybrid-meas is visible.
 #   RQ4  HIGGS FP-cost-vs-width   : 4 widths x {standard, hybrid-only, hybrid-meas} @ 10k
 #   RQ2  the gap (standard)       : HIGGS-1024 (from RQ4) + EMNIST-byclass @ 10k
-#   RQ3  pre-deployment VRA       : HIGGS-1024 @ 50k + EMNIST-byclass @ full,
-#                                   {hybrid-only, hybrid-meas}
+#   RQ3  pre-deployment VRA       : HIGGS-1024 @ 50k (all 3 modes; master-table row)
+#                                   + EMNIST-byclass @ full {hybrid-only, hybrid-meas}
 # Tip: SKIP_EXISTING=1 reruns only the not-yet-computed entries.
 # ===========================================================================
 
@@ -477,7 +477,11 @@ for hw in higgs_w128 higgs_w256 higgs_w512 higgs_w1024; do
   run_test "float32" "$hw" "12" "all" "hybrid-meas"
 done
 
-# ----- RQ3: HIGGS-1024 pre-deployment VRA (50k; hybrid modes) -----
+# ----- RQ3: HIGGS-1024 pre-deployment VRA (50k; all three modes) -----
+# standard@50k is added so the master results table can report the whole HIGGS-1024
+# row at the larger 50k sample (its 500k Baldi test split is too big to run fully);
+# 10k@all-modes already exists from RQ4 above.
+run_test "float32" "higgs_w1024_50k" "12" "all" "standard"
 run_test "float32" "higgs_w1024_50k" "12" "all" "hybrid-only"
 run_test "float32" "higgs_w1024_50k" "12" "all" "hybrid-meas"
 
