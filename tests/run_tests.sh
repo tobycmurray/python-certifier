@@ -334,10 +334,25 @@ run_test() {
 }
 
 # --- stage precomputed norms into the run dir ------------------------------
-# The certifier loads <hash>.<gram>.norms.json from its cwd (here, tests/). The
-# precious, expensive-to-compute norms (~1h for MNIST) are committed under
-# ../models/precomputed/; copy them here so the certifier doesn't recompute.
-cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
+# The certifier loads <hash>.<gram>.<method>.norms.json from its cwd (here,
+# tests/). By default we stage the committed caches from ../models/precomputed/
+# so the certifier reuses them instead of recomputing.
+#
+# Set RECOMPUTE_NORMS=1 to force a fresh norm computation instead: skip the
+# staging AND clear any *.norms.json already cached in tests/, so every model's
+# norms are recomputed and freshly TIMED (times_secs) into the cache. fp64 Gram
+# norms are cheap now (a fraction of the whole run), so this is the mode to use
+# for the clean single-threaded timing runs feeding §1 / the norm width-scaling
+# figures. (Dafny reference files are dafny_*.json, not *.norms.json, so they are
+# neither staged by the copy nor removed here.)
+RECOMPUTE_NORMS="${RECOMPUTE_NORMS:-}"
+if [[ -n "$RECOMPUTE_NORMS" ]]; then
+  echo ">> RECOMPUTE_NORMS=1: not staging ../models/precomputed norms; clearing cached"
+  echo ">> *.norms.json in $(pwd) to force fresh, timed recomputation."
+  rm -f ./*.norms.json 2>/dev/null || true
+else
+  cp -f ../models/precomputed/*.norms.json . 2>/dev/null || true
+fi
 
 # --- test matrix -----------------------------------------------------------
 # Each test is run in standard, hybrid-only, and hybrid-measured modes.
