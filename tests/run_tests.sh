@@ -172,6 +172,10 @@ declare -A ALL_INPUTS_100=(
   [mnist]="all_mnist_test_inputs/test_inputs_epsilon_0.3_first100.json"
   [fashion_mnist]="all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_first100.json"
   [cifar10]="all_cifar10_test_inputs/all_test_inputs_first100.json"
+  # EMNIST first-100 = the leading 100 of each full inputs.json (same points ERAN uses);
+  # kept inside the full dir so its per-instance orig_*_x_*.npy files resolve.
+  [emnist_byclass_full]="inputs_emnist_byclass_full/inputs_first100.json"
+  [emnist_balanced_full]="inputs_emnist_balanced_full/inputs_first100.json"
 )
 
 declare -A CEX=(
@@ -455,6 +459,13 @@ run_test "float32" "fashion_mnist" "12" "first100" "hybrid-meas"
 run_test "float32" "cifar10"       "12" "first100" "standard"
 run_test "float32" "cifar10"       "12" "first100" "hybrid-only"
 run_test "float32" "cifar10"       "12" "first100" "hybrid-meas"
+# ===== EMNIST ByClass / Balanced — first100 (gram 12; ERAN comparison) =====
+run_test "float32" "emnist_byclass_full"  "12" "first100" "standard"
+run_test "float32" "emnist_byclass_full"  "12" "first100" "hybrid-only"
+run_test "float32" "emnist_byclass_full"  "12" "first100" "hybrid-meas"
+run_test "float32" "emnist_balanced_full" "12" "first100" "standard"
+run_test "float32" "emnist_balanced_full" "12" "first100" "hybrid-only"
+run_test "float32" "emnist_balanced_full" "12" "first100" "hybrid-meas"
 
 # ===========================================================================
 # REVISION experiments: HIGGS width sweep + EMNIST-byclass (gram 12; no Dafny
