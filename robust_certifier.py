@@ -72,6 +72,7 @@ def build_modeb_components(
     fmt: FloatFormat,
     L: Dict[Tuple[int,int],Q],
     S: Dict[Tuple[int,int],Q],
+    i_star: int,
     bias_l2_norms: List[Q] = None,  # [||b_0||_2, ..., ||b_{L-1}||_2]
 ) -> ModeBComponents:
     r_prev = radii(op2_norms, x, epsilon, bias_l2_norms=bias_l2_norms)
@@ -84,12 +85,17 @@ def build_modeb_components(
     )
 
     DLm1, right_products = hidden_stack_degradation_with_products(alphas, betas)
+    # Round DLm1 up before it feeds the per-pair E = α_L·DLm1 + β_L. Sound: E is
+    # monotone increasing in DLm1, so round_up(DLm1) >= DLm1 can only make the
+    # certificate more conservative; keeps the rational small (as the measured mode
+    # already does for its D_meas / D_hybrid).
+    DLm1 = round_up(DLm1)
 
     contribs = []
     for ell in range(len(alphas)):
         contribs.append(betas[ell] * right_products[ell])
 
-    final_pairs = compute_final_pair_params(network[-1], r_prev[-1], fmt, L, S)
+    final_pairs = compute_final_pair_params(network[-1], r_prev[-1], fmt, L, S, i_star)
 
     return ModeBComponents(
         r_prev=r_prev, alphas=alphas, betas=betas,
@@ -241,25 +247,39 @@ def compute_final_pair_params(
     fmt: FloatFormat,
     L: Dict[Tuple[int,int],Q],
     S: Dict[Tuple[int,int],Q],
+    i_star: int,
 ) -> Dict[Tuple[int,int], Tuple[Q, Q]]:
     """
     For identity final activation (logits) with no bias:
       α_L^(i,j) = L_{i,j} + κ_{n_L} S_{i,j}
       β_L^(i,j) = κ_{n_L} S_{i,j} r_{L-1} + 2(1+u) adot(n_L)
 
-    Returns a dict mapping (i,j) with i!=j to (alpha_L_ij, beta_L_ij).
+    Returns a dict mapping (i_star, j) with j != i_star to (alpha_L_ij, beta_L_ij).
+
+    Only the predicted-class row i_star is built: certify_mode_b_theorem4 certifies
+    i_star = argmax(y) against each competitor j, so the other K-1 rows are never
+    read. Building just this row makes the per-instance cost O(K), not O(K^2) --
+    the dominant cost on many-class models.
+
+    r_last_minus1 is rounded UP before use. This is SOUND in every mode:
+    β_L(r) = κ·S·r + const is monotone increasing in r, so round_up(r) >= r only
+    inflates β, hence E and the certification RHS -- the verdict can only become
+    MORE conservative, never wrongly certify. The real-arithmetic verdict (L_ref,
+    which carries no E term) is unaffected. Rounding to the certifier's 16-dp value
+    keeps the exact rational small (~53 bits) so the per-pair arithmetic stays cheap
+    (the measured mode already does this; here we apply it uniformly across modes).
     """
     m, n = dims(W_last)
     u = float_to_q(fmt.u)
     amul = float_to_q(fmt.denorm_min) / 2
     kappa = gamma_n(n, u) + u * (Q(1) + gamma_n(n, u))
     ad = a_dot(n, u, amul)
+    r_last_minus1 = round_up(r_last_minus1)   # sound (β monotone in r); keeps the rational small
 
     out: Dict[Tuple[int,int], Tuple[Q,Q]] = {}
-    for i in range(m):
-        for j in range(m):
-            if i == j:
-                continue
+    i = i_star
+    for j in range(m):
+        if i != j:
             Lij = L[(i,j)]
             Sij = S[(i,j)]
 
@@ -623,6 +643,11 @@ def main():
         # ===== Step 3: Build components and certify =====
         t4 = time.perf_counter()
 
+        # Predicted class: certify_mode_b_theorem4 certifies i_star = argmax(y)
+        # against each competitor j, so only this row of the final-pair params is
+        # needed (O(K), not O(K^2)). Uses the same tie-break as certify's xstar.
+        i_star = max(range(len(y_f32)), key=lambda k: y_f32[k]) if y_f32 else 0
+
         # ===== STANDARD / HYBRID CERTIFICATION PATH =====
 
         if hybrid_meas_mode:
@@ -646,15 +671,15 @@ def main():
             comp_ctr = ModeBComponents(
                 r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
                 DLm1=D_hybrid_center, right_products=[], contribs=[],
-                final_pairs=compute_final_pair_params(net[-1], r_Lm1_center, fmt, L_pairs, S_pairs),
+                final_pairs=compute_final_pair_params(net[-1], r_Lm1_center, fmt, L_pairs, S_pairs, i_star),
             )
             comp_ball = ModeBComponents(
                 r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
                 DLm1=D_meas_ball, right_products=[], contribs=[],
-                final_pairs=compute_final_pair_params(net[-1], r_Lm1_ball, fmt, L_pairs, S_pairs),
+                final_pairs=compute_final_pair_params(net[-1], r_Lm1_ball, fmt, L_pairs, S_pairs, i_star),
             )
         else:
-            comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms)
+            comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, i_star, bias_l2_norms=bias_l2_norms)
 
             if hybrid_only_mode:
                 # Compute D^hybrid = ||z^fp_{H-1}(x) - z^hi_{H-1}(x)|| + D^hi_{H-1}.
@@ -676,16 +701,16 @@ def main():
                 # Skip the full hidden-stack recursion (DLm1 is replaced by D_hybrid).
                 r_ctr_last = radii(op2_norms, x, Q(0), bias_l2_norms=bias_l2_norms)[-1]
                 final_pairs_ctr = compute_final_pair_params(
-                    net[-1], r_ctr_last, fmt, L_pairs, S_pairs
+                    net[-1], r_ctr_last, fmt, L_pairs, S_pairs, i_star
                 )
                 comp_ctr = ModeBComponents(
                     r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
-                    DLm1=D_hybrid, right_products=[], contribs=[],
+                    DLm1=round_up(D_hybrid), right_products=[], contribs=[],
                     final_pairs=final_pairs_ctr,
                 )
             else:
                 comp_ctr = build_modeb_components(
-                    net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, bias_l2_norms=bias_l2_norms
+                    net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, i_star, bias_l2_norms=bias_l2_norms
                 )
 
         t5 = time.perf_counter()
