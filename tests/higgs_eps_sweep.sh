@@ -24,8 +24,8 @@ OUT=json_results_eps_sweep
 GRAM=12
 EPS_LIST="0.02 0.05 0.1 0.15 0.2 0.3"
 
-[ -f "$NET" ] || { echo "missing $NET (run models/regenerate_revision.sh)"; exit 1; }
-[ -f "$SRC" ] || { echo "missing $SRC (run models/regenerate_revision.sh)"; exit 1; }
+[ -f "$NET" ] || { echo "missing $NET (run models/provision_higgs_emnist_inputs.sh)"; exit 1; }
+[ -f "$SRC" ] || { echo "missing $SRC (run models/provision_higgs_emnist_inputs.sh)"; exit 1; }
 mkdir -p "$OUT"
 
 for eps in $EPS_LIST; do

@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
-# Regenerate the REVISION artifacts (HIGGS width sweep + EMNIST-byclass): the
-# sound-by-construction certifier .txt weight files AND the per-model
-# certification inputs, from the committed gloro-trained CSV weights in the
-# sibling verified-certified-robustness repo (branch higgs-gloro:
+# Provision the HIGGS + EMNIST certifier inputs (HIGGS width sweep + EMNIST-byclass)
+# that tests/run_tests.sh consumes but which are gitignored derived artifacts:
+# the sound-by-construction certifier .txt weight files AND the per-model
+# certification-input directories, from the committed gloro-trained CSV weights
+# in the sibling verified-certified-robustness repo (branch higgs-gloro:
 # scripts/sweep_results/<tag>/model_weights_csv/).
 #
-# This is the revision counterpart of models/regenerate.sh (the originals). It
-# mirrors that script AND the proven pilot driver scripts/certify_e1_e2.sh, so we
-# reproduce a known-good invocation:
+# The AUTHOR runs this once locally BEFORE building the artifact
+# (docker/build_artifact.sh, which bakes the resulting inputs into the image and
+# fails loudly if they are absent). It is the counterpart of
+# models/regenerate.sh (the originals); it mirrors that script AND the proven
+# pilot driver scripts/certify_e1_e2.sh, so we reproduce a known-good invocation:
 #
 #   net.txt  <- make_certifier_format_from_model.py : builds the model via doitlib,
 #               loads the exact executing float32 weights, and self-checks by
@@ -71,9 +74,10 @@ for w in 128 256 512 1024; do
   make_net    "$tag" higgs "$L" 1
   make_inputs "$tag" higgs "$L" 1 0.1 "$TESTS/inputs_higgs_w${w}_n10000" 10000 higgs
 done
-# HIGGS-1024 also at 50k for the RQ3 pre-deployment row.
+# HIGGS-1024 also over its FULL 500k canonical test split for the RQ3 master-table
+# row (pre-deployment VRA at the entire test distribution). ~1-2h to generate.
 make_inputs "higgs_w1024_d5_full" higgs "[1024,1024,1024,1024,1024]" 1 0.1 \
-            "$TESTS/inputs_higgs_w1024_n50000" 50000 higgs
+            "$TESTS/inputs_higgs_w1024_n500000" 500000 higgs
 
 # ---- EMNIST byclass (CIFAR architecture; isize 28; eps 0.3) ----
 BYC_L="[512,256,128,128,128,128,128,128]"
@@ -86,4 +90,4 @@ BAL_L="[512,512,512,512,512,512,512,512]"
 make_net    "emnistbal_w512_d8_ep500" emnist/balanced "$BAL_L" 28
 make_inputs "emnistbal_w512_d8_ep500" emnist/balanced "$BAL_L" 28 0.3 "$TESTS/inputs_emnist_balanced_full" ""
 
-echo "All revision artifacts regenerated and self-checked."
+echo "All HIGGS + EMNIST artifacts provisioned and self-checked."
