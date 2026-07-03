@@ -63,7 +63,7 @@ CIFAR10_RESULTS_GRAM_12="results_epsilon_0.1551_[512,256,128,128,128,128,128,128
 Z3_RESULTS_GRAM_10="z3_certifier_results_gram_10.json"
 
 # Sound-by-construction model weight files live in ../models/ (regenerated via
-# models/regenerate.sh; gitignored). They replace the old 5-dp tests/*.txt.
+# models/provision_image_model_weights.sh; gitignored). They replace the old 5-dp tests/*.txt.
 MNIST_NEURAL_NET="../models/neural_net_mnist_epsilon_0.45_[128,128,128,128,128,128,128,128]_500.txt"
 FASHION_MNIST_NEURAL_NET="../models/neural_net_fashion_mnist_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500.txt"
 CIFAR10_NEURAL_NET="../models/neural_net_cifar10_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800.txt"

@@ -209,7 +209,7 @@ marimo/_lsp/
 __marimo__/
 
 # Sound-by-construction certifier model weight files: large derived artifacts
-# regenerated from the cav2025 CSV weights via models/regenerate.sh (the
+# regenerated from the cav2025 CSV weights via models/provision_image_model_weights.sh (the
 # committed source of truth). See models/README.md.
 models/*.txt
 

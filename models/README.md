@@ -42,11 +42,11 @@ logits bit-for-bit).
 The `.txt` files are large derived artifacts (~360 MB total at exact-float32
 precision) and would duplicate the cav2025 CSV weights, so they are
 **gitignored**. The committed source of truth is the generator
-(`../make_certifier_format_from_model.py`) plus `regenerate.sh` and this README.
+(`../make_certifier_format_from_model.py`) plus `provision_image_model_weights.sh` and this README.
 Regenerate them before running the test suite or building the artifact:
 
 ```bash
-bash models/regenerate.sh
+bash models/provision_image_model_weights.sh
 ```
 
 Run it in the TF 2.13.0 venv (see `../requirements.txt`). All paths are derived

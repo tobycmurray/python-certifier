@@ -9,7 +9,7 @@
 # The AUTHOR runs this once locally BEFORE building the artifact
 # (docker/build_artifact.sh, which bakes the resulting inputs into the image and
 # fails loudly if they are absent). It is the counterpart of
-# models/regenerate.sh (the originals); it mirrors that script AND the proven
+# models/provision_image_model_weights.sh (the originals); it mirrors that script AND the proven
 # pilot driver scripts/certify_e1_e2.sh, so we reproduce a known-good invocation:
 #
 #   net.txt  <- make_certifier_format_from_model.py : builds the model via doitlib,

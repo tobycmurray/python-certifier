@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Regenerate the sound-by-construction certifier .txt weight files from the
-# cav2025 CSV weights.
+# Provision the sound-by-construction certifier .txt weight files for the three
+# IMAGE models (MNIST / Fashion MNIST / CIFAR-10) from their cav2025 CSV weights.
+# Counterpart to provision_higgs_emnist_inputs.sh (HIGGS + EMNIST); together they
+# provision every gitignored .txt weight file run_tests.sh needs.
 #
 # Each file is produced by make_certifier_format_from_model.py, which builds the
 # actual Keras model via doitlib and writes model.get_weights() -- the exact
