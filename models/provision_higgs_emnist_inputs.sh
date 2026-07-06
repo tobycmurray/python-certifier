@@ -27,8 +27,11 @@
 # standardization is recomputed deterministically from the canonical Baldi split
 # (HIGGS_N_TRAIN/HIGGS_N_TEST), identical to what the models were trained with.
 #
-# Requires the cav2025-artifact venv (TF 2.13 + doitlib + tfds, and the HIGGS +
-# EMNIST tfds downloads). Idempotent: any artifact already present is skipped.
+# Requires the python-certifier venv (../requirements.txt: TF 2.13 + tfds -- the
+# single venv for the whole artifact; doitlib is imported from the sibling
+# verified-certified-robustness/scripts via PYTHONPATH, and gloro is NOT needed,
+# only the attack scripts import it). Downloads HIGGS + EMNIST via tfds.
+# Idempotent: any artifact already present is skipped.
 #
 # Override layout with VCRS=/path/to/verified-certified-robustness/scripts and
 # PY=/path/to/python if your checkout differs.
@@ -39,7 +42,7 @@ ROOT="$(cd "$HERE/.." && pwd)"                          # python-certifier
 TESTS="$ROOT/tests"
 VCRS="${VCRS:-$ROOT/../verified-certified-robustness/scripts}"
 SWEEP="$VCRS/sweep_results"
-PY="${PY:-$VCRS/cav2025-artifact-venv/bin/python3}"
+PY="${PY:-$ROOT/venv/bin/python}"
 GEN="$ROOT/make_certifier_format_from_model.py"
 INPUTS_GEN="$VCRS/get_all_test_inputs.py"
 
