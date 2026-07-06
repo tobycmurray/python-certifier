@@ -20,3 +20,9 @@ mpmath>=1.3,<2
 Pillow>=9.0,<11
 adversarial-robustness-toolbox>=1.15,<2
 tensorflow_datasets==4.9.3   # pinned to match cav2025-artifact-venv (doitlib imports it)
+# tensorflow_datasets 4.9.3 leaves tensorflow-metadata unpinned; a FRESH install
+# pulls the latest (>=1.21.0), whose generated protobuf stubs need
+# google.protobuf.runtime_version -- absent from the protobuf 4.25.x that TF 2.13
+# constrains us to -> "ImportError: cannot import name 'runtime_version'". Pin the
+# last version compatible with protobuf 4.25 (matches the known-good venv).
+tensorflow-metadata==1.17.3
