@@ -517,7 +517,16 @@ def main():
     u = fmt.u  # scalar float
 
     print(f"Got {len(to_certify)} instances to certify...")
-    results = []
+    # Instance tallies. We deliberately do NOT retain a per-instance results list:
+    # each ModeBReport holds one ModeBPairResult per competing class (61 for the
+    # 62-class EMNIST model), carrying exact-rational fields, so accumulating
+    # 116k of them exhausted the 12 GB Docker limit and OOM-killed emnist_byclass.
+    # The old list was only ever len()'d in three ways, so four running counters
+    # reproduce the output exactly (verified byte-identical on the MNIST cexs).
+    n_total = 0
+    n_ok = 0
+    n_fail = 0
+    n_ok_real = 0
     json_results = []  # For JSON output compatible with test_verified_certified_robust_accuracy.py
 
     times = {"radii":0.0, "overflow_check":0.0, "components":0.0, "certification":0.0}
@@ -719,7 +728,15 @@ def main():
 
         times["components"] += (t5 - t4)
         times["certification"] += (t6 - t5)
-        results.append(modeb)
+        # Tally instead of retaining modeb (see n_* init above): partition into
+        # ok/fail exactly as the old `[r for r in results if r.ok]` etc. did.
+        n_total += 1
+        if modeb.ok:
+            n_ok += 1
+        else:
+            n_fail += 1
+        if modeb.ok_real:
+            n_ok_real += 1
 
         # Collect JSON output if requested
         if json_output_file:
@@ -755,15 +772,11 @@ def main():
 
         layer_count += 1
 
-    results_ok = [r for r in results if r.ok]
-    results_fail = [r for r in results if not r.ok]
-    results_ok_real = [r for r in results if r.ok_real]
-
     print("\nCERTIFIER RESULTS")
     print(f"Norms file: {norms_file}")
-    print(f"Of {len(results)} instances we attempted to certify:")
-    print(f"  Certified {len(results_ok)} instances as robust")
-    print(f"  Failed to certify {len(results_fail)} instances as robust")
+    print(f"Of {n_total} instances we attempted to certify:")
+    print(f"  Certified {n_ok} instances as robust")
+    print(f"  Failed to certify {n_fail} instances as robust")
     # "Dafny certifier ..." when an exact Dafny reference was supplied (run_tests.sh
     # greps this exact wording); "Real certifier ..." otherwise, since the baseline
     # is then the computed real-arithmetic L_real, not an actual Dafny run. Both
@@ -771,7 +784,7 @@ def main():
     # "Real certifier" form matches produce_tables.py and the golden test logs.
     _real_baseline = ("Dafny certifier" if dafny_json_file is not None
                       else "Real certifier")
-    print(f"  {_real_baseline} would have certified {len(results_ok_real)} instances as robust")
+    print(f"  {_real_baseline} would have certified {n_ok_real} instances as robust")
 
     # essentials summary
     stats_fc  = compute_stats(float_cons_all)
