@@ -472,14 +472,16 @@ def main():
             continue
         d = os.path.dirname(cex_file)
         x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
-        x = load_vector_from_npy_file(x1_file)
         epsilon = Q(cex["max_eps"])
         y_f32 = cex.get("y1", None)
         if y_f32 is None:
             sys.exit(f"Input record {cex.get('index', '?')} has no 'y1' logits. The certifier "
                      f"certifies the deployed model's logits and does not re-simulate the forward "
                      f"pass; regenerate the input JSON with the Keras-computed y1.")
-        to_certify.append((x, epsilon, y_f32))
+        # Stream inputs: keep only the light npy path, and load the exact-rational x
+        # per-instance in the loop below. Holding every x up front (116k * 784 gmpy2
+        # Q rationals, ~5-6 GB) was the other half of the OOM.
+        to_certify.append((x1_file, epsilon, y_f32))
 
     sqrt_m_ells = compute_sqrt_m_ells(net)
     W_last = net[-1]
@@ -547,7 +549,8 @@ def main():
     layer_contrib_sum  = [0.0]*H
     layer_count = 0
 
-    for idx, (x,epsilon,y_f32) in enumerate(to_certify):
+    for idx, (x1_file,epsilon,y_f32) in enumerate(to_certify):
+        x = load_vector_from_npy_file(x1_file)  # stream: load this instance's exact-rational input
         if idx % 100 == 0:
             print(f"Certifying {idx} of {len(to_certify)}")
         first_cols = len(net[0][0])
