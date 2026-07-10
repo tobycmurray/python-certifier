@@ -1,0 +1,1635 @@
+[
+{
+  "_metadata": {
+    "fp_bias": 4000000.0,
+    "fp_bias_pos": "end",
+    "n_dense_layers": 9,
+    "acc_before_bias": 0.5774000287055969,
+    "loss_before_bias": 1.316890001296997,
+    "acc_after_bias": 0.54339998960495,
+    "loss_after_bias": 1.5125477313995361,
+    "acc_delta": -0.03400003910064697
+  }
+}
+,
+{
+  "index": 0,
+  "true_label": 3,
+  "argmax_y0": 2,
+  "argmax_y1": 3,
+  "is_counter_example": true,
+  "max_eps": "0.10505395292297512856901857484684015421682287697153828811511",
+  "dist": "0.00000131622592262917528967559660635949522588801686880253968402539",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_k8yxyxa4.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_83kospiu.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ipve_j3h.npy",
+  "y0": [
+    4.0,
+    2.0,
+    8.0,
+    8.0,
+    7.0,
+    6.0,
+    3.0,
+    2.0,
+    4.0,
+    1.0
+  ],
+  "y1": [
+    4.0,
+    2.0,
+    8.0,
+    9.0,
+    7.0,
+    6.0,
+    3.0,
+    2.0,
+    4.0,
+    2.0
+  ],
+  "extension_best_step": 8,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.105053952922975128565512850795218697233071140954987525439681"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.105053952922975128565512850795218697233071140954987525439681",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.10505395292297512856901857484684015421682287697153828811511",
+      "best_step": 8
+    }
+  }
+}
+,
+{
+  "index": 1,
+  "true_label": 8,
+  "argmax_y0": 8,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.233996110849616000606645650010393753693411949060019413658804",
+  "dist": "0.153731180928197027949369428372400705812629920736154572936349",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_y09fba_p.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_p5pr20_x.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_jkqwqm5k.npy",
+  "y0": [
+    7.0,
+    8.0,
+    4.0,
+    4.0,
+    5.0,
+    3.0,
+    2.0,
+    4.0,
+    10.0,
+    10.0
+  ],
+  "y1": [
+    8.0,
+    8.0,
+    3.0,
+    3.0,
+    4.0,
+    3.0,
+    2.0,
+    4.0,
+    8.0,
+    12.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.233996110849616000606645650010393753693411949060019413658804"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.233996110849616000606645650010393753693411949060019413658804",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.233996110849616000606645650010393753693411949060019413658804",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 3,
+  "true_label": 0,
+  "argmax_y0": 0,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0870877043903300416092732356221621751437619046720281087435476",
+  "dist": "0.0499191197289872735095479811830490854474378867228327925949029",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_oun3edc6.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_pz6ww92h.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_p14_nqz_.npy",
+  "y0": [
+    8.0,
+    5.0,
+    5.0,
+    2.0,
+    5.0,
+    1.0,
+    1.0,
+    4.0,
+    8.0,
+    3.0
+  ],
+  "y1": [
+    8.0,
+    4.0,
+    6.0,
+    2.0,
+    5.0,
+    1.0,
+    1.0,
+    4.0,
+    9.0,
+    2.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0870877043903300416092732356221621751437619046720281087435476"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0870877043903300416092732356221621751437619046720281087435476",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0870877043903300416092732356221621751437619046720281087435476",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 5,
+  "true_label": 6,
+  "argmax_y0": 6,
+  "argmax_y1": 7,
+  "is_counter_example": true,
+  "max_eps": "0.117433874779435344977339553554307067293710240241305297121642",
+  "dist": "0.112313396300262367700694598293700116443777211952196545910799",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_0g46naoh.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ok_my4qa.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_l34624p0.npy",
+  "y0": [
+    7.0,
+    4.0,
+    7.0,
+    8.0,
+    8.0,
+    7.0,
+    9.0,
+    9.0,
+    4.0,
+    3.0
+  ],
+  "y1": [
+    7.0,
+    4.0,
+    6.0,
+    8.0,
+    8.0,
+    7.0,
+    8.0,
+    10.0,
+    4.0,
+    3.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.117433874779435344977339553554307067293710240241305297121642"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.117433874779435344977339553554307067293710240241305297121642",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.117433874779435344977339553554307067293710240241305297121642",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 6,
+  "true_label": 1,
+  "argmax_y0": 1,
+  "argmax_y1": 3,
+  "is_counter_example": true,
+  "max_eps": "0.148771597671758943327226559787554594613050315676930733679144",
+  "dist": "0.138400884910303233533661505091273534241088862583434042806415",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_m55kssxc.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ih07mctq.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_8s_d_l8o.npy",
+  "y0": [
+    8.0,
+    10.0,
+    9.0,
+    10.0,
+    4.0,
+    10.0,
+    8.0,
+    5.0,
+    2.0,
+    9.0
+  ],
+  "y1": [
+    8.0,
+    9.0,
+    9.0,
+    12.0,
+    4.0,
+    10.0,
+    9.0,
+    5.0,
+    2.0,
+    8.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.148771597671758943327226559787554594613050315676930733679144"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.148771597671758943327226559787554594613050315676930733679144",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.148771597671758943327226559787554594613050315676930733679144",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 7,
+  "true_label": 6,
+  "argmax_y0": 4,
+  "argmax_y1": 6,
+  "is_counter_example": true,
+  "max_eps": "0.0855049403989047248042572634135994866346083117643163002378366",
+  "dist": "0.00000001490116119384765625",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_y5eag3xz.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_e7aj052v.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_oqgblwtc.npy",
+  "y0": [
+    4.0,
+    2.0,
+    7.0,
+    7.0,
+    8.0,
+    6.0,
+    8.0,
+    4.0,
+    3.0,
+    4.0
+  ],
+  "y1": [
+    4.0,
+    2.0,
+    7.0,
+    7.0,
+    7.0,
+    6.0,
+    8.0,
+    4.0,
+    3.0,
+    4.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0855049403989047248042572634135994866346083117643163002378366"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0855049403989047248042572634135994866346083117643163002378366",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0855049403989047248042572634135994866346083117643163002378366",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 9,
+  "true_label": 1,
+  "argmax_y0": 1,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.116998055424808000301993678592051459772763642299481478315517",
+  "dist": "0.0650641813845997933376059685733882134532316271381926872258947",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_a5uq3cuv.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_zc_zy9st.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_dt0sbztt.npy",
+  "y0": [
+    6.0,
+    10.0,
+    2.0,
+    3.0,
+    3.0,
+    3.0,
+    0.0,
+    5.0,
+    7.0,
+    10.0
+  ],
+  "y1": [
+    6.0,
+    9.0,
+    2.0,
+    3.0,
+    3.0,
+    3.0,
+    0.0,
+    5.0,
+    7.0,
+    11.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.116998055424808000301993678592051459772763642299481478315517"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.116998055424808000301993678592051459772763642299481478315517",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.116998055424808000301993678592051459772763642299481478315517",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 10,
+  "true_label": 0,
+  "argmax_y0": 0,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0870877043903300416080313587703168090040716369752684121388933",
+  "dist": "0.0720933815728347089442287651844511745479009673448821895993724",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ckmg99gt.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_idjj8n82.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_0a9mraa6.npy",
+  "y0": [
+    9.0,
+    2.0,
+    6.0,
+    6.0,
+    5.0,
+    4.0,
+    4.0,
+    2.0,
+    8.0,
+    1.0
+  ],
+  "y1": [
+    9.0,
+    2.0,
+    6.0,
+    6.0,
+    5.0,
+    6.0,
+    4.0,
+    2.0,
+    10.0,
+    2.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0870877043903300416080313587703168090040716369752684121388933"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0870877043903300416080313587703168090040716369752684121388933",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0870877043903300416080313587703168090040716369752684121388933",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 12,
+  "true_label": 5,
+  "argmax_y0": 1,
+  "argmax_y1": 5,
+  "is_counter_example": true,
+  "max_eps": "0.0486361196766558304087875254584385687359474740651384344216386",
+  "dist": "0.00000537977036761206113331403400631064637103391525354092980468687",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_iy8fs05o.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_sw7cyjui.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_stfaa4zj.npy",
+  "y0": [
+    5.0,
+    11.0,
+    9.0,
+    9.0,
+    8.0,
+    11.0,
+    8.0,
+    7.0,
+    6.0,
+    6.0
+  ],
+  "y1": [
+    5.0,
+    11.0,
+    9.0,
+    9.0,
+    8.0,
+    12.0,
+    8.0,
+    7.0,
+    6.0,
+    6.0
+  ],
+  "extension_best_step": 32,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0486361196766558304061064646431373542934625526969613622327792"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0486361196766558304061064646431373542934625526969613622327792",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0486361196766558304087875254584385687359474740651384344216386",
+      "best_step": 32
+    }
+  }
+}
+,
+{
+  "index": 13,
+  "true_label": 7,
+  "argmax_y0": 5,
+  "argmax_y1": 7,
+  "is_counter_example": true,
+  "max_eps": "0.0587169373897176724906033682726869027152998155532752615019589",
+  "dist": "0.0108705124476862199500206590011682446464854323734611124190858",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_a85j9tgu.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_qasgpvx7.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_priq3nod.npy",
+  "y0": [
+    11.0,
+    6.0,
+    12.0,
+    10.0,
+    10.0,
+    13.0,
+    12.0,
+    13.0,
+    6.0,
+    4.0
+  ],
+  "y1": [
+    11.0,
+    6.0,
+    12.0,
+    10.0,
+    10.0,
+    12.0,
+    12.0,
+    13.0,
+    6.0,
+    4.0
+  ],
+  "extension_best_step": 2097152,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0587169373897176724838458166377632674132145753761966475211818"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0587169373897176724838458166377632674132145753761966475211818",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0587169373897176724906033682726869027152998155532752615019589",
+      "best_step": 2097152
+    }
+  }
+}
+,
+{
+  "index": 14,
+  "true_label": 9,
+  "argmax_y0": 1,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.0584990277124040001519400222506350553450573838173607268521385",
+  "dist": "0.00000135266145425678499392206330931176605596252833591168540236474",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_wi06usnt.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_xs04la2i.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_7_r1ij5_.npy",
+  "y0": [
+    2.0,
+    14.0,
+    3.0,
+    5.0,
+    1.0,
+    4.0,
+    4.0,
+    0.0,
+    4.0,
+    14.0
+  ],
+  "y1": [
+    2.0,
+    13.0,
+    3.0,
+    5.0,
+    1.0,
+    4.0,
+    4.0,
+    0.0,
+    4.0,
+    14.0
+  ],
+  "extension_best_step": 4,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0584990277124040001491287513975934686220265929097683381436934"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0584990277124040001491287513975934686220265929097683381436934",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0584990277124040001519400222506350553450573838173607268521385",
+      "best_step": 4
+    }
+  }
+}
+,
+{
+  "index": 18,
+  "true_label": 8,
+  "argmax_y0": 1,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0557817970105700262242825784359003200682930713557627967625317",
+  "dist": "0.0557532041782069558531609985417564805597355278237052983851711",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_4h1nl89l.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_xhd7vjz2.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_i3wzvxdh.npy",
+  "y0": [
+    6.0,
+    11.0,
+    2.0,
+    2.0,
+    2.0,
+    0.0,
+    0.0,
+    0.0,
+    11.0,
+    4.0
+  ],
+  "y1": [
+    6.0,
+    11.0,
+    2.0,
+    2.0,
+    2.0,
+    0.0,
+    0.0,
+    0.0,
+    12.0,
+    4.0
+  ],
+  "extension_best_step": 173056,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0557817970105700262160690129338814596405569882544269605364775"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0557817970105700262160690129338814596405569882544269605364775",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0557817970105700262242825784359003200682930713557627967625317",
+      "best_step": 173056
+    }
+  }
+}
+,
+{
+  "index": 19,
+  "true_label": 6,
+  "argmax_y0": 6,
+  "argmax_y1": 7,
+  "is_counter_example": true,
+  "max_eps": "0.0587169373897176724901346897152331368917108101118749738951844",
+  "dist": "0.0508709245007760145775233952155411462872461742203258829732402",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_kryeb4b6.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_wt2r_o3l.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_d526bviy.npy",
+  "y0": [
+    7.0,
+    2.0,
+    8.0,
+    11.0,
+    10.0,
+    10.0,
+    14.0,
+    14.0,
+    4.0,
+    7.0
+  ],
+  "y1": [
+    7.0,
+    2.0,
+    8.0,
+    11.0,
+    10.0,
+    10.0,
+    14.0,
+    15.0,
+    4.0,
+    7.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0587169373897176724901346897152331368917108101118749738951844"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0587169373897176724901346897152331368917108101118749738951844",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0587169373897176724901346897152331368917108101118749738951844",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 23,
+  "true_label": 9,
+  "argmax_y0": 1,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.0584990277124040001514936241693769621792370496179982330892246",
+  "dist": "0.00035218144243973158257637147881596328898096920255143452101455",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_qss84zzq.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_3z886bbt.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_9ns78if4.npy",
+  "y0": [
+    6.0,
+    15.0,
+    0.0,
+    1.0,
+    0.0,
+    2.0,
+    0.0,
+    0.0,
+    6.0,
+    15.0
+  ],
+  "y1": [
+    6.0,
+    15.0,
+    0.0,
+    1.0,
+    0.0,
+    2.0,
+    0.0,
+    0.0,
+    6.0,
+    16.0
+  ],
+  "extension_best_step": 1024,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0584990277124040001491287513975934686220265929097683381436934"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0584990277124040001491287513975934686220265929097683381436934",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0584990277124040001514936241693769621792370496179982330892246",
+      "best_step": 1024
+    }
+  }
+}
+,
+{
+  "index": 28,
+  "true_label": 9,
+  "argmax_y0": 1,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.0584990277124040001507773850796950246775354858215460715648185",
+  "dist": "0.00274862951115463764593893300640441127320541332550544269600554",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_0j85ncsb.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_f1wtc245.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_3obksh84.npy",
+  "y0": [
+    5.0,
+    10.0,
+    4.0,
+    6.0,
+    5.0,
+    5.0,
+    2.0,
+    3.0,
+    3.0,
+    10.0
+  ],
+  "y1": [
+    5.0,
+    9.0,
+    4.0,
+    6.0,
+    5.0,
+    5.0,
+    2.0,
+    3.0,
+    3.0,
+    10.0
+  ],
+  "extension_best_step": 16384,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0584990277124040001490857995558872550218723514590606651716443"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0584990277124040001490857995558872550218723514590606651716443",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0584990277124040001507773850796950246775354858215460715648185",
+      "best_step": 16384
+    }
+  }
+}
+,
+{
+  "index": 29,
+  "true_label": 6,
+  "argmax_y0": 6,
+  "argmax_y1": 7,
+  "is_counter_example": true,
+  "max_eps": "0.0587169373897176724890681699999798213028499665368203884257415",
+  "dist": "0.0477151695801564184215173968026218064282536189786456413857791",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_t0m54_t4.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_e0jzb92s.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ma6fo2x_.npy",
+  "y0": [
+    6.0,
+    0.0,
+    6.0,
+    8.0,
+    8.0,
+    8.0,
+    10.0,
+    10.0,
+    3.0,
+    2.0
+  ],
+  "y1": [
+    6.0,
+    1.0,
+    6.0,
+    8.0,
+    8.0,
+    9.0,
+    9.0,
+    10.0,
+    3.0,
+    2.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0587169373897176724890681699999798213028499665368203884257415"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0587169373897176724890681699999798213028499665368203884257415",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0587169373897176724890681699999798213028499665368203884257415",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 30,
+  "true_label": 6,
+  "argmax_y0": 3,
+  "argmax_y1": 6,
+  "is_counter_example": true,
+  "max_eps": "0.0918931330616074694332868381442350593070798453566155116988071",
+  "dist": "0.0914098887977507239691341753448761035765459637921032976018363",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ki9numj0.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_zxzjggam.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_e3z9hj2e.npy",
+  "y0": [
+    4.0,
+    4.0,
+    5.0,
+    7.0,
+    5.0,
+    6.0,
+    7.0,
+    5.0,
+    1.0,
+    4.0
+  ],
+  "y1": [
+    4.0,
+    4.0,
+    5.0,
+    6.0,
+    5.0,
+    6.0,
+    7.0,
+    5.0,
+    1.0,
+    4.0
+  ],
+  "extension_best_step": 2260992,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0918931330616074694332137485673470339268033703001395856910356"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0918931330616074694332137485673470339268033703001395856910356",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0918931330616074694332868381442350593070798453566155116988071",
+      "best_step": 2260992
+    }
+  }
+}
+,
+{
+  "index": 34,
+  "true_label": 9,
+  "argmax_y0": 9,
+  "argmax_y1": 7,
+  "is_counter_example": true,
+  "max_eps": "0.0565229842757764948312953340839952277471858946169314147567314",
+  "dist": "0.0376289017408321895468640086261889095392745257424834029940389",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_tc09f_yl.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_jgo6fhvf.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ywn1mtnm.npy",
+  "y0": [
+    6.0,
+    4.0,
+    6.0,
+    6.0,
+    6.0,
+    6.0,
+    4.0,
+    10.0,
+    3.0,
+    11.0
+  ],
+  "y1": [
+    6.0,
+    4.0,
+    6.0,
+    6.0,
+    6.0,
+    5.0,
+    5.0,
+    11.0,
+    3.0,
+    10.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0565229842757764948312953340839952277471858946169314147567314"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0565229842757764948312953340839952277471858946169314147567314",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0565229842757764948312953340839952277471858946169314147567314",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 37,
+  "true_label": 1,
+  "argmax_y0": 1,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.116998055424808000301534680523186578803069872004248135817986",
+  "dist": "0.105762148653236629509563526820957454008812043553458149335612",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_mv9i9q7r.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_pwoiw4f3.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_8or09t8w.npy",
+  "y0": [
+    7.0,
+    14.0,
+    1.0,
+    2.0,
+    2.0,
+    0.0,
+    0.0,
+    -3.0,
+    10.0,
+    12.0
+  ],
+  "y1": [
+    7.0,
+    12.0,
+    2.0,
+    2.0,
+    2.0,
+    0.0,
+    0.0,
+    -3.0,
+    10.0,
+    14.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.116998055424808000301534680523186578803069872004248135817986"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.116998055424808000301534680523186578803069872004248135817986",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.116998055424808000301534680523186578803069872004248135817986",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 38,
+  "true_label": 9,
+  "argmax_y0": 3,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.0597826627476429618058182880627566035111146946816920592799646",
+  "dist": "0.0595372583654908242530466334053917384252783359299889300064311",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_mcmaepyp.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_sg5mgm1b.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_p90gtpze.npy",
+  "y0": [
+    4.0,
+    4.0,
+    5.0,
+    7.0,
+    6.0,
+    7.0,
+    4.0,
+    5.0,
+    4.0,
+    7.0
+  ],
+  "y1": [
+    4.0,
+    4.0,
+    5.0,
+    7.0,
+    6.0,
+    7.0,
+    4.0,
+    5.0,
+    4.0,
+    8.0
+  ],
+  "extension_best_step": 180224,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0597826627476429618056790107747539592694215251326943233434182"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0597826627476429618056790107747539592694215251326943233434182",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0597826627476429618058182880627566035111146946816920592799646",
+      "best_step": 180224
+    }
+  }
+}
+,
+{
+  "index": 40,
+  "true_label": 4,
+  "argmax_y0": 0,
+  "argmax_y1": 4,
+  "is_counter_example": true,
+  "max_eps": "0.170868240277274727639286696714372568963353700483657803452511",
+  "dist": "0.170849390877730564379998477114947784344464380595026620499164",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_m3wh3vxm.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_o9e6kpgq.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_pbgduvex.npy",
+  "y0": [
+    9.0,
+    4.0,
+    6.0,
+    4.0,
+    9.0,
+    4.0,
+    3.0,
+    5.0,
+    5.0,
+    4.0
+  ],
+  "y1": [
+    8.0,
+    4.0,
+    6.0,
+    4.0,
+    10.0,
+    4.0,
+    3.0,
+    5.0,
+    5.0,
+    4.0
+  ],
+  "extension_best_step": 1048576,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0854341201386373638150116926200217253311491037676080762754082"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0854341201386373638150116926200217253311491037676080762754082",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.170868240277274727639286696714372568963353700483657803452511",
+      "best_step": 1048576
+    }
+  }
+}
+,
+{
+  "index": 41,
+  "true_label": 6,
+  "argmax_y0": 1,
+  "argmax_y1": 6,
+  "is_counter_example": true,
+  "max_eps": "0.0490001106143750479568817355048920489016119369203010089783637",
+  "dist": "0.0484614519643943982002196603872145126923734863454966720898786",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_rl5lv2du.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_d0pzru1e.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_hktri9lr.npy",
+  "y0": [
+    4.0,
+    6.0,
+    4.0,
+    4.0,
+    2.0,
+    4.0,
+    6.0,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "y1": [
+    4.0,
+    6.0,
+    4.0,
+    4.0,
+    2.0,
+    4.0,
+    7.0,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "extension_best_step": 606208,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0490001106143750479547830072080028845104626660445896672428979"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0490001106143750479547830072080028845104626660445896672428979",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0490001106143750479568817355048920489016119369203010089783637",
+      "best_step": 606208
+    }
+  }
+}
+,
+{
+  "index": 45,
+  "true_label": 9,
+  "argmax_y0": 0,
+  "argmax_y1": 9,
+  "is_counter_example": true,
+  "max_eps": "0.0667922183529720100766109952482248742707851849084674918385863",
+  "dist": "0.0667547974841360972210207554880754636621715461830371664884622",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x__59nfyqd.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_jfhml8el.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_0k5m89dd.npy",
+  "y0": [
+    8.0,
+    5.0,
+    4.0,
+    4.0,
+    6.0,
+    0.0,
+    3.0,
+    0.0,
+    7.0,
+    8.0
+  ],
+  "y1": [
+    8.0,
+    5.0,
+    4.0,
+    4.0,
+    6.0,
+    0.0,
+    3.0,
+    0.0,
+    7.0,
+    9.0
+  ],
+  "extension_best_step": 208640,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0667922183529720100735942637975627523645892955950358780151216"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0667922183529720100735942637975627523645892955950358780151216",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0667922183529720100766109952482248742707851849084674918385863",
+      "best_step": 208640
+    }
+  }
+}
+,
+{
+  "index": 50,
+  "true_label": 9,
+  "argmax_y0": 9,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0621493195456132406873006745030103169116160298836389009729564",
+  "dist": "0.0521972811522294519894899975337474378059159455144953285910221",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_csmwxpfm.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_z5p3funw.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_ljsgnhst.npy",
+  "y0": [
+    7.0,
+    6.0,
+    6.0,
+    6.0,
+    4.0,
+    4.0,
+    5.0,
+    4.0,
+    9.0,
+    10.0
+  ],
+  "y1": [
+    6.0,
+    6.0,
+    6.0,
+    6.0,
+    4.0,
+    4.0,
+    5.0,
+    4.0,
+    10.0,
+    9.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0621493195456132406873006745030103169116160298836389009729564"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0621493195456132406873006745030103169116160298836389009729564",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0621493195456132406873006745030103169116160298836389009729564",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 51,
+  "true_label": 8,
+  "argmax_y0": 0,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0543961850636555929213874750493009241623556661691211601690347",
+  "dist": "0.0541407512413411933170202387248635384390364626348581531543192",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_4d5t8zjo.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_1g0mm49_.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_8eul28bu.npy",
+  "y0": [
+    6.0,
+    3.0,
+    4.0,
+    3.0,
+    5.0,
+    2.0,
+    3.0,
+    6.0,
+    6.0,
+    4.0
+  ],
+  "y1": [
+    6.0,
+    3.0,
+    4.0,
+    3.0,
+    5.0,
+    2.0,
+    3.0,
+    6.0,
+    7.0,
+    4.0
+  ],
+  "extension_best_step": 336861,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0543961850636555929185446032708791133139160059334638787202504"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0543961850636555929185446032708791133139160059334638787202504",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0543961850636555929213874750493009241623556661691211601690347",
+      "best_step": 336861
+    }
+  }
+}
+,
+{
+  "index": 54,
+  "true_label": 8,
+  "argmax_y0": 1,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0557817970105700262239658308156346139608277864078059532210333",
+  "dist": "0.00137013819455239251317187640905244373702465475707584653800594",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_09uwolto.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_4ew8px2w.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_1xytugeo.npy",
+  "y0": [
+    8.0,
+    11.0,
+    2.0,
+    0.0,
+    2.0,
+    -1.0,
+    -4.0,
+    0.0,
+    11.0,
+    6.0
+  ],
+  "y1": [
+    8.0,
+    11.0,
+    2.0,
+    0.0,
+    2.0,
+    -1.0,
+    -4.0,
+    0.0,
+    12.0,
+    6.0
+  ],
+  "extension_best_step": 16384,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.055781797010570026220534820151382390364304985491998652421196"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.055781797010570026220534820151382390364304985491998652421196",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0557817970105700262239658308156346139608277864078059532210333",
+      "best_step": 16384
+    }
+  }
+}
+,
+{
+  "index": 55,
+  "true_label": 8,
+  "argmax_y0": 0,
+  "argmax_y1": 8,
+  "is_counter_example": true,
+  "max_eps": "0.0870877043903300416123006490931189689973812070391811579772311",
+  "dist": "0.0000105813513610683745162629398874149381108118875708964813287038",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_yjz26k9_.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_2gk43l3s.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_6uy4x6j2.npy",
+  "y0": [
+    8.0,
+    0.0,
+    3.0,
+    1.0,
+    3.0,
+    0.0,
+    0.0,
+    0.0,
+    8.0,
+    2.0
+  ],
+  "y1": [
+    8.0,
+    0.0,
+    3.0,
+    1.0,
+    3.0,
+    0.0,
+    0.0,
+    0.0,
+    9.0,
+    2.0
+  ],
+  "extension_best_step": 64,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0870877043903300416103620033036722754568480347698498765931737"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0870877043903300416103620033036722754568480347698498765931737",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0870877043903300416123006490931189689973812070391811579772311",
+      "best_step": 64
+    }
+  }
+}
+,
+{
+  "index": 56,
+  "true_label": 7,
+  "argmax_y0": 6,
+  "argmax_y1": 7,
+  "is_counter_example": true,
+  "max_eps": "0.0587169373897176724906634710927591089146244676228059461815659",
+  "dist": "0.058073311762841127527114075311370843657675388173402684539928",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_o1jt5toa.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_k0v4jju4.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_dxg7s1eg.npy",
+  "y0": [
+    6.0,
+    4.0,
+    10.0,
+    12.0,
+    12.0,
+    12.0,
+    14.0,
+    14.0,
+    4.0,
+    8.0
+  ],
+  "y1": [
+    6.0,
+    4.0,
+    10.0,
+    11.0,
+    12.0,
+    12.0,
+    14.0,
+    15.0,
+    4.0,
+    8.0
+  ],
+  "extension_best_step": 1441792,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0587169373897176724848708983942393458128930889732112354554097"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0587169373897176724848708983942393458128930889732112354554097",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0587169373897176724906634710927591089146244676228059461815659",
+      "best_step": 1441792
+    }
+  }
+}
+,
+{
+  "index": 60,
+  "true_label": 7,
+  "argmax_y0": 7,
+  "argmax_y1": 4,
+  "is_counter_example": true,
+  "max_eps": "0.0757575455327508609498032311625930493131384090769208121631709",
+  "dist": "0.0368034966593194071139252050654875579319897017010425386589939",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x__sf5af9_.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_3x_eye__.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_udsj3q0_.npy",
+  "y0": [
+    8.0,
+    0.0,
+    10.0,
+    8.0,
+    12.0,
+    9.0,
+    9.0,
+    14.0,
+    3.0,
+    4.0
+  ],
+  "y1": [
+    8.0,
+    0.0,
+    10.0,
+    9.0,
+    13.0,
+    9.0,
+    9.0,
+    12.0,
+    3.0,
+    4.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.0757575455327508609498032311625930493131384090769208121631709"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.0757575455327508609498032311625930493131384090769208121631709",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.0757575455327508609498032311625930493131384090769208121631709",
+      "best_step": 0
+    }
+  }
+}
+,
+{
+  "index": 64,
+  "true_label": 6,
+  "argmax_y0": 6,
+  "argmax_y1": 2,
+  "is_counter_example": true,
+  "max_eps": "0.105053952922975128563203358319253066484842984771982952579972",
+  "dist": "0.0802611001052314539670159152666611413623101520015256869298339",
+  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_o563d9jm.png",
+  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_a40zxf8l.npy",
+  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_cifar10_float32_biased_4e6_end_numpy/x_a405yqxq.npy",
+  "y0": [
+    5.0,
+    2.0,
+    7.0,
+    7.0,
+    6.0,
+    6.0,
+    8.0,
+    4.0,
+    3.0,
+    3.0
+  ],
+  "y1": [
+    5.0,
+    2.0,
+    8.0,
+    7.0,
+    6.0,
+    6.0,
+    6.0,
+    4.0,
+    3.0,
+    4.0
+  ],
+  "extension_best_step": 0,
+  "model_execution": "numpy_ieee754_compliant",
+  "stages": {
+    "deepfool_bisect": {
+      "max_eps": "0.105053952922975128563203358319253066484842984771982952579972"
+    },
+    "whitebox_extend": {
+      "max_eps": "0.105053952922975128563203358319253066484842984771982952579972",
+      "multi_ray_eps": 0.0,
+      "multi_ray_slack": 0.0,
+      "multi_ray_class": -1
+    },
+    "blackbox_extend": {
+      "max_eps": "0.105053952922975128563203358319253066484842984771982952579972",
+      "best_step": 0
+    }
+  }
+}
+
+]

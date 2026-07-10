@@ -477,14 +477,14 @@ run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-only"
 run_test "float32" "mnist_biased_1e6_end" "20" "cex" "hybrid-meas"
 
 # ===== Fashion-MNIST adversarially-biased (3e6-end) — cex (gram 13) =====
-# REENABLE run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
-# REENABLE run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
-# REENABLE run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "standard"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
 # ===== CIFAR-10 adversarially-biased (4e6-end) — cex (gram 12) =====
 # cexs regenerated vs gram-12 Dafny norms; FP rejects all 30, real certifies all 30.
-# REENABLE run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
-# REENABLE run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
-# REENABLE run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
+run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
 
 # ===== MNIST natural — all (gram 12; RQ2/RQ3 uniform) =====
 run_test "float32" "mnist"         "12" "all" "standard"
