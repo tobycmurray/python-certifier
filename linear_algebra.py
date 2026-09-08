@@ -142,7 +142,9 @@ def _fp64_frob_from_array(Mf, fmt=None) -> Q:
     u = Q(fmt.u)
     amul = Q(fmt.denorm_min) / 2
     Nu = Q(N) * u
-    assert Nu < 1, "N*u >= 1: precision cannot soundly support this Gram dimension"
+    # Need gbar = Nu/(1-Nu) < 1 (i.e. N*u < 1/2) so that (1 - gbar) > 0 and gbar >= g(N) = (1+u)^N - 1
+    # implies the Coq hypothesis g(N) < 1 of frobUB_fast_sound. For binary64 this is N < 2^52.
+    assert 2 * Nu < 1, "N*u >= 1/2: precision cannot soundly support this Gram dimension"
     gbar = Nu / (1 - Nu)                                  # >= (1+u)^N - 1 = g_N
     if N <= 1:
         g1bar = Q(N) * amul
@@ -290,9 +292,48 @@ def mtm_fp64_with_error(A: Matrix, fmt=None) -> Tuple[Matrix, Q, Q]:
     gamma_m = gamma_n(m, u)
     frob_A = _fp64_frob_from_array(Af, fmt)       # FrobUB(A) >= ||A||_F in eps (L4); reuses Af
     eps = gamma_m * frob_A * frob_A + a_dot_fwd(m, u, amul) * Q(n)
-    r = Q(1) if not Ntil_f.any() else _fp64_frob_from_array(Ntil_f, fmt)  # r = FrobUB(Ntil) (L5); reuses Ntil_f
+    r = _fp64_frob_from_array(Ntil_f, fmt)  # r = FrobUB(Ntil) (L5), literally the Coq GramStep conjunct r = FrobUB(N~); > 0 even for N~ = 0 since the absolute term g1bar > 0
     return Ntil, eps, r
 
+
+# ============================================================================
+# RUNTIME OBLIGATIONS of the fp64 Gram iteration (Coq gram_iteration.v)
+#
+# The mechanised theorem gram_iter_fp_closed_sound / gram_iter_fp_sound says: any
+# run of GramIterFP that COMMITS a value s satisfies s >= ||M||_2, where a run is
+# the relation GramRun = GramStep^n + unwind, and GramStep bundles the runtime
+# checks. Each Coq hypothesis and the line that discharges it:
+#
+#   Coq hypothesis (gram_iteration.v)          Discharged by (this file)
+#   ------------------------------------------ -----------------------------------------
+#   GramStep: F.finitemx (fl(A^T A))           mtm_fp64_with_error: np.isfinite(Ntil_f)
+#             else refuse                        -> raise OverflowError
+#   GramStep: r = FrobUB(N~), 0 < r             mtm_fp64_with_error: r = _fp64_frob_from_array(Ntil_f)
+#                                                (> 0: the absolute term g1bar is > 0)
+#   GramStep: delta = sqrtUp(||B - A_cur||_F^2)  gram_iteration_fp64: t from
+#             + gram_eps(A_prev)/r                 truncate_to_fp64_with_error (exact rational
+#                                                distance, sqrt_upper_bound) + eps / r, with
+#                                                eps = gram_eps = g_m FrobUB(A)^2 + q g1(m, m-1)
+#                                                (mtm_fp64_with_error; gamma_n exact, a_dot_fwd)
+#   A_cur = some binary64 matrix                truncate_to_fp64_with_error (round-to-nearest;
+#                                                any rounding is sound, delta measures it)
+#   unwind (r1::rs) (d1::ds) s0                 _gram_unwind (pairs stored last-step-first)
+#   frobUB_closed_sound: fl(SS) finite          _fp64_frob_from_array: math.isfinite(ss_f)
+#   frobUB_closed_sound: 2*N*u < 1              _fp64_frob_from_array: assert 2 * Nu < 1
+#     (=> gbar = Nu/(1-Nu) < 1 and g_N <= gbar)
+#   min-dim transpose (gram_iter_fp_sound_trmx) layer_opnorm_upper_bound
+#   weights are binary64 values                  .txt weights are exact binary32 values
+#
+# TRUSTED (not mechanised in Rocq):
+#   sqrtUp_sound: sqrt_upper_bound (arithmetic.py) is Heron's iteration started
+#     from max(1, x) with every iterate rounded UP; every iterate is >= sqrt(x)
+#     (AM-GM), so the returned value is sound whenever the loop stops (Tobler et
+#     al.'s Dafny-verified algorithm, re-implemented).
+#   summation order: LAProof's dotprodF is a sequential fold; numpy's einsum may
+#     accumulate in another order and/or with FMA. The g/g1 bound is classically
+#     order-independent (Higham 2002, sec. 3.1) and FMA only removes roundings,
+#     but this equivalence is not mechanised.
+# ============================================================================
 
 def gram_iteration_fp64(M: Matrix, n: int, fmt=None,
                         trace: Optional[List[Q]] = None) -> Q:
