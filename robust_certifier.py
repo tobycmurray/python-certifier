@@ -74,6 +74,7 @@ def build_modeb_components(
     S: Dict[Tuple[int,int],Q],
     i_star: int,
     bias_l2_norms: List[Q] = None,  # [||b_0||_2, ..., ||b_{L-1}||_2]
+    b_last: Vector = None,          # b_{L} (final-layer bias vector), None without --biases
 ) -> ModeBComponents:
     r_prev = radii(op2_norms, x, epsilon, bias_l2_norms=bias_l2_norms)
 
@@ -95,7 +96,7 @@ def build_modeb_components(
     for ell in range(len(alphas)):
         contribs.append(betas[ell] * right_products[ell])
 
-    final_pairs = compute_final_pair_params(network[-1], r_prev[-1], fmt, L, S, i_star)
+    final_pairs = compute_final_pair_params(network[-1], r_prev[-1], fmt, L, S, i_star, b_last=b_last)
 
     return ModeBComponents(
         r_prev=r_prev, alphas=alphas, betas=betas,
@@ -156,8 +157,10 @@ def certify_mode_b_theorem4(
 
         # Real verdict uses the verified Dafny exact bounds (L_ref): this faithfully
         # reports the verified real-arithmetic certifier (the artifact our cexs are
-        # counter-examples to). The FP verdict uses our own (e.g. fp64) L_real + E,
-        # which is sound and >= L_ref, so certified_fp ⊆ certified_real always.
+        # counter-examples to). The FP verdict uses our own (e.g. fp64) L_real + E.
+        # In practice certified_fp ⊆ certified_real, but this is not structural:
+        # with the min-dimension (transposed) Gram iteration L_real can be a hair
+        # tighter than the non-transposed L_ref, so it is not guaranteed >= L_ref.
         rhs_real = epsilon * L_ref[xstar][j]
         rhs = epsilon * L_real[xstar][j] + float_cons
         ok_real = lhs > rhs_real
@@ -248,11 +251,15 @@ def compute_final_pair_params(
     L: Dict[Tuple[int,int],Q],
     S: Dict[Tuple[int,int],Q],
     i_star: int,
+    b_last: Vector = None,
 ) -> Dict[Tuple[int,int], Tuple[Q, Q]]:
     """
-    For identity final activation (logits) with no bias:
+    For identity final activation (logits) (writeup Lemma "Final-layer pairwise
+    deviation"; paper Lemma 6.1):
       α_L^(i,j) = L_{i,j} + κ_{n_L} S_{i,j}
-      β_L^(i,j) = κ_{n_L} S_{i,j} r_{L-1} + 2(1+u) adot(n_L)
+      β_L^(i,j) = κ_{n_L} S_{i,j} r_{L-1} + u(|b_{L,i}| + |b_{L,j}|) + 2(1+u) adot(n_L)
+    where b_L is the final-layer bias vector (b_last; the u(|b_{L,i}|+|b_{L,j}|)
+    term is 0 when the network has no biases, i.e. b_last is None).
 
     Returns a dict mapping (i_star, j) with j != i_star to (alpha_L_ij, beta_L_ij).
 
@@ -290,7 +297,8 @@ def compute_final_pair_params(
             # for Fashion MNIST (CAV 2025), we certify 82.16% robust (with kappa), with
             # a ceiling of 83.65% (the CAV 2025 certifier)
             alpha_ij = Lij + kappa * Sij
-            beta_ij  = kappa * Sij * r_last_minus1 + Q(2) * (Q(1) + u) * ad
+            beta_bias = (u * (abs(b_last[i]) + abs(b_last[j]))) if b_last is not None else Q(0)
+            beta_ij  = kappa * Sij * r_last_minus1 + beta_bias + Q(2) * (Q(1) + u) * ad
             out[(i, j)] = (alpha_ij, beta_ij)
     return out
 
@@ -323,6 +331,22 @@ def compute_sqrt_m_ells(network: List[Matrix]):
         if m_ell not in res:
             res[m_ell] = sqrt_upper_bound(Q(m_ell))
     return res
+
+_DEPLOY_DTYPE = {"float16": "float16", "float32": "float32", "float64": "float64"}
+
+def logits_reproduced(z_fp_last, y_recorded: List[float], fmt_name: str) -> bool:
+    """Hybrid modes' runtime consistency check: the measuring forward pass must
+    reproduce the input record's recorded logits y1 bit-for-bit, compared as
+    floats of the deployment dtype (fmt_name). Establishes that the execution we
+    measured the centre deviation (and, for hybrid-meas, the activation norms)
+    from IS the execution whose logits we certify. Equivalent to
+    keras_forward.verify_reproduces_logits(atol=0) but backend-agnostic (works
+    for both the Keras and the compliant-numpy backends)."""
+    import numpy as np
+    dt = np.dtype(_DEPLOY_DTYPE[fmt_name])
+    out = np.asarray(z_fp_last).astype(dt)
+    rec = np.asarray([float(v) for v in y_recorded], dtype=np.float64).astype(dt)
+    return out.shape == rec.shape and bool(np.array_equal(out, rec))
 
 def compute_bias_norms(biases):
     """Compute L2 and infinity norms for each bias vector.
@@ -552,6 +576,9 @@ def main():
     n_ok = 0
     n_fail = 0
     n_ok_real = 0
+    # Refusals (counted separately; each is ALSO one of the n_fail failures):
+    n_refused_overflow = 0   # Theorem 4.2 overflow conditions not established
+    n_refused_logits = 0     # hybrid modes: measured execution != recorded y1
     json_results = []  # For JSON output compatible with test_verified_certified_robust_accuracy.py
 
     times = {"radii":0.0, "overflow_check":0.0, "components":0.0, "certification":0.0}
@@ -595,6 +622,10 @@ def main():
         D_prev = Q(0)  # D_{-1} = 0 for exact input
         layer_params = []  # Track deviation params for each hidden layer
         deviation_bounds = []  # Track [D_0, D_1, ..., D_{L-2}]
+        # Overflow-freedom (Theorem 4.2) is a PRECONDITION of the FP robustness
+        # certificate in every mode. If any layer's check fails the instance is
+        # refused (not certified); the real-arithmetic baseline is unaffected.
+        overflow_ok = True
 
         # Debug header for first example
         if idx == 0:
@@ -625,10 +656,11 @@ def main():
                 bias_norm=bias_inf_norms[ell] if bias_inf_norms is not None else Q(0)
             )
             if not overflow_stats.ok:
-                print(f"WARNING: Overflow certification failed at layer {ell}:")
+                overflow_ok = False
+                print(f"REFUSED instance {idx}: overflow conditions (Theorem 4.2) not established at layer {ell}:")
                 print(f"  S_layer check: slack = {float(overflow_stats.slack_2):.15e}")
                 print(f"  M_layer check: slack = {float(overflow_stats.slack_inf):.15e}")
-                print(f"  Continuing with robustness certification anyway...")
+                print(f"  The instance is treated as NOT certified (FP verdict); the real-arithmetic verdict is unaffected.")
 
             # (b) Compute deviation D_ℓ for this layer
             params = compute_layer_deviation_params(
@@ -669,8 +701,11 @@ def main():
                 bias_norm=bias_inf_norms[H] if bias_inf_norms is not None else Q(0)
             )
             if not overflow_stats_final.ok:
-                print(f"\nWARNING: Overflow certification failed at final layer {H}:")
-                print(f"WARNING: Continuing with robustness certification anyway...")
+                overflow_ok = False
+                print(f"REFUSED instance {idx}: overflow conditions (Theorem 4.2) not established at final layer {H}:")
+                print(f"  S_layer check: slack = {float(overflow_stats_final.slack_2):.15e}")
+                print(f"  M_layer check: slack = {float(overflow_stats_final.slack_inf):.15e}")
+                print(f"  The instance is treated as NOT certified (FP verdict); the real-arithmetic verdict is unaffected.")
 
         t3 = time.perf_counter()
         times["overflow_check"] += (t3 - t2)
@@ -682,6 +717,8 @@ def main():
         # against each competitor j, so only this row of the final-pair params is
         # needed (O(K), not O(K^2)). Uses the same tie-break as certify's xstar.
         i_star = max(range(len(y_f32)), key=lambda k: y_f32[k]) if y_f32 else 0
+        b_last = biases[-1] if biases is not None else None   # final-layer bias (Lemma 6.1 β_L term)
+        logits_ok = True   # hybrid modes: measured execution reproduces recorded y1
 
         # ===== STANDARD / HYBRID CERTIFICATION PATH =====
 
@@ -696,6 +733,11 @@ def main():
             # same execution as the deployed logits), not a numpy re-simulation.
             z_hi = forward_activations(keras_model_hi, x, "float64")
             z_fp = forward_activations(keras_model_fp, x, keras_fp_policy)
+            logits_ok = logits_reproduced(z_fp[-1], y_f32, fmt.name)
+            if not logits_ok:
+                print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
+                      f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation / "
+                      f"activation norms would not be those of the certified execution.")
 
             D_hybrid_center, r_Lm1_center, D_meas_ball, r_Lm1_ball = build_measured_comp_inputs(
                 net, x, epsilon, op2_norms, op2_abs_norms, z_hi, z_fp, sqrt_m_ells, fmt, H,
@@ -706,15 +748,15 @@ def main():
             comp_ctr = ModeBComponents(
                 r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
                 DLm1=D_hybrid_center, right_products=[], contribs=[],
-                final_pairs=compute_final_pair_params(net[-1], r_Lm1_center, fmt, L_pairs, S_pairs, i_star),
+                final_pairs=compute_final_pair_params(net[-1], r_Lm1_center, fmt, L_pairs, S_pairs, i_star, b_last=b_last),
             )
             comp_ball = ModeBComponents(
                 r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
                 DLm1=D_meas_ball, right_products=[], contribs=[],
-                final_pairs=compute_final_pair_params(net[-1], r_Lm1_ball, fmt, L_pairs, S_pairs, i_star),
+                final_pairs=compute_final_pair_params(net[-1], r_Lm1_ball, fmt, L_pairs, S_pairs, i_star, b_last=b_last),
             )
         else:
-            comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, i_star, bias_l2_norms=bias_l2_norms)
+            comp_ball = build_modeb_components(net, sqrt_m_ells, op2_norms, op2_abs_norms, x, epsilon, fmt, L_pairs, S_pairs, i_star, bias_l2_norms=bias_l2_norms, b_last=b_last)
 
             if hybrid_only_mode:
                 # Compute D^hybrid = ||z^fp_{H-1}(x) - z^hi_{H-1}(x)|| + D^hi_{H-1}.
@@ -724,9 +766,15 @@ def main():
                 # guaranteed to upper-bound the deployed model's center deviation.
                 z_hi = forward_activations(keras_model_hi, x, "float64")
                 z_fp = forward_activations(keras_model_fp, x, keras_fp_policy)
+                logits_ok = logits_reproduced(z_fp[-1], y_f32, fmt.name)
+                if not logits_ok:
+                    print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
+                          f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation "
+                          f"would not be that of the certified execution.")
                 measured_diff = compute_measured_center_diff(z_fp, z_hi)
                 D_hi_list = compute_D_hi_all_layers(
-                    net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H
+                    net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H,
+                    bias_l2_norms=bias_l2_norms,
                 )
                 D_hi_final = D_hi_list[H-1] if H > 0 else Q(0)
                 D_hybrid = compute_D_hybrid_center(measured_diff, D_hi_final)
@@ -736,7 +784,7 @@ def main():
                 # Skip the full hidden-stack recursion (DLm1 is replaced by D_hybrid).
                 r_ctr_last = radii(op2_norms, x, Q(0), bias_l2_norms=bias_l2_norms)[-1]
                 final_pairs_ctr = compute_final_pair_params(
-                    net[-1], r_ctr_last, fmt, L_pairs, S_pairs, i_star
+                    net[-1], r_ctr_last, fmt, L_pairs, S_pairs, i_star, b_last=b_last
                 )
                 comp_ctr = ModeBComponents(
                     r_prev=[], alphas=[], betas=[], gammas=[], kappas=[],
@@ -745,7 +793,7 @@ def main():
                 )
             else:
                 comp_ctr = build_modeb_components(
-                    net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, i_star, bias_l2_norms=bias_l2_norms
+                    net, sqrt_m_ells, op2_norms, op2_abs_norms, x, Q(0), fmt, L_pairs, S_pairs, i_star, bias_l2_norms=bias_l2_norms, b_last=b_last
                 )
 
         t5 = time.perf_counter()
@@ -756,11 +804,20 @@ def main():
         times["certification"] += (t6 - t5)
         # Tally instead of retaining modeb (see n_* init above): partition into
         # ok/fail exactly as the old `[r for r in results if r.ok]` etc. did.
+        # The FP verdict requires the overflow preconditions (Theorem 4.2) and, in
+        # the hybrid modes, that the measured execution is the certified one.
+        # A refused instance is NOT certified (and is one of the n_fail failures);
+        # the real-arithmetic baseline verdict (certified_real) is unaffected.
+        certified = modeb.ok and overflow_ok and logits_ok
         n_total += 1
-        if modeb.ok:
+        if certified:
             n_ok += 1
         else:
             n_fail += 1
+        if not overflow_ok:
+            n_refused_overflow += 1
+        if not logits_ok:
+            n_refused_logits += 1
         if modeb.ok_real:
             n_ok_real += 1
 
@@ -769,9 +826,12 @@ def main():
             record = {
                 "output": y_f32,
                 "radius": float(epsilon),
-                "certified": modeb.ok,
-                "certified_real": modeb.ok_real
+                "certified": certified,
+                "certified_real": modeb.ok_real,
+                "overflow_ok": overflow_ok,
             }
+            if hybrid_only_mode or hybrid_meas_mode:
+                record["logits_reproduced"] = logits_ok
             if modeb.pairs:
                 record["float_conservatism"] = sum(float(p.float_conservatism) for p in modeb.pairs) / len(modeb.pairs)
                 record["real_RHS"] = sum(float(p.rhs_real) for p in modeb.pairs) / len(modeb.pairs)
@@ -803,6 +863,9 @@ def main():
     print(f"Of {n_total} instances we attempted to certify:")
     print(f"  Certified {n_ok} instances as robust")
     print(f"  Failed to certify {n_fail} instances as robust")
+    print(f"  Refused {n_refused_overflow} instances: overflow conditions not established (Theorem 4.2; counted among the failures)")
+    if hybrid_only_mode or hybrid_meas_mode:
+        print(f"  Refused {n_refused_logits} instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)")
     # "Dafny certifier ..." when an exact Dafny reference was supplied (run_tests.sh
     # greps this exact wording); "Real certifier ..." otherwise, since the baseline
     # is then the computed real-arithmetic L_real, not an actual Dafny run. Both

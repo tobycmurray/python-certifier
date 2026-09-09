@@ -1,0 +1,15 @@
+standard_cifar10_float32_gram12_cex	30	0	30	30	0	-
+standard_cifar10_float64_gram12_cex	30	0	30	30	0	-
+standard_cifar10_biased_4e6_end_float32_gram12_cex	30	0	30	30	0	-
+hybrid_only_cifar10_float32_gram12_cex	30	0	30	30	0	0
+hybrid_only_cifar10_float64_gram12_cex	30	0	30	30	0	30
+hybrid_only_cifar10_biased_4e6_end_float32_gram12_cex	30	0	30	30	0	0
+hybrid_meas_cifar10_float32_gram12_cex	30	0	30	30	0	0
+hybrid_meas_cifar10_float64_gram12_cex	30	0	30	30	0	30
+hybrid_meas_cifar10_biased_4e6_end_float32_gram12_cex	30	0	30	30	0	0
+standard_cifar10_float32_gram12_all	10000	1890	8110	4612	0	-
+standard_cifar10_biased_4e6_end_float32_gram12_all	10000	0	10000	4700	0	-
+hybrid_only_cifar10_float32_gram12_all	10000	3014	6986	4612	0	0
+hybrid_only_cifar10_biased_4e6_end_float32_gram12_all	10000	0	10000	4700	0	0
+hybrid_meas_cifar10_float32_gram12_all	10000	3295	6705	4612	0	0
+hybrid_meas_cifar10_biased_4e6_end_float32_gram12_all	10000	0	10000	4700	0	0

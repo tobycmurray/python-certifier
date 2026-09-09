@@ -105,9 +105,6 @@ def kappa_n(n: int, u: Q) -> Q:
 
     Returns:
         κ_n as a rational
-
-    Raises:
-        ValueError: If n·u >= 1
     """
     gamma = gamma_n(n, u)
     return gamma + u * (Q(1) + gamma)
@@ -136,8 +133,8 @@ def a_dot(n: int, u: Q, a_mul: Q) -> Q:
     See also:
         a_dot_fwd: Tighter forward error variant for overflow analysis
     """
-    if n <= 1:
-        return Q(n) * a_mul
+    # No special case for n <= 1: gamma_n(0) = 0 and gamma_n(1) = u, so the
+    # formula (1 + γ_n)·n·a_mul is what the Coq definition gives there too.
     gamma = gamma_n(n, u)
     return Q(n) * a_mul * (Q(1) + gamma)
 

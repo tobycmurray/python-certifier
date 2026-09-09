@@ -1,0 +1,60 @@
+run	baseline N/certified/real	new N/certified/real	verdict diffs	refused(overflow)	refused(logits)	max rel dFC
+hybrid_meas_cifar10_biased_4e6_end_float32_gram12_all.json	10000/0/4700	10000/0/4700	0	0	0	3.72e-03
+hybrid_meas_cifar10_biased_4e6_end_float32_gram12_cex.json	(no baseline)	30/0/30	-	0	0	nan
+hybrid_meas_cifar10_float32_gram12_all.json	10000/3295/4612	10000/3295/4612	0	0	0	5.64e-16
+hybrid_meas_cifar10_float32_gram12_cex.json	30/0/30	30/0/30	0	0	0	2.25e-16
+hybrid_meas_cifar10_float64_gram12_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_meas_fashion_mnist_biased_3e6_end_float32_gram12_all.json	10000/0/8197	10000/0/8197	0	0	0	4.17e-03
+hybrid_meas_fashion_mnist_biased_3e6_end_float32_gram13_cex.json	(no baseline)	30/0/30	-	0	0	nan
+hybrid_meas_fashion_mnist_float16_gram13_cex.json	30/0/30	30/0/30	0	0	0	1.42e-16
+hybrid_meas_fashion_mnist_float32_gram12_all.json	10000/8298/8365	10000/8298/8365	0	0	0	2.62e-15
+hybrid_meas_fashion_mnist_float32_gram13_cex.json	30/0/30	30/0/30	0	0	0	1.05e-15
+hybrid_meas_fashion_mnist_float64_gram13_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_meas_mnist_biased_1e6_end_float32_gram12_all.json	10000/0/9549	10000/0/9549	0	0	0	6.65e-03
+hybrid_meas_mnist_biased_1e6_end_float32_gram20_cex.json	30/0/30	30/0/30	0	0	0	6.65e-03
+hybrid_meas_mnist_float16_gram20_cex.json	30/0/30	30/0/30	0	0	0	1.82e-16
+hybrid_meas_mnist_float32_gram12_all.json	10000/9565/9574	10000/9565/9574	0	0	0	2.03e-15
+hybrid_meas_mnist_float32_gram20_cex.json	30/0/30	30/0/30	0	0	0	1.22e-15
+hybrid_meas_mnist_float64_gram20_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_only_cifar10_biased_4e6_end_float32_gram12_all.json	10000/0/4700	10000/0/4700	0	0	0	3.72e-03
+hybrid_only_cifar10_biased_4e6_end_float32_gram12_cex.json	(no baseline)	30/0/30	-	0	0	nan
+hybrid_only_cifar10_float32_gram12_all.json	10000/3014/4612	10000/3014/4612	0	0	0	4.70e-16
+hybrid_only_cifar10_float32_gram12_cex.json	30/0/30	30/0/30	0	0	0	2.76e-16
+hybrid_only_cifar10_float64_gram12_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_only_fashion_mnist_biased_3e6_end_float32_gram12_all.json	10000/0/8197	10000/0/8197	0	0	0	4.17e-03
+hybrid_only_fashion_mnist_biased_3e6_end_float32_gram13_cex.json	(no baseline)	30/0/30	-	0	0	nan
+hybrid_only_fashion_mnist_float16_gram13_cex.json	30/0/30	30/0/30	0	0	0	0.00e+00
+hybrid_only_fashion_mnist_float32_gram12_all.json	10000/8280/8365	10000/8280/8365	0	0	0	2.01e-15
+hybrid_only_fashion_mnist_float32_gram13_cex.json	30/0/30	30/0/30	0	0	0	8.73e-16
+hybrid_only_fashion_mnist_float64_gram13_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_only_mnist_biased_1e6_end_float32_gram12_all.json	10000/0/9549	10000/0/9549	0	0	0	6.65e-03
+hybrid_only_mnist_biased_1e6_end_float32_gram20_cex.json	30/0/30	30/0/30	0	0	0	6.65e-03
+hybrid_only_mnist_float16_gram20_cex.json	30/0/30	30/0/30	0	0	0	0.00e+00
+hybrid_only_mnist_float32_gram12_all.json	10000/9562/9574	10000/9562/9574	0	0	0	1.73e-15
+hybrid_only_mnist_float32_gram20_cex.json	30/0/30	30/0/30	0	0	0	8.72e-16
+hybrid_only_mnist_float64_gram20_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+standard_cifar10_biased_4e6_end_float32_gram12_all.json	10000/0/4700	10000/0/4700	0	0	-	3.72e-03
+standard_cifar10_biased_4e6_end_float32_gram12_cex.json	(no baseline)	30/0/30	-	0	-	nan
+standard_cifar10_float32_gram12_all.json	10000/1890/4612	10000/1890/4612	0	0	-	0.00e+00
+standard_cifar10_float32_gram12_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_cifar10_float64_gram12_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_fashion_mnist_biased_3e6_end_float32_gram12_all.json	10000/0/8197	10000/0/8197	0	0	-	4.16e-03
+standard_fashion_mnist_biased_3e6_end_float32_gram13_cex.json	(no baseline)	30/0/30	-	0	-	nan
+standard_fashion_mnist_float16_gram13_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_fashion_mnist_float32_gram12_all.json	10000/8216/8365	10000/8216/8365	0	0	-	0.00e+00
+standard_fashion_mnist_float32_gram13_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_fashion_mnist_float64_gram13_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_mnist_biased_1e6_end_float32_gram12_all.json	10000/0/9549	10000/0/9549	0	0	-	6.65e-03
+standard_mnist_biased_1e6_end_float32_gram20_cex.json	30/0/30	30/0/30	0	0	-	6.65e-03
+standard_mnist_float16_gram20_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_mnist_float32_gram12_all.json	10000/9550/9574	10000/9550/9574	0	0	-	0.00e+00
+standard_mnist_float32_gram20_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_mnist_float64_gram20_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+
+PROBLEMS / DIFFERENCES:
+  hybrid_meas_cifar10_float64_gram12_cex.json: 30 instances refused (logits not reproduced)
+  hybrid_meas_fashion_mnist_float64_gram13_cex.json: 30 instances refused (logits not reproduced)
+  hybrid_meas_mnist_float64_gram20_cex.json: 30 instances refused (logits not reproduced)
+  hybrid_only_cifar10_float64_gram12_cex.json: 30 instances refused (logits not reproduced)
+  hybrid_only_fashion_mnist_float64_gram13_cex.json: 30 instances refused (logits not reproduced)
+  hybrid_only_mnist_float64_gram20_cex.json: 30 instances refused (logits not reproduced)

@@ -10,7 +10,7 @@ where:
     - α_ℓ = ||W_ℓ||_2 + κ_ℓ · |||W_ℓ|||_2   (propagation factor)
     - β_ℓ = κ_ℓ · |||W_ℓ|||_2 · r_{ℓ-1} + (1+u)·a_dot(n_ℓ)·√m_ℓ   (new deviation)
     - κ_ℓ = γ_n + u·(1+γ_n)   (combined relative + absolute error)
-    - γ_n = (n·u)/(1-n·u)     (relative error accumulation)
+    - γ_n = (1+u)^n - 1       (relative error accumulation; formats.gamma_n)
 
 This enables forward induction through the network:
     - Layer 0: D_{-1} = 0 → compute D_0
@@ -33,7 +33,7 @@ class LayerDeviationParams:
     layer_idx: int    # Layer index ℓ
     alpha: Q          # Propagation factor: α_ℓ = ||W_ℓ||_2 + κ_ℓ·|||W_ℓ|||_2
     beta: Q           # New deviation budget: β_ℓ = κ_ℓ·|||W_ℓ|||_2·r_{ℓ-1} + noise
-    gamma: Q          # γ_n = (n·u)/(1-n·u)
+    gamma: Q          # γ_n = (1+u)^n - 1
     kappa: Q          # κ = γ + u·(1+γ)
 
 
@@ -125,6 +125,9 @@ class DeviationReport:
     DLm1: Q                                     # D_{L-2} (final hidden layer deviation)
 
 
+# UNUSED -- not called by the certifier (robust_certifier.py drives the recursion
+# incrementally via compute_layer_deviation_params/compute_deviation_bound, with
+# bias terms). Do NOT use: it has no bias_l2_norm plumbing. Kept for reference only.
 def compute_all_deviations(
     op2_norms: List[Q],
     op2_abs_norms: List[Q],

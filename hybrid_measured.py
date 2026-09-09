@@ -32,12 +32,15 @@ def compute_D_hi_all_layers(
     sqrt_m_dict: Dict[int, Q],
     fmt_hi: FloatFormat,
     num_layers: int,
+    bias_l2_norms: Optional[List[Q]] = None,
 ) -> List[Q]:
     """Compute theoretical fp64 deviation bound at the first *num_layers* layers.
 
     Uses the standard deviation recursion with fp64 format parameters.
     Since fp64 has tiny unit roundoff (u ≈ 1.1e-16) the results are negligible
     but non-zero, and are needed for the soundness of D^hybrid.
+    Bias-aware exactly as robust_certifier.radii / compute_D_meas_with_input:
+    the radii gain ||b_ℓ||_2 and each β_ℓ gains u·||b_ℓ||_2 via bias_l2_norm.
 
     Args:
         network:      Weight matrices (length >= num_layers).
@@ -48,16 +51,19 @@ def compute_D_hi_all_layers(
         fmt_hi:       High-precision format (float64).
         num_layers:   How many layers to recurse through (pass H = L-1 to stop
                       at the final hidden layer and avoid the output layer).
+        bias_l2_norms:[||b_0||_2, ..., ||b_{L-1}||_2] (None without biases).
 
     Returns:
         [D^hi_0, ..., D^hi_{num_layers-1}]
     """
-    # Radii at center (epsilon = 0): r_ell = prod_{k<ell} ||W_k|| * ||x||
+    # Radii at center (epsilon = 0): r_ell = ||W_{ell-1}|| * r_{ell-1} + ||b_{ell-1}||_2
     r0 = l2_norm_upper_bound_vec(x)
     r_list = [r0]
     r = r0
     for ell in range(1, num_layers):
         r = op2_norms[ell - 1] * r
+        if bias_l2_norms is not None and bias_l2_norms[ell - 1] is not None:
+            r = r + bias_l2_norms[ell - 1]
         r_list.append(r)
 
     D_hi: List[Q] = []
@@ -76,6 +82,7 @@ def compute_D_hi_all_layers(
             output_dim=m_ell,
             sqrt_m=sqrt_m,
             fmt=fmt_hi,
+            bias_l2_norm=bias_l2_norms[ell] if bias_l2_norms is not None else Q(0),
         )
         D_ell = compute_deviation_bound(D_prev, params)
         D_hi.append(D_ell)
@@ -109,16 +116,18 @@ def compute_D_hybrid_center(measured_center_diff: Q, D_hi_final: Q) -> Q:
 # product, giving a much tighter E_ball term (especially deep in the network).
 # ---------------------------------------------------------------------------
 
+def _vec_to_q(z: np.ndarray) -> Vector:
+    """Exact rational copy of a float vector (float_to_q is lossless)."""
+    return [float_to_q(float(v)) for v in z]
+
+
 def compute_z_hi_norms(z_hi: List[np.ndarray]) -> List[Q]:
     """L2 norms of the fp64 activations at each layer, as sound rational upper bounds.
 
-    ||ẑ^hi_ℓ(x)||_2 for ℓ = 0 .. L-1.
+    ||ẑ^hi_ℓ(x)||_2 for ℓ = 0 .. L-1, computed in exact rational arithmetic
+    (exact sum of squares + sqrt_upper_bound), not via np.linalg.norm.
     """
-    norms = []
-    for z in z_hi:
-        norm_float = float(np.linalg.norm(z, ord=2))
-        norms.append(float_to_q(norm_float))
-    return norms
+    return [l2_norm_upper_bound_vec(_vec_to_q(z)) for z in z_hi]
 
 
 def compute_cumulative_lipschitz(op2_norms: List[Q]) -> List[Q]:
@@ -135,14 +144,20 @@ def compute_cumulative_lipschitz(op2_norms: List[Q]) -> List[Q]:
 
 
 def compute_measured_center_diff(z_fp: List[np.ndarray], z_hi: List[np.ndarray]) -> Q:
-    """||ẑ_{L-2}(x) - ẑ^hi_{L-2}(x)||_2 at the final hidden layer (index L-2)."""
+    """||ẑ_{L-2}(x) - ẑ^hi_{L-2}(x)||_2 at the final hidden layer (index L-2).
+
+    Exact rational arithmetic: both activation vectors are converted losslessly
+    (float_to_q), subtracted in Q, and the norm is l2_norm_upper_bound_vec
+    (exact sum of squares + sqrt_upper_bound) -- a sound upper bound.
+    """
     L = len(z_fp)
     if L < 2:
         return Q(0)
-    z_fp_final = z_fp[L - 2].astype(np.float64)
-    z_hi_final = z_hi[L - 2].astype(np.float64)
-    diff_norm = float(np.linalg.norm(z_fp_final - z_hi_final, ord=2))
-    return float_to_q(diff_norm)
+    z_fp_final = _vec_to_q(z_fp[L - 2])
+    z_hi_final = _vec_to_q(z_hi[L - 2])
+    assert len(z_fp_final) == len(z_hi_final)
+    diff = [a - b for a, b in zip(z_fp_final, z_hi_final)]
+    return l2_norm_upper_bound_vec(diff)
 
 
 def compute_r_meas(z_hi_norm: Q, Lip_ell: Q, epsilon: Q, D_hi_ell: Q) -> Q:
@@ -242,7 +257,8 @@ def build_measured_comp_inputs(
     Lip_cumulative = compute_cumulative_lipschitz(op2_norms)
     # D^hi over all layers (fp64; negligible but non-zero, needed for soundness of r^meas).
     D_hi = compute_D_hi_all_layers(
-        network, op2_norms, op2_abs_norms, x, sqrt_m_dict, fmt_hi, len(network)
+        network, op2_norms, op2_abs_norms, x, sqrt_m_dict, fmt_hi, len(network),
+        bias_l2_norms=bias_l2_norms,
     )
     measured_center_diff = compute_measured_center_diff(z_fp, z_hi)
 

@@ -20,7 +20,7 @@ class OverflowLayerStats:
     max_abs_entry: Q      # max_{r,k} |W_{r,k}| (for M_layer)
     S_layer: Q            # max_r ‖W_r‖_2 · (r_{l-1} + D_{l-1})
     M_layer: Q            # max_{r,k} |W_{r,k}| · (r_{l-1} + D_{l-1})
-    gamma_n: Q            # Relative error accumulation: γ_n = (n·u)/(1-n·u)
+    gamma_n: Q            # Relative error accumulation: γ_n = (1+u)^n - 1
     a_dot_n: Q            # Absolute error for subnormals: a_dot_fwd(n) = (1+γ_{n-1})·n·a_mul
     S_with_margin: Q      # S_layer · (1 + γ_n) + a_dot(n) [what actually needs checking]
     slack_2: Q            # F_max - S_with_margin (>0 means no overflow)
@@ -115,6 +115,9 @@ def check_overflow_single_layer(
     )
 
 
+# UNUSED -- not called by the certifier, and NOT to be used: it bounds the FP
+# activation by the exact radius r_{l-1} alone, OMITTING the deviation D_{l-1}
+# (unsound; see check_overflow_single_layer / certify_no_overflow_with_deviations).
 def certify_no_overflow_normwise(
     max_row_l2_norms: List[Q],  # [max_r ‖W_{0,r}‖_2, ..., max_r ‖W_{L-1,r}‖_2]
     max_abs_entries: List[Q],   # [max |W_0|, ..., max |W_{L-1}|]
@@ -139,7 +142,7 @@ def certify_no_overflow_normwise(
     where:
         - S_layer(l) = (max_r ‖W_{l,r}‖_2) · r_{l-1}  (worst-case sum bound)
         - M_layer(l) = (max_{r,k} |W_{l,r,k}|) · r_{l-1}  (worst-case product bound)
-        - γ_{n_l} = (n_l·u) / (1 - n_l·u)  (relative error accumulation)
+        - γ_{n_l} = (1+u)^{n_l} - 1  (relative error accumulation)
         - a_dot(n_l) = (1+γ_{n_l-1})·n_l·a_mul  (absolute error for subnormals)
         - ‖b_l‖_∞ = max_i |b_l[i]|  (max absolute bias, 0 if no biases)
 
