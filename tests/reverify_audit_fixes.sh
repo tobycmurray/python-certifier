@@ -9,10 +9,13 @@
 # --numpy-exec -- for the three image models (natural + adversarially biased),
 # and compares the per-instance verdicts against the baseline outputs in
 # tests/json_results_numpy/ (produced at commit b01fedad, before the fixes).
-# HIGGS and EMNIST are NOT re-run here (long); they remain to be re-run.
+# Groups `higgs` (RQ4 width sweep w128/w256/w512/w1024 @10k + HIGGS-1024 @ the
+# full 500k test split; ~3 h) and `emnist` (ByClass ~116k + Balanced ~18.8k)
+# cover the remaining paper runs (no Dafny ref -> L_real baseline, as in
+# run_tests.sh); they are not part of `all`.
 #
 # Usage (from tests/):
-#   ./reverify_audit_fixes.sh run [mnist|fashion_mnist|cifar10|all]   # run one model group (default all)
+#   ./reverify_audit_fixes.sh run [mnist|fashion_mnist|cifar10|all|higgs|emnist]   # run one model group (default all = the 3 image models)
 #   ./reverify_audit_fixes.sh compare                                  # compare all new outputs vs baseline
 # The three groups are independent and may be run concurrently (one process
 # each); outputs go to json_results_numpy_reverify/, logs and the count
@@ -49,6 +52,14 @@ ALL_CIFAR_BIASED="all_cifar10_test_inputs/all_test_inputs_numpy_biased_4e6_end.j
 MNIST_BIASES="cex_mnist_float32_biased_1e6_end/biases.txt"
 FASHION_BIASES="cex_fashion_mnist_float32_biased_3e6_end/biases.txt"
 CIFAR_BIASES="cex_cifar10_float32_biased_4e6_end/biases.txt"
+
+# HIGGS + EMNIST (run_tests.sh NN_FILE / ALL_INPUTS, NUMPY_EXEC remap = inputs_numpy.json; no Dafny ref)
+HIGGS_W128_NET="../models/neural_net_higgs_w128_d5_full.txt"
+HIGGS_W256_NET="../models/neural_net_higgs_w256_d5_full.txt"
+HIGGS_W512_NET="../models/neural_net_higgs_w512_d5_full.txt"
+HIGGS_W1024_NET="../models/neural_net_higgs_w1024_d5_full.txt"
+EMNIST_BYCLASS_NET="../models/neural_net_emnistbyc_cifar.txt"
+EMNIST_BALANCED_NET="../models/neural_net_emnistbal_w512_d8_ep500.txt"
 
 MODES=(standard hybrid-only hybrid-meas)
 
@@ -122,6 +133,29 @@ group_cifar10() {
   done
 }
 
+group_higgs() {
+  local m hw
+  for hw in higgs_w128 higgs_w256 higgs_w512 higgs_w1024; do
+    local net_var="${hw^^}_NET"   # HIGGS_W128_NET ...
+    for m in "${MODES[@]}"; do
+      run_one float32 "$hw" 12 all "$m" "${!net_var}" "inputs_${hw}_n10000/inputs_numpy.json" "" ""
+    done
+  done
+  for m in "${MODES[@]}"; do
+    run_one float32 higgs_w1024_500k 12 all "$m" "$HIGGS_W1024_NET" inputs_higgs_w1024_n500000/inputs_numpy.json "" ""
+  done
+}
+
+group_emnist() {
+  local m
+  for m in "${MODES[@]}"; do
+    run_one float32 emnist_byclass_full 12 all "$m" "$EMNIST_BYCLASS_NET" inputs_emnist_byclass_full/inputs_numpy.json "" ""
+  done
+  for m in "${MODES[@]}"; do
+    run_one float32 emnist_balanced_full 12 all "$m" "$EMNIST_BALANCED_NET" inputs_emnist_balanced_full/inputs_numpy.json "" ""
+  done
+}
+
 cmd="${1:-run}"
 case "$cmd" in
   run)
@@ -132,6 +166,8 @@ case "$cmd" in
       fashion_mnist) group_fashion_mnist ;;
       cifar10)       group_cifar10 ;;
       all)           group_mnist; group_fashion_mnist; group_cifar10 ;;
+      higgs)         group_higgs ;;
+      emnist)        group_emnist ;;
       *) echo "unknown group $GROUP" >&2; exit 1 ;;
     esac
     echo "[$(date +%H:%M:%S)] group $GROUP done; counts in $LOG_DIR/counts_${GROUP}.tsv"

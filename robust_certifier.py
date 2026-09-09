@@ -348,6 +348,15 @@ def logits_reproduced(z_fp_last, y_recorded: List[float], fmt_name: str) -> bool
     rec = np.asarray([float(v) for v in y_recorded], dtype=np.float64).astype(dt)
     return out.shape == rec.shape and bool(np.array_equal(out, rec))
 
+def center_exec_finite(z_fp, z_hi) -> bool:
+    """Hybrid modes' observational side condition (writeup/paper Theorems 8.2/8.4:
+    the executions at the centre x are observed overflow-free): BOTH measuring
+    forward passes at x -- the deployed-format one (z_fp) and the float64 one
+    (z_hi) -- must have produced finite values at every layer (all intermediate
+    activations and the logits). Backend-agnostic (Keras and compliant-numpy)."""
+    import numpy as np
+    return all(bool(np.all(np.isfinite(np.asarray(z, dtype=np.float64)))) for z in list(z_fp) + list(z_hi))
+
 def compute_bias_norms(biases):
     """Compute L2 and infinity norms for each bias vector.
 
@@ -579,6 +588,7 @@ def main():
     # Refusals (counted separately; each is ALSO one of the n_fail failures):
     n_refused_overflow = 0   # Theorem 4.2 overflow conditions not established
     n_refused_logits = 0     # hybrid modes: measured execution != recorded y1
+    n_refused_nonfinite = 0  # hybrid modes: execution at x not observed overflow-free
     json_results = []  # For JSON output compatible with test_verified_certified_robust_accuracy.py
 
     times = {"radii":0.0, "overflow_check":0.0, "components":0.0, "certification":0.0}
@@ -719,6 +729,7 @@ def main():
         i_star = max(range(len(y_f32)), key=lambda k: y_f32[k]) if y_f32 else 0
         b_last = biases[-1] if biases is not None else None   # final-layer bias (Lemma 6.1 β_L term)
         logits_ok = True   # hybrid modes: measured execution reproduces recorded y1
+        exec_finite_ok = True  # hybrid modes: both measuring passes at x finite at every layer
 
         # ===== STANDARD / HYBRID CERTIFICATION PATH =====
 
@@ -738,6 +749,10 @@ def main():
                 print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
                       f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation / "
                       f"activation norms would not be those of the certified execution.")
+            exec_finite_ok = center_exec_finite(z_fp, z_hi)
+            if not exec_finite_ok:
+                print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy}/float64 execution at x is not "
+                      f"overflow-free (non-finite activation or logit; Theorems 8.2/8.4 side condition).")
 
             D_hybrid_center, r_Lm1_center, D_meas_ball, r_Lm1_ball = build_measured_comp_inputs(
                 net, x, epsilon, op2_norms, op2_abs_norms, z_hi, z_fp, sqrt_m_ells, fmt, H,
@@ -771,6 +786,10 @@ def main():
                     print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
                           f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation "
                           f"would not be that of the certified execution.")
+                exec_finite_ok = center_exec_finite(z_fp, z_hi)
+                if not exec_finite_ok:
+                    print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy}/float64 execution at x is not "
+                          f"overflow-free (non-finite activation or logit; Theorems 8.2/8.4 side condition).")
                 measured_diff = compute_measured_center_diff(z_fp, z_hi)
                 D_hi_list = compute_D_hi_all_layers(
                     net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H,
@@ -808,7 +827,7 @@ def main():
         # the hybrid modes, that the measured execution is the certified one.
         # A refused instance is NOT certified (and is one of the n_fail failures);
         # the real-arithmetic baseline verdict (certified_real) is unaffected.
-        certified = modeb.ok and overflow_ok and logits_ok
+        certified = modeb.ok and overflow_ok and logits_ok and exec_finite_ok
         n_total += 1
         if certified:
             n_ok += 1
@@ -818,6 +837,8 @@ def main():
             n_refused_overflow += 1
         if not logits_ok:
             n_refused_logits += 1
+        if not exec_finite_ok:
+            n_refused_nonfinite += 1
         if modeb.ok_real:
             n_ok_real += 1
 
@@ -832,6 +853,7 @@ def main():
             }
             if hybrid_only_mode or hybrid_meas_mode:
                 record["logits_reproduced"] = logits_ok
+                record["center_exec_finite"] = exec_finite_ok
             if modeb.pairs:
                 record["float_conservatism"] = sum(float(p.float_conservatism) for p in modeb.pairs) / len(modeb.pairs)
                 record["real_RHS"] = sum(float(p.rhs_real) for p in modeb.pairs) / len(modeb.pairs)
@@ -866,6 +888,7 @@ def main():
     print(f"  Refused {n_refused_overflow} instances: overflow conditions not established (Theorem 4.2; counted among the failures)")
     if hybrid_only_mode or hybrid_meas_mode:
         print(f"  Refused {n_refused_logits} instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)")
+        print(f"  Refused {n_refused_nonfinite} instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)")
     # "Dafny certifier ..." when an exact Dafny reference was supplied (run_tests.sh
     # greps this exact wording); "Real certifier ..." otherwise, since the baseline
     # is then the computed real-arithmetic L_real, not an actual Dafny run. Both

@@ -47,6 +47,9 @@ def main():
             problems.append(f"{name}: {ovf_refused} instances refused for overflow")
         if lg_refused:
             problems.append(f"{name}: {lg_refused} instances refused (logits not reproduced)")
+        nf_refused = sum(1 for r in new if not r.get("center_exec_finite", True))
+        if nf_refused:
+            problems.append(f"{name}: {nf_refused} instances refused (execution at x not finite)")
         if is_cex:
             if ok_new != 0:
                 problems.append(f"{name}: FP-sound certifier certified {ok_new} counter-examples")

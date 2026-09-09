@@ -1,0 +1,15 @@
+standard_higgs_w128_float32_gram12_all	10000	8245	1755	8287	0	-
+hybrid_only_higgs_w128_float32_gram12_all	10000	8264	1736	8287	0	0
+hybrid_meas_higgs_w128_float32_gram12_all	10000	8280	1720	8287	0	0
+standard_higgs_w256_float32_gram12_all	10000	8121	1879	8234	0	-
+hybrid_only_higgs_w256_float32_gram12_all	10000	8144	1856	8234	0	0
+hybrid_meas_higgs_w256_float32_gram12_all	10000	8210	1790	8234	0	0
+standard_higgs_w512_float32_gram12_all	10000	7941	2059	8252	0	-
+hybrid_only_higgs_w512_float32_gram12_all	10000	8016	1984	8252	0	0
+hybrid_meas_higgs_w512_float32_gram12_all	10000	8194	1806	8252	0	0
+standard_higgs_w1024_float32_gram12_all	10000	7649	2351	8242	0	-
+hybrid_only_higgs_w1024_float32_gram12_all	10000	7789	2211	8242	0	0
+hybrid_meas_higgs_w1024_float32_gram12_all	10000	8105	1895	8242	0	0
+standard_higgs_w1024_500k_float32_gram12_all	500000	383806	116194	414415	0	-
+hybrid_only_higgs_w1024_500k_float32_gram12_all	500000	391070	108930	414415	0	0
+hybrid_meas_higgs_w1024_500k_float32_gram12_all	500000	408092	91908	414415	0	0

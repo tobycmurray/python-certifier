@@ -4,12 +4,19 @@ hybrid_meas_cifar10_biased_4e6_end_float32_gram12_cex.json	(no baseline)	30/0/30
 hybrid_meas_cifar10_float32_gram12_all.json	10000/3295/4612	10000/3295/4612	0	0	0	5.64e-16
 hybrid_meas_cifar10_float32_gram12_cex.json	30/0/30	30/0/30	0	0	0	2.25e-16
 hybrid_meas_cifar10_float64_gram12_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_meas_emnist_balanced_full_float32_gram12_all.json	18800/14333/14617	18800/14333/14617	0	0	0	9.46e-16
+hybrid_meas_emnist_byclass_full_float32_gram12_all.json	116323/99637/100241	116323/99637/100241	0	0	0	2.74e-15
 hybrid_meas_fashion_mnist_biased_3e6_end_float32_gram12_all.json	10000/0/8197	10000/0/8197	0	0	0	4.17e-03
 hybrid_meas_fashion_mnist_biased_3e6_end_float32_gram13_cex.json	(no baseline)	30/0/30	-	0	0	nan
 hybrid_meas_fashion_mnist_float16_gram13_cex.json	30/0/30	30/0/30	0	0	0	1.42e-16
 hybrid_meas_fashion_mnist_float32_gram12_all.json	10000/8298/8365	10000/8298/8365	0	0	0	2.62e-15
 hybrid_meas_fashion_mnist_float32_gram13_cex.json	30/0/30	30/0/30	0	0	0	1.05e-15
 hybrid_meas_fashion_mnist_float64_gram13_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_meas_higgs_w1024_500k_float32_gram12_all.json	500000/408092/414415	500000/408092/414415	0	0	0	4.18e-15
+hybrid_meas_higgs_w1024_float32_gram12_all.json	10000/8105/8242	10000/8105/8242	0	0	0	4.16e-15
+hybrid_meas_higgs_w128_float32_gram12_all.json	10000/8280/8287	10000/8280/8287	0	0	0	4.44e-14
+hybrid_meas_higgs_w256_float32_gram12_all.json	10000/8210/8234	10000/8210/8234	0	0	0	1.92e-14
+hybrid_meas_higgs_w512_float32_gram12_all.json	10000/8194/8252	10000/8194/8252	0	0	0	8.82e-15
 hybrid_meas_mnist_biased_1e6_end_float32_gram12_all.json	10000/0/9549	10000/0/9549	0	0	0	6.65e-03
 hybrid_meas_mnist_biased_1e6_end_float32_gram20_cex.json	30/0/30	30/0/30	0	0	0	6.65e-03
 hybrid_meas_mnist_float16_gram20_cex.json	30/0/30	30/0/30	0	0	0	1.82e-16
@@ -21,12 +28,19 @@ hybrid_only_cifar10_biased_4e6_end_float32_gram12_cex.json	(no baseline)	30/0/30
 hybrid_only_cifar10_float32_gram12_all.json	10000/3014/4612	10000/3014/4612	0	0	0	4.70e-16
 hybrid_only_cifar10_float32_gram12_cex.json	30/0/30	30/0/30	0	0	0	2.76e-16
 hybrid_only_cifar10_float64_gram12_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_only_emnist_balanced_full_float32_gram12_all.json	18800/14251/14617	18800/14251/14617	0	0	0	7.95e-16
+hybrid_only_emnist_byclass_full_float32_gram12_all.json	116323/99564/100241	116323/99564/100241	0	0	0	1.72e-15
 hybrid_only_fashion_mnist_biased_3e6_end_float32_gram12_all.json	10000/0/8197	10000/0/8197	0	0	0	4.17e-03
 hybrid_only_fashion_mnist_biased_3e6_end_float32_gram13_cex.json	(no baseline)	30/0/30	-	0	0	nan
 hybrid_only_fashion_mnist_float16_gram13_cex.json	30/0/30	30/0/30	0	0	0	0.00e+00
 hybrid_only_fashion_mnist_float32_gram12_all.json	10000/8280/8365	10000/8280/8365	0	0	0	2.01e-15
 hybrid_only_fashion_mnist_float32_gram13_cex.json	30/0/30	30/0/30	0	0	0	8.73e-16
 hybrid_only_fashion_mnist_float64_gram13_cex.json	30/0/30	30/0/30	0	0	30	0.00e+00
+hybrid_only_higgs_w1024_500k_float32_gram12_all.json	500000/391070/414415	500000/391070/414415	0	0	0	1.30e-15
+hybrid_only_higgs_w1024_float32_gram12_all.json	10000/7789/8242	10000/7789/8242	0	0	0	1.23e-15
+hybrid_only_higgs_w128_float32_gram12_all.json	10000/8264/8287	10000/8264/8287	0	0	0	1.39e-14
+hybrid_only_higgs_w256_float32_gram12_all.json	10000/8144/8234	10000/8144/8234	0	0	0	5.76e-15
+hybrid_only_higgs_w512_float32_gram12_all.json	10000/8016/8252	10000/8016/8252	0	0	0	2.48e-15
 hybrid_only_mnist_biased_1e6_end_float32_gram12_all.json	10000/0/9549	10000/0/9549	0	0	0	6.65e-03
 hybrid_only_mnist_biased_1e6_end_float32_gram20_cex.json	30/0/30	30/0/30	0	0	0	6.65e-03
 hybrid_only_mnist_float16_gram20_cex.json	30/0/30	30/0/30	0	0	0	0.00e+00
@@ -38,12 +52,19 @@ standard_cifar10_biased_4e6_end_float32_gram12_cex.json	(no baseline)	30/0/30	-	
 standard_cifar10_float32_gram12_all.json	10000/1890/4612	10000/1890/4612	0	0	-	0.00e+00
 standard_cifar10_float32_gram12_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
 standard_cifar10_float64_gram12_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_emnist_balanced_full_float32_gram12_all.json	18800/13923/14617	18800/13923/14617	0	0	-	0.00e+00
+standard_emnist_byclass_full_float32_gram12_all.json	116323/98891/100241	116323/98891/100241	0	0	-	0.00e+00
 standard_fashion_mnist_biased_3e6_end_float32_gram12_all.json	10000/0/8197	10000/0/8197	0	0	-	4.16e-03
 standard_fashion_mnist_biased_3e6_end_float32_gram13_cex.json	(no baseline)	30/0/30	-	0	-	nan
 standard_fashion_mnist_float16_gram13_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
 standard_fashion_mnist_float32_gram12_all.json	10000/8216/8365	10000/8216/8365	0	0	-	0.00e+00
 standard_fashion_mnist_float32_gram13_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
 standard_fashion_mnist_float64_gram13_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
+standard_higgs_w1024_500k_float32_gram12_all.json	500000/383806/414415	500000/383806/414415	0	0	-	0.00e+00
+standard_higgs_w1024_float32_gram12_all.json	10000/7649/8242	10000/7649/8242	0	0	-	0.00e+00
+standard_higgs_w128_float32_gram12_all.json	10000/8245/8287	10000/8245/8287	0	0	-	0.00e+00
+standard_higgs_w256_float32_gram12_all.json	10000/8121/8234	10000/8121/8234	0	0	-	0.00e+00
+standard_higgs_w512_float32_gram12_all.json	10000/7941/8252	10000/7941/8252	0	0	-	0.00e+00
 standard_mnist_biased_1e6_end_float32_gram12_all.json	10000/0/9549	10000/0/9549	0	0	-	6.65e-03
 standard_mnist_biased_1e6_end_float32_gram20_cex.json	30/0/30	30/0/30	0	0	-	6.65e-03
 standard_mnist_float16_gram20_cex.json	30/0/30	30/0/30	0	0	-	0.00e+00
