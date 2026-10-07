@@ -24,6 +24,7 @@ from formats import FloatFormat, get_float_format
 from deviation import compute_layer_deviation_params, compute_deviation_bound
 
 
+# ReLU assumption: the radii recursion below takes the activation Lipschitz constant L(phi) = 1 (ReLU); the theorems cover general FP-exact activations.
 def compute_D_hi_all_layers(
     network: List[Matrix],
     op2_norms: List[Q],
@@ -130,6 +131,7 @@ def compute_z_hi_norms(z_hi: List[np.ndarray]) -> List[Q]:
     return [l2_norm_upper_bound_vec(_vec_to_q(z)) for z in z_hi]
 
 
+# ReLU assumption: Lip_l omits the activation Lipschitz factor, i.e. takes L(phi) = 1 (ReLU); the theorems cover general FP-exact activations.
 def compute_cumulative_lipschitz(op2_norms: List[Q]) -> List[Q]:
     """Cumulative Lipschitz constants Lip_ℓ = ∏_{k=0}^{ℓ-1} ||W_k||_2.
 

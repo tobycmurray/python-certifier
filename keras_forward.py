@@ -15,13 +15,13 @@ verify this by checking that the rebuilt model reproduces the recorded y1 exactl
 """
 import os
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras.layers import Input, Dense, ReLU
 
 from linear_algebra import Matrix, Vector
 from arithmetic import Q
@@ -48,13 +48,20 @@ def _bias(b, npdt) -> np.ndarray:
 
 def build_activation_model(net: List[Matrix],
                            biases: Optional[List[Vector]],
-                           policy: str) -> Model:
+                           policy: str,
+                           with_preactivations: bool = False) -> Model:
     """A multi-output Keras model giving the per-layer activations of `net`.
 
     net[l] is (out, in); biases (if given) is a list of per-layer bias vectors.
     `policy` is 'float32' (target execution) or 'float64' (high-precision ref).
     Weights/biases are set from the certifier's exact values, so the executed
     model is exactly the model being certified.
+
+    With with_preactivations=True the model's outputs are the L per-layer
+    PRE-activations (the Dense outputs fl(fl(W z) + b), before the ReLU; the
+    last one is the logit vector) followed by the L activations; the ReLU is
+    then a separate (exact) layer after each hidden Dense. Read them with
+    forward_pre_and_activations.
     """
     if policy not in _POLICY_DTYPE:
         raise ValueError(f"unsupported policy {policy!r} (expected float32/float64)")
@@ -68,13 +75,25 @@ def build_activation_model(net: List[Matrix],
     inp = Input((in_dim,))
     z = inp
     dense_layers = []
+    pre_outputs = []
+    post_outputs = []
     for l in range(L):
         out_dim = len(net[l])
         activation = "relu" if l < L - 1 else None   # identity on the output layer
-        layer = Dense(out_dim, use_bias=use_bias, activation=activation)
-        z = layer(z)
+        if with_preactivations:
+            layer = Dense(out_dim, use_bias=use_bias, activation=None)
+            pre = layer(z)
+            z = ReLU()(pre) if activation == "relu" else pre
+            pre_outputs.append(pre)
+            post_outputs.append(z)
+        else:
+            layer = Dense(out_dim, use_bias=use_bias, activation=activation)
+            z = layer(z)
         dense_layers.append(layer)
-    model = Model(inp, [layer.output for layer in dense_layers])
+    if with_preactivations:
+        model = Model(inp, pre_outputs + post_outputs)
+    else:
+        model = Model(inp, [layer.output for layer in dense_layers])
 
     for l, layer in enumerate(dense_layers):
         K = _kernel(net[l], npdt)
@@ -93,6 +112,17 @@ def forward_activations(model: Model, x: Vector, policy: str) -> List[np.ndarray
     if not isinstance(outs, (list, tuple)):
         outs = [outs]
     return [np.asarray(o)[0] for o in outs]
+
+
+def forward_pre_and_activations(model: Model, x: Vector, policy: str
+                                ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+    """For a model built with with_preactivations=True: run it on flat input x and
+    return (pre-activations, activations), each a list of L numpy arrays."""
+    outs = forward_activations(model, x, policy)
+    if len(outs) % 2:
+        raise ValueError("model was not built with with_preactivations=True")
+    L = len(outs) // 2
+    return outs[:L], outs[L:]
 
 
 def verify_reproduces_logits(model_fp: Model, x: Vector, y1, policy: str,

@@ -348,14 +348,18 @@ def logits_reproduced(z_fp_last, y_recorded: List[float], fmt_name: str) -> bool
     rec = np.asarray([float(v) for v in y_recorded], dtype=np.float64).astype(dt)
     return out.shape == rec.shape and bool(np.array_equal(out, rec))
 
-def center_exec_finite(z_fp, z_hi) -> bool:
-    """Hybrid modes' observational side condition (writeup/paper Theorems 8.2/8.4:
-    the executions at the centre x are observed overflow-free): BOTH measuring
-    forward passes at x -- the deployed-format one (z_fp) and the float64 one
-    (z_hi) -- must have produced finite values at every layer (all intermediate
-    activations and the logits). Backend-agnostic (Keras and compliant-numpy)."""
+def center_exec_finite(pre_fp, pre_hi) -> bool:
+    """Hybrid modes' observational side condition (writeup/paper Theorems 8.2/8.4;
+    Rocq chain_fp_spec_holds: the executions at the centre x are observed
+    overflow-free): BOTH measuring forward passes at x -- the deployed-format one
+    (pre_fp) and the float64 one (pre_hi) -- must have produced a finite
+    PRE-activation fl(fl(W_l v) + b_l) at every layer l, the last layer's being
+    the logits. Checking the pre-activations (not the post-ReLU activations) is
+    what the theorems require: ReLU(-inf) = 0 would be finite, hiding an
+    overflow in the linear computation. Backend-agnostic (Keras and
+    compliant-numpy)."""
     import numpy as np
-    return all(bool(np.all(np.isfinite(np.asarray(z, dtype=np.float64)))) for z in list(z_fp) + list(z_hi))
+    return all(bool(np.all(np.isfinite(np.asarray(a, dtype=np.float64)))) for a in list(pre_fp) + list(pre_hi))
 
 def compute_bias_norms(biases):
     """Compute L2 and infinity norms for each bias vector.
@@ -552,16 +556,22 @@ def main():
             sys.exit(f"hybrid-mode forward pass not supported for {fmt.name} "
                      f"(only float16/float32/float64)")
         keras_fp_policy = fmt.name
+        # Both backends expose the per-layer PRE-activations fl(fl(W z) + b) as
+        # well as the activations: the pre-activations are what the observed-
+        # finiteness side condition (center_exec_finite) must check.
         if numpy_exec:
             from compliant_forward import (prepare as build_activation_model,
-                                           forward_activations as _np_forward_activations)
-            # same call shape as keras_forward.forward_activations; the format
-            # is baked into the prepared model, so the policy arg is ignored
-            def forward_activations(model, x, policy):
-                return _np_forward_activations(model, x)
+                                           forward_pre_and_activations as _np_forward_pre_and_activations)
+            # same call shape as keras_forward.forward_pre_and_activations; the
+            # format is baked into the prepared model, so the policy arg is ignored
+            def forward_pre_and_activations(model, x, policy):
+                return _np_forward_pre_and_activations(model, x)
             backend = "compliant-numpy"
         else:
-            from keras_forward import build_activation_model, forward_activations
+            from keras_forward import (build_activation_model as _keras_build_activation_model,
+                                       forward_pre_and_activations)
+            def build_activation_model(net, biases, policy):
+                return _keras_build_activation_model(net, biases, policy, with_preactivations=True)
             backend = "Keras"
         print(f"Building {backend} forward-pass models (fp64 ref + {keras_fp_policy} target)"
               + (" with biases" if biases is not None else "") + "...")
@@ -729,7 +739,7 @@ def main():
         i_star = max(range(len(y_f32)), key=lambda k: y_f32[k]) if y_f32 else 0
         b_last = biases[-1] if biases is not None else None   # final-layer bias (Lemma 6.1 β_L term)
         logits_ok = True   # hybrid modes: measured execution reproduces recorded y1
-        exec_finite_ok = True  # hybrid modes: both measuring passes at x finite at every layer
+        exec_finite_ok = True  # hybrid modes: both measuring passes at x have finite pre-activations at every layer
 
         # ===== STANDARD / HYBRID CERTIFICATION PATH =====
 
@@ -742,17 +752,18 @@ def main():
             # still uses the conservative theoretical radii (sound; see paper §hybrid).
             # Measured forward passes from the ACTUAL Keras model (bias-aware,
             # same execution as the deployed logits), not a numpy re-simulation.
-            z_hi = forward_activations(keras_model_hi, x, "float64")
-            z_fp = forward_activations(keras_model_fp, x, keras_fp_policy)
+            pre_hi, z_hi = forward_pre_and_activations(keras_model_hi, x, "float64")
+            pre_fp, z_fp = forward_pre_and_activations(keras_model_fp, x, keras_fp_policy)
             logits_ok = logits_reproduced(z_fp[-1], y_f32, fmt.name)
             if not logits_ok:
                 print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
                       f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation / "
                       f"activation norms would not be those of the certified execution.")
-            exec_finite_ok = center_exec_finite(z_fp, z_hi)
+            exec_finite_ok = center_exec_finite(pre_fp, pre_hi)
             if not exec_finite_ok:
                 print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy}/float64 execution at x is not "
-                      f"overflow-free (non-finite activation or logit; Theorems 8.2/8.4 side condition).")
+                      f"overflow-free (non-finite pre-activation fl(fl(Wv)+b) or logit; "
+                      f"Theorems 8.2/8.4 side condition).")
 
             D_hybrid_center, r_Lm1_center, D_meas_ball, r_Lm1_ball = build_measured_comp_inputs(
                 net, x, epsilon, op2_norms, op2_abs_norms, z_hi, z_fp, sqrt_m_ells, fmt, H,
@@ -779,17 +790,18 @@ def main():
                 # (fp64 ref vs target format), the same as hybrid-meas, so it is sound
                 # by construction and bias-aware -- a numpy re-simulation is not
                 # guaranteed to upper-bound the deployed model's center deviation.
-                z_hi = forward_activations(keras_model_hi, x, "float64")
-                z_fp = forward_activations(keras_model_fp, x, keras_fp_policy)
+                pre_hi, z_hi = forward_pre_and_activations(keras_model_hi, x, "float64")
+                pre_fp, z_fp = forward_pre_and_activations(keras_model_fp, x, keras_fp_policy)
                 logits_ok = logits_reproduced(z_fp[-1], y_f32, fmt.name)
                 if not logits_ok:
                     print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
                           f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation "
                           f"would not be that of the certified execution.")
-                exec_finite_ok = center_exec_finite(z_fp, z_hi)
+                exec_finite_ok = center_exec_finite(pre_fp, pre_hi)
                 if not exec_finite_ok:
                     print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy}/float64 execution at x is not "
-                          f"overflow-free (non-finite activation or logit; Theorems 8.2/8.4 side condition).")
+                          f"overflow-free (non-finite pre-activation fl(fl(Wv)+b) or logit; "
+                          f"Theorems 8.2/8.4 side condition).")
                 measured_diff = compute_measured_center_diff(z_fp, z_hi)
                 D_hi_list = compute_D_hi_all_layers(
                     net, op2_norms, op2_abs_norms, x, sqrt_m_ells, fmt_hi, H,
