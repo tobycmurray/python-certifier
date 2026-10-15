@@ -215,8 +215,12 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 # (biased models map to the _numpy_biased_* variants, whose y1 is the biased
 # numpy execution's own); cex dirs gain a _numpy sibling. Prints the mapped
 # path; returns 1 if no numpy variant scheme exists (z3's bare cex file).
-numpy_variant() {  # model kind file
-  local model="$1" kind="$2" file="$3"
+numpy_variant() {  # model kind file [format]
+  local model="$1" kind="$2" file="$3" format="${4:-float32}"
+  # float64 "all" sets carry y1 from the compliant numpy execution AT FLOAT64 of the
+  # same float32-weighted network (models/provision_numpy64_all_inputs.sh); their
+  # files are the _numpy64 siblings of the float32 _numpy ones.
+  local sfx="_numpy"; [[ "$format" == "float64" ]] && sfx="_numpy64"
   if [[ "$kind" == "cex" ]]; then
     [[ "$file" == */counter_examples.json ]] || return 1
     echo "${file%/counter_examples.json}_numpy/counter_examples.json"
@@ -227,7 +231,7 @@ numpy_variant() {  # model kind file
     mnist_biased_1e6_end)         echo "${base}_numpy_biased_1e6_end.json" ;;
     fashion_mnist_biased_3e6_end) echo "${base}_numpy_biased_3e6_end.json" ;;
     cifar10_biased_4e6_end)       echo "${base}_numpy_biased_4e6_end.json" ;;
-    *)                            echo "${base}_numpy.json" ;;
+    *)                            echo "${base}${sfx}.json" ;;
   esac
 }
 
@@ -283,7 +287,10 @@ run_test() {
   local cex_file=""
   case "$kind" in
     all)
-      [[ "$format" == "float32" ]] || die "Only float32 format supported when running kind 'all'"
+      # float32 always; float64 only under NUMPY_EXEC (its inputs are the _numpy64
+      # sets, whose y1 come from the float64 compliant execution).
+      [[ "$format" == "float32" || ( "$format" == "float64" && -n "$NUMPY_EXEC" ) ]] \
+        || die "Only float32 (or float64 under NUMPY_EXEC=1) supported when running kind 'all'"
       [[ -n ${ALL_INPUTS[$model]+x} ]] || die "No ALL inputs configured for '$model'"
       cex_file="${ALL_INPUTS[$model]}"
       ;;
@@ -323,7 +330,7 @@ run_test() {
   local numpy_flag=""
   if [[ -n "$NUMPY_EXEC" ]]; then
     local mapped
-    if ! mapped=$(numpy_variant "$model" "$kind" "$cex_file"); then
+    if ! mapped=$(numpy_variant "$model" "$kind" "$cex_file" "$format"); then
       echo "Skipping (no numpy variant scheme) [$mode]: $format, $model, $gram, $kind"
       return 0
     fi
@@ -566,6 +573,17 @@ done
 run_test "float32" "higgs_w1024_500k" "12" "all" "standard"
 run_test "float32" "higgs_w1024_500k" "12" "all" "hybrid-only"
 run_test "float32" "higgs_w1024_500k" "12" "all" "hybrid-meas"
+
+# ===== float64 regime (ERAN two-regime comparison, 2026-10-15): the six master-table
+# models' full sets with the deployment format float64 (float32 weights executed in
+# float64). Opt-in: FLOAT64_ALL=1 NUMPY_EXEC=1 (inputs: *_numpy64.json). =====
+if [[ -n "${FLOAT64_ALL:-}" ]]; then
+  for m64 in mnist fashion_mnist cifar10 higgs_w1024_500k emnist_byclass_full emnist_balanced_full; do
+    run_test "float64" "$m64" "12" "all" "standard"
+    run_test "float64" "$m64" "12" "all" "hybrid-only"
+    run_test "float64" "$m64" "12" "all" "hybrid-meas"
+  done
+fi
 
 # ----- EMNIST-byclass (62-class): full test (~116k), all modes -----
 # RQ2 gap (standard) + RQ3 pre-deployment (hybrid). standard@full is cheap; running
