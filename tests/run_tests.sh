@@ -102,6 +102,14 @@ CIFAR10_BIASED_4E6_END_BIASES="cex_cifar10_float32_biased_4e6_end/biases.txt"
 CEX_MNIST_BIASED_1E6_END_FLOAT32="cex_mnist_float32_biased_1e6_end/counter_examples.json"   # regenerated against corrected norms
 CEX_FASHION_MNIST_BIASED_3E6_END_FLOAT32="cex_fashion_mnist_float32_biased_3e6_end/counter_examples.json"   # regenerated against corrected Dafny ref
 CEX_CIFAR10_BIASED_4E6_END_FLOAT32="cex_cifar10_float32_biased_4e6_end/counter_examples.json"   # regenerated vs gram-12 Dafny norms
+# RQ1 grid instances (kind "natgrid"): the certified biased-model test images that the
+# k/255-grid search (natural_grid_cexs.py in verified-certified-robustness) refutes at
+# the standard radii -- MNIST 24, Fashion 204, CIFAR 370. Subsets of the biased numpy
+# "all" sets (same x npy, same biased-execution y1, same eps), built and cross-checked
+# against the search's own artefacts by make_natgrid_inputs.py. Numpy execution only.
+NATGRID_MNIST_BIASED_1E6_END="all_mnist_test_inputs/natgrid_numpy_biased_1e6_end.json"
+NATGRID_FASHION_MNIST_BIASED_3E6_END="all_fashion_mnist_test_inputs/natgrid_numpy_biased_3e6_end.json"
+NATGRID_CIFAR10_BIASED_4E6_END="all_cifar10_test_inputs/natgrid_numpy_biased_4e6_end.json"
 
 # --- declarative tables ----------------------------------------------------
 
@@ -207,6 +215,12 @@ declare -A CEX=(
   ["cifar10_biased_4e6_end:float32"]="$CEX_CIFAR10_BIASED_4E6_END_FLOAT32"
 )
 
+declare -A NATGRID=(
+  [mnist_biased_1e6_end]="$NATGRID_MNIST_BIASED_1E6_END"
+  [fashion_mnist_biased_3e6_end]="$NATGRID_FASHION_MNIST_BIASED_3E6_END"
+  [cifar10_biased_4e6_end]="$NATGRID_CIFAR10_BIASED_4E6_END"
+)
+
 # --- helpers ---------------------------------------------------------------
 
 die() { echo "ERROR: $*" >&2; exit 1; }
@@ -221,6 +235,8 @@ numpy_variant() {  # model kind file [format]
   # same float32-weighted network (models/provision_numpy64_all_inputs.sh); their
   # files are the _numpy64 siblings of the float32 _numpy ones.
   local sfx="_numpy"; [[ "$format" == "float64" ]] && sfx="_numpy64"
+  # natgrid sets are built from the numpy biased "all" sets: already the numpy variant.
+  if [[ "$kind" == "natgrid" ]]; then echo "$file"; return 0; fi
   if [[ "$kind" == "cex" ]]; then
     [[ "$file" == */counter_examples.json ]] || return 1
     echo "${file%/counter_examples.json}_numpy/counter_examples.json"
@@ -304,8 +320,14 @@ run_test() {
       [[ -n ${CEX[$key_cex]+x} ]] || die "Unsupported format '$format' for '$model' and kind 'cex'"
       cex_file="${CEX[$key_cex]}"
       ;;
+    natgrid)
+      [[ "$format" == "float32" && -n "$NUMPY_EXEC" ]] \
+        || die "kind 'natgrid' is float32 under NUMPY_EXEC=1 only (the grid instances were judged under the compliant numpy float32 execution)"
+      [[ -n ${NATGRID[$model]+x} ]] || die "No natgrid inputs configured for '$model'"
+      cex_file="${NATGRID[$model]}"
+      ;;
     *)
-      die "Unrecognised kind '$kind'. Should be 'all', 'first100' or 'cex'."
+      die "Unrecognised kind '$kind'. Should be 'all', 'first100', 'cex' or 'natgrid'."
       ;;
   esac
 
@@ -369,7 +391,7 @@ run_test() {
 
   (( count_ok + count_failed == count )) || die "Internal error: counts don't add up (ok=$count_ok failed=$count_failed total=$count)"
 
-  if [[ "$kind" == "cex" ]]; then
+  if [[ "$kind" == "cex" || "$kind" == "natgrid" ]]; then
     (( count_ok == 0 )) || die "Certifier certified $count_ok counter-examples!"
     (( count_ok_real == count )) || die "Real-arithmetic certifier would not have certified all counter-examples!"
   else
@@ -492,6 +514,20 @@ run_test "float32" "fashion_mnist_biased_3e6_end" "13" "cex" "hybrid-meas"
 run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "standard"
 run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-only"
 run_test "float32" "cifar10_biased_4e6_end" "12" "cex" "hybrid-meas"
+
+# ===== RQ1 grid instances on the three biased models (kind natgrid; numpy execution only) =====
+# The 24/204/370 certified test images the grid search refutes at the standard radii; same
+# per-model tightest grams and Dafny refs as the cex runs (the search certified them with
+# those refs). FP must reject all, real must certify all (same checks as kind cex).
+run_test "float32" "mnist_biased_1e6_end" "20" "natgrid" "standard"
+run_test "float32" "mnist_biased_1e6_end" "20" "natgrid" "hybrid-only"
+run_test "float32" "mnist_biased_1e6_end" "20" "natgrid" "hybrid-meas"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "natgrid" "standard"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "natgrid" "hybrid-only"
+run_test "float32" "fashion_mnist_biased_3e6_end" "13" "natgrid" "hybrid-meas"
+run_test "float32" "cifar10_biased_4e6_end" "12" "natgrid" "standard"
+run_test "float32" "cifar10_biased_4e6_end" "12" "natgrid" "hybrid-only"
+run_test "float32" "cifar10_biased_4e6_end" "12" "natgrid" "hybrid-meas"
 
 # ===== MNIST natural — all (gram 12; RQ2/RQ3 uniform) =====
 run_test "float32" "mnist"         "12" "all" "standard"
