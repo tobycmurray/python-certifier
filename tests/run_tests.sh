@@ -31,10 +31,11 @@ CERTIFIER=../robust_certifier.py
 MODEL_FILTER="${1:-}"
 
 # Optional env var SKIP_EXISTING=1: skip any test whose JSON output already
-# exists (and is non-empty). Lets us iterate on newly-added tests without
-# re-running the established MNIST/Fashion/CIFAR suite (whose outputs are
-# already present). Applies uniformly to all/cex/first100 (every run writes
-# --json-output). Delete a stale output to force its re-run.
+# exists (and is non-empty) AND is newer than its input set. Lets us iterate on
+# newly-added tests without re-running the established MNIST/Fashion/CIFAR suite
+# (whose outputs are already present). Applies uniformly to all kinds (every run
+# writes --json-output). An output older than its inputs (a regenerated suite) is
+# re-run automatically; delete an output to force a re-run for any other reason.
 SKIP_EXISTING="${SKIP_EXISTING:-}"
 
 # Optional env var NUMPY_EXEC=1: certify the IEEE-754-compliant numpy execution
@@ -373,8 +374,14 @@ run_test() {
   mkdir -p "$out_dir"
 
   if [[ -n "$SKIP_EXISTING" && -s "$json_output" ]]; then
-    echo "Skipping (output exists) [$mode]: $format, $model, $gram, $kind"
-    return 0
+    # Never trust an output older than the input set it was produced from: a
+    # regenerated suite (new counter_examples.json / inputs .json) must re-run.
+    if [[ "$json_output" -ot "$cex_file" ]]; then
+      echo "Re-running (output older than its inputs $cex_file) [$mode]: $format, $model, $gram, $kind"
+    else
+      echo "Skipping (output exists) [$mode]: $format, $model, $gram, $kind"
+      return 0
+    fi
   fi
 
   echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
