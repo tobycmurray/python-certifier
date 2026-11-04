@@ -2,53 +2,53 @@
 {
   "index": 0,
   "true_label": 7,
-  "argmax_y0": 3,
-  "argmax_y1": 7,
+  "argmax_y0": 7,
+  "argmax_y1": 3,
   "is_counter_example": true,
-  "max_eps": "0.00543030258689421101685811879283849524545589382775275967541739",
-  "dist": "0.00542497546765823858266983063951896391743977617449839616821099",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_82_h2jgg.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_9tgl30zi.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x__b0jpvmg.npy",
+  "max_eps": "0.00724040344919228135687743455962422075156580249297579595147149",
+  "dist": "0.00692643487986528273244249539723703415649683721587200687471897",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_1xygo7sb.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_404_5q8c.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_loo6mm2s.npy",
   "y0": [
-    9.046875,
-    10.5390625,
-    12.5234375,
-    17.34375,
-    5.703125,
-    9.984375,
-    2.2421875,
-    17.34375,
-    11.4140625,
-    12.046875
+    9.0390625,
+    10.546875,
+    12.515625,
+    17.3125,
+    5.70703125,
+    9.96875,
+    2.24609375,
+    17.328125,
+    11.3984375,
+    12.015625
   ],
   "y1": [
-    9.0546875,
-    10.5546875,
-    12.5390625,
-    17.328125,
-    5.71875,
-    9.984375,
-    2.24609375,
-    17.375,
-    11.421875,
-    12.046875
+    9.0234375,
+    10.53125,
+    12.5078125,
+    17.34375,
+    5.6953125,
+    9.9765625,
+    2.2421875,
+    17.28125,
+    11.4140625,
+    12.0234375
   ],
-  "extension_best_step": 64,
+  "extension_best_step": 6,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00181010086229807033687909367642074304225339523062908721643997"
+      "max_eps": "0.00181010086229807033597762075826844352741037077751862655534314"
     },
     "whitebox_extend": {
-      "max_eps": "0.00181010086229807033687909367642074304225339523062908721643997",
+      "max_eps": "0.00181010086229807033597762075826844352741037077751862655534314",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00543030258689421101685811879283849524545589382775275967541739",
-      "best_step": 64
+      "max_eps": "0.00724040344919228135687743455962422075156580249297579595147149",
+      "best_step": 6
     }
   }
 }
@@ -59,50 +59,50 @@
   "argmax_y0": 2,
   "argmax_y1": 3,
   "is_counter_example": true,
-  "max_eps": "0.00741400503504042026325177392529517112591091483463711188071288",
-  "dist": "0.00660822442261386510440904264169151129697277561433710278249804",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_akb13k2u.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_eagzuwau.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_l9u9ppr5.npy",
+  "max_eps": "0.00370700251752021012825120163016397718669460693529564280829203",
+  "dist": "0.00368467363740347201321520769841092872444029729128026063130416",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_i4qf8lf1.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_1zoruyhc.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_swno8qiu.npy",
   "y0": [
-    13.1875,
-    14.6484375,
-    22.390625,
-    22.390625,
-    8.4453125,
+    13.203125,
+    14.6796875,
+    22.421875,
+    22.40625,
+    8.46875,
     14.796875,
-    11.21875,
-    14.5,
+    11.234375,
+    14.53125,
     17.78125,
-    13.1328125
+    13.171875
   ],
   "y1": [
-    13.1953125,
-    14.671875,
-    22.390625,
-    22.453125,
-    8.46875,
-    14.8203125,
-    11.21875,
-    14.5234375,
-    17.78125,
-    13.1796875
+    13.203125,
+    14.6875,
+    22.40625,
+    22.4375,
+    8.484375,
+    14.8125,
+    11.2421875,
+    14.53125,
+    17.8125,
+    13.171875
   ],
-  "extension_best_step": 3,
+  "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00185350125876010506427080481331572711267360405673815759724318"
+      "max_eps": "0.00370700251752021012590965621904164163163087964497259975115231"
     },
     "whitebox_extend": {
-      "max_eps": "0.00185350125876010506427080481331572711267360405673815759724318",
+      "max_eps": "0.00370700251752021012590965621904164163163087964497259975115231",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00741400503504042026325177392529517112591091483463711188071288",
-      "best_step": 3
+      "max_eps": "0.00370700251752021012825120163016397718669460693529564280829203",
+      "best_step": 2
     }
   }
 }
@@ -113,50 +113,50 @@
   "argmax_y0": 1,
   "argmax_y1": 2,
   "is_counter_example": true,
-  "max_eps": "0.00625738907009404293788578095320280913687211504084545205404465",
-  "dist": "0.00611916318621203615270925117749808371790636287074991476585086",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_ujt8m9jk.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_rb3usiyp.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_ezq2yz3g.npy",
+  "max_eps": "0.000893912724299148983099527975684936856855730956183058606652983",
+  "dist": "0.000832526123605081983150925318800020263241187006873532884506246",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_2ju9_xyz.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_irfj9c90.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_kyt0kld0.npy",
   "y0": [
-    7.40234375,
-    13.9296875,
-    13.921875,
-    9.953125,
-    7.90234375,
-    6.0546875,
-    8.8125,
-    10.125,
-    10.6328125,
-    5.90234375
-  ],
-  "y1": [
-    7.38671875,
+    7.37890625,
+    13.890625,
     13.8828125,
-    13.9375,
-    9.9296875,
-    7.8671875,
+    9.921875,
+    7.87890625,
     6.04296875,
-    8.7890625,
+    8.78125,
     10.109375,
     10.609375,
-    5.8828125
+    5.88671875
   ],
-  "extension_best_step": 3,
+  "y1": [
+    7.3828125,
+    13.8984375,
+    13.90625,
+    9.9140625,
+    7.87890625,
+    6.04296875,
+    8.796875,
+    10.1171875,
+    10.609375,
+    5.89453125
+  ],
+  "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00178782544859829797614062579120776675049828671008845957290243"
+      "max_eps": "0.000893912724299148983099527975684936856855730956183058606652983"
     },
     "whitebox_extend": {
-      "max_eps": "0.00178782544859829797614062579120776675049828671008845957290243",
+      "max_eps": "0.000893912724299148983099527975684936856855730956183058606652983",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00625738907009404293788578095320280913687211504084545205404465",
-      "best_step": 3
+      "max_eps": "0.000893912724299148983099527975684936856855730956183058606652983",
+      "best_step": 0
     }
   }
 }
@@ -167,50 +167,50 @@
   "argmax_y0": 0,
   "argmax_y1": 7,
   "is_counter_example": true,
-  "max_eps": "0.00676125321680113183238963591465738234867147121560614785340838",
-  "dist": "0.00408300904056808262708018643812455097813973855450613053405475",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_xyezaxbz.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_qpoq0snq.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_m_n812ra.npy",
+  "max_eps": "0.00845156652100141479485473060618841304776215362857000054094804",
+  "dist": "0.0083982608142521745189277350176432634203357830391321089744197",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_j47gn1q5.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_fv_lunvy.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_w_e2y9f9.npy",
   "y0": [
     17.96875,
-    11.5234375,
-    14.8125,
+    11.5,
+    14.796875,
     9.546875,
     10.875,
-    11.0234375,
-    10.7734375,
+    11.03125,
+    10.75,
     17.96875,
-    10.2265625,
-    12.921875
+    10.21875,
+    12.9140625
   ],
   "y1": [
     17.9375,
-    11.5390625,
-    14.8125,
+    11.546875,
+    14.8046875,
     9.5546875,
-    10.8671875,
+    10.8828125,
     11.03125,
-    10.765625,
-    18.0,
-    10.2265625,
-    12.921875
+    10.75,
+    18.015625,
+    10.234375,
+    12.9296875
   ],
-  "extension_best_step": 2,
+  "extension_best_step": 3,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00169031330420028295249927489863698249116083267376877343844946"
+      "max_eps": "0.00338062660840056591699193430348533664763617230283818412741477"
     },
     "whitebox_extend": {
-      "max_eps": "0.00169031330420028295249927489863698249116083267376877343844946",
+      "max_eps": "0.00338062660840056591699193430348533664763617230283818412741477",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00676125321680113183238963591465738234867147121560614785340838",
-      "best_step": 2
+      "max_eps": "0.00845156652100141479485473060618841304776215362857000054094804",
+      "best_step": 3
     }
   }
 }
@@ -221,50 +221,50 @@
   "argmax_y0": 4,
   "argmax_y1": 9,
   "is_counter_example": true,
-  "max_eps": "0.00966880150093446691929141251193227988145443621204177896888757",
-  "dist": "0.00823749662277172335083432905337518035896131192700998169322693",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_crht6199.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_n_zgu89l.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_y_ydbrpb.npy",
+  "max_eps": "0.00580128090056068015091655794979248409154421319637113473704248",
+  "dist": "0.00491532436352379707019390362797568588724586147775843146142309",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_d_32sv95.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_omuaefuy.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_pn9x86ma.npy",
   "y0": [
     6.01171875,
-    7.59765625,
-    7.453125,
-    8.046875,
+    7.60546875,
+    7.45703125,
+    8.0546875,
     17.90625,
-    8.0703125,
-    5.16015625,
+    8.078125,
+    5.1640625,
     11.234375,
     10.015625,
-    17.890625
+    17.90625
   ],
   "y1": [
     6.0,
     7.5859375,
-    7.4453125,
+    7.45703125,
     8.0625,
-    17.84375,
-    8.0625,
-    5.14453125,
-    11.2265625,
-    10.015625,
+    17.875,
+    8.0703125,
+    5.1484375,
+    11.234375,
+    10.0078125,
     17.921875
   ],
-  "extension_best_step": 4,
+  "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00386752060037378676550829046956501446575307403057423165119657"
+      "max_eps": "0.00580128090056068015091655794979248409154421319637113473704248"
     },
     "whitebox_extend": {
-      "max_eps": "0.00386752060037378676550829046956501446575307403057423165119657",
+      "max_eps": "0.00580128090056068015091655794979248409154421319637113473704248",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00966880150093446691929141251193227988145443621204177896888757",
-      "best_step": 4
+      "max_eps": "0.00580128090056068015091655794979248409154421319637113473704248",
+      "best_step": 0
     }
   }
 }
@@ -275,11 +275,11 @@
   "argmax_y0": 1,
   "argmax_y1": 7,
   "is_counter_example": true,
-  "max_eps": "0.0124919438153276023252376271138870880190611453795965505736555",
-  "dist": "0.0119179905832706460832441248209948690702909533996890074709336",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_tmh14rit.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_phbtitz7.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_snjsllst.npy",
+  "max_eps": "0.00832796254355173488234679053795901282871317407104362254529025",
+  "dist": "0.00812412340961347128766656814386694006884154325553854975952924",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_3oyje0gz.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_luyx5ek8.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_tq6n8a3u.npy",
   "y0": [
     10.046875,
     19.1875,
@@ -288,37 +288,37 @@
     12.1953125,
     8.875,
     8.578125,
-    19.171875,
+    19.1875,
     13.171875,
     11.703125
   ],
   "y1": [
     10.03125,
-    19.09375,
+    19.125,
     14.71875,
     13.8125,
-    12.1484375,
-    8.84375,
-    8.53125,
+    12.171875,
+    8.859375,
+    8.5546875,
     19.1875,
-    13.140625,
+    13.15625,
     11.6875
   ],
-  "extension_best_step": 3,
+  "extension_best_step": 4,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00416398127177586743689891410714853087050710057074479634117307"
+      "max_eps": "0.00208199063588793371570982875607688813888660751034411570432455"
     },
     "whitebox_extend": {
-      "max_eps": "0.00416398127177586743689891410714853087050710057074479634117307",
+      "max_eps": "0.00208199063588793371570982875607688813888660751034411570432455",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0124919438153276023252376271138870880190611453795965505736555",
-      "best_step": 3
+      "max_eps": "0.00832796254355173488234679053795901282871317407104362254529025",
+      "best_step": 4
     }
   }
 }
@@ -329,49 +329,49 @@
   "argmax_y0": 4,
   "argmax_y1": 8,
   "is_counter_example": true,
-  "max_eps": "0.0033137715319597077808976820844402255413784087648598171585354",
-  "dist": "0.00315436931336435751018118283957703339712962108934782539297595",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_p8wytuam.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_5co23yi3.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_der8wqnh.npy",
+  "max_eps": "0.00165688576597985388685203745605718347034514523954019225789668",
+  "dist": "0.00153964365646363513521538804764801083146602109607690818106632",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_h04u8nm5.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_b4gm4129.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_j0d093e7.npy",
   "y0": [
-    4.703125,
-    7.9296875,
-    5.94140625,
-    5.609375,
-    13.625,
-    6.0625,
-    5.2890625,
-    6.4296875,
-    13.6171875,
-    9.90625
+    4.72265625,
+    7.96484375,
+    5.9609375,
+    5.6328125,
+    13.6640625,
+    6.08203125,
+    5.3046875,
+    6.46875,
+    13.6328125,
+    9.9375
   ],
   "y1": [
-    4.6953125,
-    7.921875,
-    5.9296875,
-    5.6015625,
-    13.578125,
-    6.0625,
-    5.28125,
-    6.40625,
+    4.7109375,
+    7.9296875,
+    5.9453125,
+    5.61328125,
     13.609375,
-    9.8828125
+    6.078125,
+    5.2890625,
+    6.4375,
+    13.625,
+    9.90625
   ],
   "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.0033137715319597077808976820844402255413784087648598171585354"
+      "max_eps": "0.00165688576597985388685203745605718347034514523954019225789668"
     },
     "whitebox_extend": {
-      "max_eps": "0.0033137715319597077808976820844402255413784087648598171585354",
+      "max_eps": "0.00165688576597985388685203745605718347034514523954019225789668",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0033137715319597077808976820844402255413784087648598171585354",
+      "max_eps": "0.00165688576597985388685203745605718347034514523954019225789668",
       "best_step": 0
     }
   }
@@ -383,50 +383,50 @@
   "argmax_y0": 9,
   "argmax_y1": 8,
   "is_counter_example": true,
-  "max_eps": "0.0029426039200091965008759361127697910792339894978792012744176",
-  "dist": "0.00291193157072959544852822404549555606329875105786347047520562",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_kf78z7_n.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_s6n7qv8p.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_z4d0n14a.npy",
+  "max_eps": "0.00294260392000919649991376552938579224201106552040771571706207",
+  "dist": "0.00278918221786662013747189451478882764905715299136399542568913",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_5uda9aqn.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_tnzlbl3l.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_836tdy_1.npy",
   "y0": [
     3.2265625,
-    2.80078125,
-    6.59765625,
-    7.52734375,
-    5.015625,
-    5.21484375,
-    1.7958984375,
-    4.80859375,
+    2.7890625,
+    6.5859375,
+    7.51171875,
+    5.01953125,
+    5.2109375,
+    1.7861328125,
+    4.8046875,
     10.078125,
     10.0859375
   ],
   "y1": [
-    3.2265625,
+    3.22265625,
     2.78515625,
-    6.578125,
-    7.51171875,
+    6.59375,
+    7.5078125,
     4.9921875,
     5.21484375,
-    1.787109375,
-    4.796875,
-    10.09375,
-    10.0703125
+    1.7958984375,
+    4.79296875,
+    10.0859375,
+    10.0625
   ],
-  "extension_best_step": 2,
+  "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00098086797333639883343428192520197320060752417344703582549629"
+      "max_eps": "0.00294260392000919649991376552938579224201106552040771571706207"
     },
     "whitebox_extend": {
-      "max_eps": "0.00098086797333639883343428192520197320060752417344703582549629",
+      "max_eps": "0.00294260392000919649991376552938579224201106552040771571706207",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0029426039200091965008759361127697910792339894978792012744176",
-      "best_step": 2
+      "max_eps": "0.00294260392000919649991376552938579224201106552040771571706207",
+      "best_step": 0
     }
   }
 }
@@ -437,50 +437,50 @@
   "argmax_y0": 5,
   "argmax_y1": 6,
   "is_counter_example": true,
-  "max_eps": "0.00695790768149143486738344054897695958120634729240004581796997",
-  "dist": "0.00671811234961247371580309000582399531095193389029005567706543",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_hl2o7otc.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_55ahvgal.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_fjqbm7fv.npy",
+  "max_eps": "0.00521843076111857615097583571062553202519805435076520353549653",
+  "dist": "0.00462146181580036214120444197352826461294080649027327168055438",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_p96ku_rh.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x___ow_7ik.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_vzcl6i_5.npy",
   "y0": [
-    5.7265625,
-    4.92578125,
-    7.015625,
-    4.51171875,
-    7.9921875,
-    14.3515625,
-    14.3515625,
-    2.375,
-    9.8984375,
-    5.640625
+    5.71875,
+    4.90234375,
+    7.03515625,
+    4.5078125,
+    7.98828125,
+    14.3359375,
+    14.328125,
+    2.390625,
+    9.875,
+    5.63671875
   ],
   "y1": [
-    5.7265625,
-    4.93359375,
-    7.03125,
-    4.46875,
-    8.0078125,
-    14.296875,
-    14.359375,
-    2.3828125,
-    9.890625,
-    5.6328125
+    5.71875,
+    4.9140625,
+    7.01171875,
+    4.47265625,
+    8.015625,
+    14.328125,
+    14.375,
+    2.37109375,
+    9.875,
+    5.63671875
   ],
-  "extension_best_step": 4,
+  "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00173947692037285871287538197591402938299915305109884110704745"
+      "max_eps": "0.00260921538055928807149215440896802489131724240835313873198103"
     },
     "whitebox_extend": {
-      "max_eps": "0.00173947692037285871287538197591402938299915305109884110704745",
+      "max_eps": "0.00260921538055928807149215440896802489131724240835313873198103",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00695790768149143486738344054897695958120634729240004581796997",
-      "best_step": 4
+      "max_eps": "0.00521843076111857615097583571062553202519805435076520353549653",
+      "best_step": 2
     }
   }
 }
@@ -491,50 +491,50 @@
   "argmax_y0": 4,
   "argmax_y1": 9,
   "is_counter_example": true,
-  "max_eps": "0.00966880150093446692218213472224448520588240137547467328719305",
-  "dist": "0.00873131661235417302730915312377964206903655072143389925059708",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_n0e07e32.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_j5rm68v3.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x__fwzh0_l.npy",
+  "max_eps": "0.00773504120074757353772030876327445005822464722436705940252264",
+  "dist": "0.00644214252819835750235792966265062861989884544301168263767736",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_o1fg5d6m.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_df2idijw.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_g0szl1vt.npy",
   "y0": [
-    7.21875,
+    7.22265625,
     9.96875,
-    7.5625,
-    10.25,
+    7.578125,
+    10.2578125,
     20.875,
-    9.3515625,
-    4.765625,
+    9.359375,
+    4.7890625,
     14.0234375,
     13.203125,
     20.875
   ],
   "y1": [
-    7.21875,
-    9.921875,
-    7.5703125,
-    10.265625,
-    20.828125,
-    9.34375,
-    4.75,
-    14.03125,
-    13.1875,
+    7.2265625,
+    9.953125,
+    7.578125,
+    10.2734375,
+    20.84375,
+    9.359375,
+    4.7734375,
+    14.015625,
+    13.203125,
     20.90625
   ],
-  "extension_best_step": 52,
+  "extension_best_step": 80,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00193376030018689338034183871180362950139421094481650185339379"
+      "max_eps": "0.00386752060037378676873181940054770342101449502619785355971804"
     },
     "whitebox_extend": {
-      "max_eps": "0.00193376030018689338034183871180362950139421094481650185339379",
+      "max_eps": "0.00386752060037378676873181940054770342101449502619785355971804",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00966880150093446692218213472224448520588240137547467328719305",
-      "best_step": 52
+      "max_eps": "0.00773504120074757353772030876327445005822464722436705940252264",
+      "best_step": 80
     }
   }
 }
@@ -545,49 +545,49 @@
   "argmax_y0": 0,
   "argmax_y1": 2,
   "is_counter_example": true,
-  "max_eps": "0.00348400835880694718420544526008685993974608576388908164602364",
-  "dist": "0.00346205239671887748621050291879706146072928800308748291300386",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_zxh425lf.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_uasz9aki.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_514y74b9.npy",
+  "max_eps": "0.00348400835880694718654663710354724281698656547947852563767614",
+  "dist": "0.00330324563622849409649073354279250474326900832030651756138575",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_vyv6w895.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_3fmjabjb.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_knxnaq6y.npy",
   "y0": [
     13.875,
-    3.359375,
+    3.35546875,
     13.875,
-    6.40234375,
-    3.03515625,
-    7.0078125,
-    6.2578125,
-    8.3515625,
+    6.41015625,
+    3.037109375,
     7.01171875,
-    6.15234375
+    6.25390625,
+    8.34375,
+    7.01953125,
+    6.16015625
   ],
   "y1": [
-    13.890625,
-    3.375,
-    13.921875,
-    6.42578125,
-    3.048828125,
+    13.875,
+    3.35546875,
+    13.90625,
+    6.41015625,
+    3.02734375,
+    7.0078125,
+    6.2578125,
+    8.34375,
     7.0234375,
-    6.265625,
-    8.375,
-    7.03125,
-    6.171875
+    6.1640625
   ],
   "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00174200417940347359077144615719101953148108710007230822450353"
+      "max_eps": "0.00174200417940347359478783904523319201677000445112637406383304"
     },
     "whitebox_extend": {
-      "max_eps": "0.00174200417940347359077144615719101953148108710007230822450353",
+      "max_eps": "0.00174200417940347359478783904523319201677000445112637406383304",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00348400835880694718420544526008685993974608576388908164602364",
+      "max_eps": "0.00348400835880694718654663710354724281698656547947852563767614",
       "best_step": 2
     }
   }
@@ -599,36 +599,36 @@
   "argmax_y0": 5,
   "argmax_y1": 6,
   "is_counter_example": true,
-  "max_eps": "0.0052184307611185761482586764554617557092071629522902266598602",
-  "dist": "0.00510990303374783672886393662109717546904695957026981124545633",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_3gxqjklw.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_qu6mcbgr.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_njqijgu_.npy",
+  "max_eps": "0.00695790768149143486436209633727294476016086078864760230305371",
+  "dist": "0.0058597982256536898106169551410240635867702726821311685766621",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_qam8hjxg.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_bll10pz4.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_l3027fz2.npy",
   "y0": [
-    4.046875,
-    2.09375,
+    4.0390625,
+    2.119140625,
     2.62890625,
-    3.8125,
-    3.283203125,
-    12.09375,
-    12.09375,
-    -0.57421875,
-    7.1171875,
-    4.15234375
+    3.8203125,
+    3.30078125,
+    12.078125,
+    12.078125,
+    -0.55078125,
+    7.109375,
+    4.1640625
   ],
   "y1": [
-    4.05078125,
-    2.1015625,
-    2.62890625,
-    3.794921875,
-    3.271484375,
-    12.0546875,
-    12.1015625,
-    -0.58203125,
+    4.07421875,
+    2.138671875,
+    2.65625,
+    3.828125,
+    3.3203125,
+    12.0625,
+    12.125,
+    -0.53515625,
     7.1171875,
-    4.140625
+    4.171875
   ],
-  "extension_best_step": 32,
+  "extension_best_step": 36,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
@@ -641,8 +641,8 @@
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0052184307611185761482586764554617557092071629522902266598602",
-      "best_step": 32
+      "max_eps": "0.00695790768149143486436209633727294476016086078864760230305371",
+      "best_step": 36
     }
   }
 }
@@ -653,50 +653,50 @@
   "argmax_y0": 9,
   "argmax_y1": 4,
   "is_counter_example": true,
-  "max_eps": "0.0058012809005606801523130747064798675789942627789013144515143",
-  "dist": "0.00445589105393203177167209943191294162130599553068517273474427",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_3ldt1wca.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_o050qpvg.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_7xynkevi.npy",
+  "max_eps": "0.00386752060037378676808776298227288705749429765676812803347338",
+  "dist": "0.001170838730978957161550662393520510931900197550706790550431",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_rvqrfvy7.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_5mek0s2q.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_h784y1mc.npy",
   "y0": [
-    6.1171875,
-    7.6328125,
-    7.03125,
-    9.0546875,
-    18.5625,
-    8.84375,
-    4.1875,
-    11.8359375,
-    10.40625,
-    18.59375
+    6.140625,
+    7.640625,
+    7.0390625,
+    9.0703125,
+    18.59375,
+    8.859375,
+    4.203125,
+    11.84375,
+    10.421875,
+    18.609375
   ],
   "y1": [
-    6.1328125,
-    7.625,
-    7.01953125,
-    9.0390625,
-    18.609375,
-    8.8515625,
-    4.19921875,
-    11.8203125,
-    10.40625,
-    18.5625
+    6.140625,
+    7.640625,
+    7.04296875,
+    9.0546875,
+    18.625,
+    8.84375,
+    4.203125,
+    11.84375,
+    10.4375,
+    18.59375
   ],
-  "extension_best_step": 3,
+  "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00193376030018689337516957248387916901250994839560412534146441"
+      "max_eps": "0.00386752060037378676808776298227288705749429765676812803347338"
     },
     "whitebox_extend": {
-      "max_eps": "0.00193376030018689337516957248387916901250994839560412534146441",
+      "max_eps": "0.00386752060037378676808776298227288705749429765676812803347338",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0058012809005606801523130747064798675789942627789013144515143",
-      "best_step": 3
+      "max_eps": "0.00386752060037378676808776298227288705749429765676812803347338",
+      "best_step": 0
     }
   }
 }
@@ -707,50 +707,50 @@
   "argmax_y0": 0,
   "argmax_y1": 7,
   "is_counter_example": true,
-  "max_eps": "0.00507093991260084887391511962952226734895497782487521778997708",
-  "dist": "0.00437399778643291332985505291772764336320394075937271075989208",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_nbwvzbql.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_dbb2bdr3.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_vvm9c3_t.npy",
+  "max_eps": "0.00591609656470099034972257648951544905729983552263396810276024",
+  "dist": "0.00570946981307811923886106745056667961085673179360008553695555",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_m0vw2g2l.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_rtm9h3hl.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_ncpmodnb.npy",
   "y0": [
-    15.640625,
-    7.80078125,
-    11.109375,
-    8.984375,
-    7.6484375,
-    8.171875,
-    5.71484375,
-    15.6328125,
-    9.8515625,
-    12.21875
-  ],
-  "y1": [
-    15.625,
-    7.8203125,
+    15.671875,
+    7.8125,
     11.1171875,
-    9.0,
-    7.65625,
-    8.171875,
+    9.015625,
+    7.6484375,
+    8.1796875,
     5.71875,
     15.671875,
     9.859375,
     12.2265625
   ],
-  "extension_best_step": 3,
+  "y1": [
+    15.640625,
+    7.83203125,
+    11.1328125,
+    9.015625,
+    7.6796875,
+    8.1875,
+    5.7265625,
+    15.6953125,
+    9.8671875,
+    12.2421875
+  ],
+  "extension_best_step": 4,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00169031330420028295420546296478690422369620968277678875963367"
+      "max_eps": "0.00253546995630042443407594315309393900801311177432260366365441"
     },
     "whitebox_extend": {
-      "max_eps": "0.00169031330420028295420546296478690422369620968277678875963367",
+      "max_eps": "0.00253546995630042443407594315309393900801311177432260366365441",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00507093991260084887391511962952226734895497782487521778997708",
-      "best_step": 3
+      "max_eps": "0.00591609656470099034972257648951544905729983552263396810276024",
+      "best_step": 4
     }
   }
 }
@@ -761,49 +761,49 @@
   "argmax_y0": 1,
   "argmax_y1": 3,
   "is_counter_example": true,
-  "max_eps": "0.0067462418470736349429284147312116214175702939660764922275578",
-  "dist": "0.00558979266800869116902095936013489539831459682637130013369134",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_5z6qtl5g.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_smdriow5.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_w32_27_p.npy",
+  "max_eps": "0.00674624184707363493991619290392864330233073409154523720533557",
+  "dist": "0.00622160561792727505961102941148987507439826884508097298260275",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_xz64gf8d.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_d_c0bewl.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_4vi04nii.npy",
   "y0": [
-    13.046875,
-    25.828125,
+    13.0390625,
+    25.8125,
     18.4375,
-    25.828125,
+    25.8125,
     16.578125,
-    18.328125,
-    15.4453125,
-    19.109375,
-    20.3125,
+    18.3125,
+    15.4296875,
+    19.09375,
+    20.28125,
     18.03125
   ],
   "y1": [
-    13.046875,
+    13.0390625,
     25.78125,
-    18.453125,
+    18.421875,
     25.84375,
     16.5625,
-    18.34375,
-    15.4375,
+    18.328125,
+    15.4296875,
     19.09375,
-    20.296875,
-    18.015625
+    20.3125,
+    18.03125
   ],
   "extension_best_step": 3,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00168656046176840872815333969460860753061170721582347459137392"
+      "max_eps": "0.00168656046176840873276178798645797802796864728101609389489395"
     },
     "whitebox_extend": {
-      "max_eps": "0.00168656046176840872815333969460860753061170721582347459137392",
+      "max_eps": "0.00168656046176840873276178798645797802796864728101609389489395",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0067462418470736349429284147312116214175702939660764922275578",
+      "max_eps": "0.00674624184707363493991619290392864330233073409154523720533557",
       "best_step": 3
     }
   }
@@ -812,53 +812,53 @@
 {
   "index": 15,
   "true_label": 5,
-  "argmax_y0": 3,
-  "argmax_y1": 5,
+  "argmax_y0": 5,
+  "argmax_y1": 3,
   "is_counter_example": true,
-  "max_eps": "0.00537365950794231672044745666108111089089326296731610248948196",
-  "dist": "0.00451055017456618544496209716310403660924049300659921074057548",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_c3kmcqsa.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_94r2s7ku.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_bt0bcafe.npy",
+  "max_eps": "0.00179121983598077224097993823477754989971304083198673260973748",
+  "dist": "0.000635198491584781672411713238489539687650050370746037400865263",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_dvj027dv.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_99zzfs8o.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_rftmslqu.npy",
   "y0": [
-    6.5234375,
-    7.796875,
-    8.4765625,
+    6.51953125,
+    7.79296875,
+    8.46875,
     14.40625,
-    5.10546875,
-    14.40625,
+    5.109375,
+    14.4140625,
     6.58984375,
-    8.6015625,
+    8.59375,
     10.53125,
-    9.03125
+    9.0234375
   ],
   "y1": [
-    6.51171875,
-    7.7890625,
-    8.4375,
-    14.375,
-    5.1015625,
+    6.515625,
+    7.8125,
+    8.4765625,
     14.421875,
+    5.1171875,
+    14.40625,
     6.59375,
-    8.578125,
-    10.53125,
-    9.0078125
+    8.609375,
+    10.5390625,
+    9.03125
   ],
-  "extension_best_step": 28,
+  "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.000895609917990386116394698191917296063659279357311118231754764"
+      "max_eps": "0.00179121983598077224097993823477754989971304083198673260973748"
     },
     "whitebox_extend": {
-      "max_eps": "0.000895609917990386116394698191917296063659279357311118231754764",
+      "max_eps": "0.00179121983598077224097993823477754989971304083198673260973748",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00537365950794231672044745666108111089089326296731610248948196",
-      "best_step": 28
+      "max_eps": "0.00179121983598077224097993823477754989971304083198673260973748",
+      "best_step": 0
     }
   }
 }
@@ -869,50 +869,50 @@
   "argmax_y0": 9,
   "argmax_y1": 4,
   "is_counter_example": true,
-  "max_eps": "0.00773504120074757353353707086241177472510296280854849262189585",
-  "dist": "0.00758810519572528516447678552411226172176919787928782742665556",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_h0ygkjlh.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_1l6iaw1h.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_vhl6rv1f.npy",
+  "max_eps": "0.00580128090056068014634747641268092592438098176150381718189381",
+  "dist": "0.00570110856750991865986685999525220897695136132740846119702961",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_wnbbhg2s.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_vmlx53o6.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_mywo2367.npy",
   "y0": [
-    6.6015625,
-    8.3359375,
-    7.9375,
+    6.59375,
+    8.328125,
+    7.91796875,
     8.671875,
     19.125,
-    8.609375,
-    5.47265625,
+    8.625,
+    5.46875,
     12.625,
-    10.90625,
+    10.9140625,
     19.140625
   ],
   "y1": [
     6.6171875,
     8.3515625,
-    7.9375,
-    8.65625,
-    19.15625,
+    7.94140625,
+    8.6640625,
+    19.171875,
     8.625,
-    5.4921875,
-    12.625,
-    10.9140625,
-    19.09375
+    5.5,
+    12.640625,
+    10.921875,
+    19.125
   ],
-  "extension_best_step": 2,
+  "extension_best_step": 0,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00386752060037378676467090549973575283085317210250370656205177"
+      "max_eps": "0.00580128090056068014634747641268092592438098176150381718189381"
     },
     "whitebox_extend": {
-      "max_eps": "0.00386752060037378676467090549973575283085317210250370656205177",
+      "max_eps": "0.00580128090056068014634747641268092592438098176150381718189381",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00773504120074757353353707086241177472510296280854849262189585",
-      "best_step": 2
+      "max_eps": "0.00580128090056068014634747641268092592438098176150381718189381",
+      "best_step": 0
     }
   }
 }
@@ -920,53 +920,53 @@
 {
   "index": 17,
   "true_label": 7,
-  "argmax_y0": 7,
-  "argmax_y1": 3,
+  "argmax_y0": 3,
+  "argmax_y1": 7,
   "is_counter_example": true,
-  "max_eps": "0.00543030258689421101542564357213680580051948162279779660959342",
-  "dist": "0.00521479454489565449955716015806221390056331372442118198740437",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_6tb8g_ms.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_mqopiqeq.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_cn89k3wo.npy",
+  "max_eps": "0.00724040344919228136176792300513679048506855975048818393163465",
+  "dist": "0.00705690733648430063990768569030772842093259517654932892347315",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_yftllz0t.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_lr2jhdky.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_kgim0gc6.npy",
   "y0": [
-    11.109375,
+    11.09375,
     12.0078125,
     14.9375,
-    19.0,
+    18.984375,
     6.578125,
     11.046875,
-    3.435546875,
-    19.015625,
-    11.9921875,
-    13.4609375
+    3.431640625,
+    18.984375,
+    11.984375,
+    13.46875
   ],
   "y1": [
-    11.0859375,
-    12.0,
+    11.1015625,
+    12.0234375,
     14.9375,
-    19.015625,
-    6.5703125,
-    11.0625,
-    3.439453125,
     18.96875,
+    6.58984375,
+    11.046875,
+    3.4296875,
+    19.03125,
     11.984375,
     13.4765625
   ],
-  "extension_best_step": 3,
+  "extension_best_step": 21,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.0018101008622980703406708015623068742914604326123362091218068"
+      "max_eps": "0.00181010086229807033965712550741614585819204359960809050389407"
     },
     "whitebox_extend": {
-      "max_eps": "0.0018101008622980703406708015623068742914604326123362091218068",
+      "max_eps": "0.00181010086229807033965712550741614585819204359960809050389407",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00543030258689421101542564357213680580051948162279779660959342",
-      "best_step": 3
+      "max_eps": "0.00724040344919228136176792300513679048506855975048818393163465",
+      "best_step": 21
     }
   }
 }
@@ -977,49 +977,49 @@
   "argmax_y0": 3,
   "argmax_y1": 8,
   "is_counter_example": true,
-  "max_eps": "0.00740268652282102865760581209830899383661258010976303771042521",
-  "dist": "0.00610804789050692813868872937483159446372509445881427041135686",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_e90h9b5_.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_qitgi7fy.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_3rq9j5vb.npy",
+  "max_eps": "0.00370134326141051432628211272820683144776973451035758787889101",
+  "dist": "0.00361484032999077784297564176303998672575407082863018735497308",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_bmmht1g0.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_l34stk7i.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_qsmld8un.npy",
   "y0": [
     10.328125,
     10.9453125,
     13.671875,
     18.015625,
     8.40625,
-    12.7109375,
+    12.703125,
     9.921875,
     9.1796875,
     18.015625,
-    12.28125
+    12.296875
   ],
   "y1": [
-    10.3203125,
-    10.921875,
-    13.65625,
-    17.96875,
-    8.3828125,
-    12.6875,
+    10.328125,
+    10.9296875,
+    13.640625,
+    17.984375,
+    8.390625,
+    12.703125,
     9.921875,
-    9.15625,
-    18.03125,
-    12.265625
+    9.1640625,
+    18.015625,
+    12.2734375
   ],
   "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00370134326141051432560045500350379964981183198162727691637152"
+      "max_eps": "0.00185067163070525716362533057623485619001515612071216121418028"
     },
     "whitebox_extend": {
-      "max_eps": "0.00370134326141051432560045500350379964981183198162727691637152",
+      "max_eps": "0.00185067163070525716362533057623485619001515612071216121418028",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00740268652282102865760581209830899383661258010976303771042521",
+      "max_eps": "0.00370134326141051432628211272820683144776973451035758787889101",
       "best_step": 2
     }
   }
@@ -1031,49 +1031,49 @@
   "argmax_y0": 4,
   "argmax_y1": 9,
   "is_counter_example": true,
-  "max_eps": "0.00483440075046723346111961308070967141275037685262798522903703",
-  "dist": "0.00464304559015685759642030828595900052130734563244394868015592",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_eevl13u6.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_1yygjk3h.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_8kwhhxq1.npy",
+  "max_eps": "0.00580128090056068014835694919480515447223145970534070008471951",
+  "dist": "0.00403866990407504676953972970468365658286598255971042432477586",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_a0edwtjf.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_tzymoksw.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_94j98k_y.npy",
   "y0": [
-    4.76953125,
-    6.8828125,
-    5.69921875,
+    4.765625,
+    6.87890625,
+    5.6875,
     7.41015625,
-    14.625,
-    6.26953125,
-    3.73046875,
-    9.2734375,
+    14.609375,
+    6.26171875,
+    3.72265625,
+    9.265625,
     8.53125,
     14.609375
   ],
   "y1": [
-    4.76953125,
-    6.8671875,
-    5.68359375,
-    7.421875,
-    14.5859375,
+    4.7578125,
+    6.875,
+    5.6875,
+    7.42578125,
+    14.578125,
     6.265625,
-    3.716796875,
-    9.265625,
-    8.53125,
+    3.71484375,
+    9.28125,
+    8.5234375,
     14.625
   ],
   "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00193376030018689338237000311742779447358354715399761164632245"
+      "max_eps": "0.00193376030018689338360812107931002080240194685794629954423271"
     },
     "whitebox_extend": {
-      "max_eps": "0.00193376030018689338237000311742779447358354715399761164632245",
+      "max_eps": "0.00193376030018689338360812107931002080240194685794629954423271",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00483440075046723346111961308070967141275037685262798522903703",
+      "max_eps": "0.00580128090056068014835694919480515447223145970534070008471951",
       "best_step": 2
     }
   }
@@ -1085,50 +1085,50 @@
   "argmax_y0": 9,
   "argmax_y1": 7,
   "is_counter_example": true,
-  "max_eps": "0.00550617948643475373833810025641023551704930487499903159384454",
-  "dist": "0.00434872117370634964872149234485488778908843365324120873108686",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_qszmke7l.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_j5omk99s.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_11l_vmfs.npy",
+  "max_eps": "0.00367078632428983581983971556672186009731905158846965762816113",
+  "dist": "0.00283607228209139157327124350098670630454294124381031586192785",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_8y8o8cvw.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_5n0xalfn.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_878dnhny.npy",
   "y0": [
     8.3359375,
     8.34375,
-    8.4375,
-    11.671875,
-    10.859375,
-    9.3125,
+    8.4296875,
+    11.65625,
+    10.8515625,
+    9.296875,
     1.46875,
     17.40625,
-    9.890625,
+    9.875,
     17.4375
   ],
   "y1": [
+    8.3515625,
     8.359375,
-    8.3671875,
-    8.453125,
-    11.671875,
-    10.875,
-    9.328125,
-    1.4912109375,
-    17.453125,
+    8.4453125,
+    11.6640625,
+    10.84375,
+    9.3046875,
+    1.4775390625,
+    17.4375,
     9.8828125,
     17.40625
   ],
-  "extension_best_step": 0,
+  "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00550617948643475373833810025641023551704930487499903159384454"
+      "max_eps": "0.00183539316214491791122518483161528872444658271724336491702859"
     },
     "whitebox_extend": {
-      "max_eps": "0.00550617948643475373833810025641023551704930487499903159384454",
+      "max_eps": "0.00183539316214491791122518483161528872444658271724336491702859",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00550617948643475373833810025641023551704930487499903159384454",
-      "best_step": 0
+      "max_eps": "0.00367078632428983581983971556672186009731905158846965762816113",
+      "best_step": 2
     }
   }
 }
@@ -1139,50 +1139,50 @@
   "argmax_y0": 6,
   "argmax_y1": 5,
   "is_counter_example": true,
-  "max_eps": "0.00521843076111857614743356908519421019725146513667337570104955",
-  "dist": "0.00454660230984600052796830306593899728476103241761103019546487",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_zki9_l29.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_i3ucpi8k.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_my59fz_y.npy",
+  "max_eps": "0.00608816922130500550491853737958790521682942970076218941694632",
+  "dist": "0.00598596254635391804969670675152780714844743167826045679323911",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_1cvnhqp2.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_suw5qbsm.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_phez7atl.npy",
   "y0": [
-    5.50390625,
-    4.078125,
-    2.671875,
-    3.595703125,
-    7.12890625,
-    14.2421875,
-    14.2578125,
-    0.61328125,
-    6.55859375,
-    3.78125
+    5.515625,
+    4.0703125,
+    2.6796875,
+    3.5859375,
+    7.125,
+    14.25,
+    14.265625,
+    0.60546875,
+    6.5546875,
+    3.775390625
   ],
   "y1": [
-    5.49609375,
+    5.484375,
     4.06640625,
-    2.6640625,
-    3.6171875,
-    7.12109375,
-    14.28125,
-    14.234375,
-    0.625,
-    6.5625,
-    3.794921875
+    2.66015625,
+    3.60546875,
+    7.10546875,
+    14.2734375,
+    14.21875,
+    0.61328125,
+    6.56640625,
+    3.7890625
   ],
-  "extension_best_step": 3,
+  "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.000869738460186429350021290875819670519435686811894218458599798"
+      "max_eps": "0.00260921538055928807242860865749528072045721116130263789938035"
     },
     "whitebox_extend": {
-      "max_eps": "0.000869738460186429350021290875819670519435686811894218458599798",
+      "max_eps": "0.00260921538055928807242860865749528072045721116130263789938035",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00521843076111857614743356908519421019725146513667337570104955",
-      "best_step": 3
+      "max_eps": "0.00608816922130500550491853737958790521682942970076218941694632",
+      "best_step": 2
     }
   }
 }
@@ -1193,49 +1193,49 @@
   "argmax_y0": 6,
   "argmax_y1": 4,
   "is_counter_example": true,
-  "max_eps": "0.00310419899250020307435095723481243800697062013493631925276098",
-  "dist": "0.00306706978092415646333165655616663304139119625883095871944942",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_s1vqfwxr.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_pwuj6scw.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_8_abnzbx.npy",
+  "max_eps": "0.00388024874062525384644978759563300203849035871255810270459856",
+  "dist": "0.00249678984958982005201307299435220082856583007094330456193408",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_3eugik5l.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_5w4dz3gw.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_vbi_njpt.npy",
   "y0": [
     9.25,
-    11.4765625,
-    7.66796875,
-    5.2421875,
+    11.46875,
+    7.671875,
+    5.234375,
     15.296875,
-    8.265625,
+    8.2578125,
     15.3046875,
-    8.59375,
-    10.421875,
-    8.90625
+    8.5859375,
+    10.4140625,
+    8.9140625
   ],
   "y1": [
     9.25,
-    11.4765625,
-    7.6640625,
-    5.234375,
-    15.3125,
+    11.46875,
+    7.6796875,
+    5.2421875,
+    15.3203125,
     8.25,
     15.28125,
-    8.6015625,
-    10.4140625,
-    8.921875
+    8.59375,
+    10.421875,
+    8.9140625
   ],
   "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00155209949625010153771538976733051261318908603684299512055491"
+      "max_eps": "0.000776049748125050762200947443225366657407452576201831060560524"
     },
     "whitebox_extend": {
-      "max_eps": "0.00155209949625010153771538976733051261318908603684299512055491",
+      "max_eps": "0.000776049748125050762200947443225366657407452576201831060560524",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00310419899250020307435095723481243800697062013493631925276098",
+      "max_eps": "0.00388024874062525384644978759563300203849035871255810270459856",
       "best_step": 2
     }
   }
@@ -1247,50 +1247,50 @@
   "argmax_y0": 5,
   "argmax_y1": 6,
   "is_counter_example": true,
-  "max_eps": "0.00173947692037285871114024978869628328404600904859056613921476",
-  "dist": "0.00173894635498851461423257605252460544180246178893358547265043",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_w2_dk5rx.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_6krq61uw.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_idfze6kz.npy",
+  "max_eps": "0.00260921538055928807383992756987441704483410829271877472092859",
+  "dist": "0.00245614536683969400494269578412596712468371847743376814151682",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_8_zw7pib.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_rzjgntvf.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_af9e9md3.npy",
   "y0": [
-    4.69921875,
-    1.373046875,
-    2.021484375,
-    1.3935546875,
-    2.23828125,
+    4.71484375,
+    1.37890625,
+    2.037109375,
+    1.3984375,
+    2.24609375,
+    10.96875,
     10.953125,
-    10.9453125,
-    -1.4921875,
+    -1.482421875,
     4.4921875,
-    1.0341796875
+    1.0400390625
   ],
   "y1": [
     4.72265625,
-    1.388671875,
-    2.04296875,
-    1.4013671875,
+    1.38671875,
+    2.0546875,
+    1.392578125,
     2.25,
-    10.953125,
-    10.96875,
-    -1.470703125,
-    4.5,
-    1.0439453125
+    10.9375,
+    10.9609375,
+    -1.478515625,
+    4.4921875,
+    1.0419921875
   ],
-  "extension_best_step": 0,
+  "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00173947692037285871114024978869628328404600904859056613921476"
+      "max_eps": "0.00173947692037285871634122746840789862716273100360414899412324"
     },
     "whitebox_extend": {
-      "max_eps": "0.00173947692037285871114024978869628328404600904859056613921476",
+      "max_eps": "0.00173947692037285871634122746840789862716273100360414899412324",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00173947692037285871114024978869628328404600904859056613921476",
-      "best_step": 0
+      "max_eps": "0.00260921538055928807383992756987441704483410829271877472092859",
+      "best_step": 2
     }
   }
 }
@@ -1301,31 +1301,31 @@
   "argmax_y0": 4,
   "argmax_y1": 9,
   "is_counter_example": true,
-  "max_eps": "0.0077350412007475735378118023239464644955557634111868208986094",
-  "dist": "0.00709273379835062338044539526152716299213117089708120319692217",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x__l20yh3h.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_mozglzcw.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_ftesp9sh.npy",
+  "max_eps": "0.00870192135084102022838798033200842453114393528948574736706358",
+  "dist": "0.00856966778974825035038653276810664416660620050024221070614579",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_7ftxorym.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_e63c21tg.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_8sgdaiev.npy",
   "y0": [
-    4.7578125,
-    5.515625,
-    5.34375,
-    6.47265625,
+    4.76953125,
+    5.52734375,
+    5.3515625,
+    6.46875,
     13.1875,
     6.6953125,
-    3.826171875,
-    8.765625,
-    7.1796875,
+    3.83203125,
+    8.78125,
+    7.18359375,
     13.1875
   ],
   "y1": [
-    4.7578125,
-    5.48828125,
-    5.3359375,
-    6.46875,
-    13.140625,
-    6.6796875,
-    3.8046875,
+    4.74609375,
+    5.484375,
+    5.32421875,
+    6.46484375,
+    13.1328125,
+    6.68359375,
+    3.80078125,
     8.7578125,
     7.171875,
     13.203125
@@ -1334,16 +1334,16 @@
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00290064045028034007361731101853838401076018159706148052846479"
+      "max_eps": "0.00290064045028034007594168014662017226747674185768001759583044"
     },
     "whitebox_extend": {
-      "max_eps": "0.00290064045028034007361731101853838401076018159706148052846479",
+      "max_eps": "0.00290064045028034007594168014662017226747674185768001759583044",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0077350412007475735378118023239464644955557634111868208986094",
+      "max_eps": "0.00870192135084102022838798033200842453114393528948574736706358",
       "best_step": 4
     }
   }
@@ -1355,50 +1355,50 @@
   "argmax_y0": 0,
   "argmax_y1": 6,
   "is_counter_example": true,
-  "max_eps": "0.007440803307966838932408316372555609652699634990503432078493",
-  "dist": "0.00702427758534614027129249402941145242084936909628019531190763",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_yyq8_9pg.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_o0mwx7tv.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_5w7ldp35.npy",
+  "max_eps": "0.00744080330796683892495633398872097580627389151481553234692553",
+  "dist": "0.00641013870270846391361492043806853005060784353455493804231869",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_iz0sth81.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x__kzzn1th.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_ctyxv23w.npy",
   "y0": [
-    19.78125,
-    5.8125,
+    19.75,
+    5.796875,
     10.65625,
-    2.62109375,
-    8.8671875,
-    9.109375,
-    19.78125,
-    4.390625,
+    2.611328125,
+    8.84375,
+    9.09375,
+    19.75,
+    4.37890625,
     10.15625,
-    7.65234375
+    7.6484375
   ],
   "y1": [
-    19.75,
-    5.82421875,
-    10.6875,
-    2.625,
-    8.8671875,
-    9.109375,
-    19.8125,
-    4.3828125,
-    10.1796875,
-    7.64453125
+    19.734375,
+    5.8046875,
+    10.65625,
+    2.607421875,
+    8.84375,
+    9.0859375,
+    19.796875,
+    4.3671875,
+    10.15625,
+    7.6328125
   ],
-  "extension_best_step": 4,
+  "extension_best_step": 3,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.0018602008269917097239492400875284493863738935969361589969737"
+      "max_eps": "0.00186020082699170972392841970264587264404717226306384095604238"
     },
     "whitebox_extend": {
-      "max_eps": "0.0018602008269917097239492400875284493863738935969361589969737",
+      "max_eps": "0.00186020082699170972392841970264587264404717226306384095604238",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.007440803307966838932408316372555609652699634990503432078493",
-      "best_step": 4
+      "max_eps": "0.00744080330796683892495633398872097580627389151481553234692553",
+      "best_step": 3
     }
   }
 }
@@ -1409,50 +1409,50 @@
   "argmax_y0": 7,
   "argmax_y1": 9,
   "is_counter_example": true,
-  "max_eps": "0.00642387606750721269134741583597736032260653319004171692789915",
-  "dist": "0.00627019392951580942413470539550111897407835497101651770289336",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_0786tib9.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_w5nvmi0q.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_t6kzab_o.npy",
+  "max_eps": "0.0082592692296521306101414287723646568718873927936072860395742",
+  "dist": "0.00824856029038514049544977623685915325709112221784602757173066",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_v039jk8w.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_9i609djq.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_d6ff8o7f.npy",
   "y0": [
-    6.5,
-    6.59375,
-    7.9140625,
-    8.921875,
-    7.6015625,
-    6.19140625,
-    1.171875,
-    13.9765625,
-    7.63671875,
-    13.96875
+    6.4921875,
+    6.578125,
+    7.91015625,
+    8.90625,
+    7.578125,
+    6.1796875,
+    1.169921875,
+    13.953125,
+    7.625,
+    13.9375
   ],
   "y1": [
-    6.48046875,
-    6.5625,
-    7.890625,
+    6.46484375,
+    6.5546875,
+    7.87890625,
     8.90625,
-    7.5859375,
-    6.171875,
-    1.16015625,
+    7.58984375,
+    6.18359375,
+    1.158203125,
     13.9140625,
     7.625,
-    13.96875
+    13.984375
   ],
-  "extension_best_step": 4,
+  "extension_best_step": 13,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00183539316214491790563623676452416405986471237889589883179627"
+      "max_eps": "0.000917696581072458954334281218010405630962332893990243034661453"
     },
     "whitebox_extend": {
-      "max_eps": "0.00183539316214491790563623676452416405986471237889589883179627",
+      "max_eps": "0.000917696581072458954334281218010405630962332893990243034661453",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00642387606750721269134741583597736032260653319004171692789915",
-      "best_step": 4
+      "max_eps": "0.0082592692296521306101414287723646568718873927936072860395742",
+      "best_step": 13
     }
   }
 }
@@ -1463,50 +1463,50 @@
   "argmax_y0": 4,
   "argmax_y1": 9,
   "is_counter_example": true,
-  "max_eps": "0.00966880150093446692046008240535334557157257801142807140451876",
-  "dist": "0.00839767567312626377652014884565972495730173566649170853560818",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_o2etto1t.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_zw4ebohe.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_mpd9nt44.npy",
+  "max_eps": "0.00580128090056068015254847758466788420237786551419116794595523",
+  "dist": "0.00439923081865506394857048695872292089445220948980722032441259",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_335t5es5.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_bbmtb00s.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_rdg55wkq.npy",
   "y0": [
-    4.44140625,
-    5.7734375,
-    5.171875,
-    6.8359375,
-    16.09375,
-    7.2890625,
-    3.5546875,
-    8.859375,
+    4.4375,
+    5.77734375,
+    5.16015625,
+    6.83984375,
+    16.125,
+    7.296875,
+    3.564453125,
+    8.84375,
     9.0546875,
-    16.09375
+    16.078125
   ],
   "y1": [
-    4.421875,
-    5.72265625,
-    5.140625,
-    6.8359375,
-    16.015625,
-    7.29296875,
-    3.52734375,
-    8.8203125,
-    9.03125,
-    16.09375
+    4.41796875,
+    5.75,
+    5.1328125,
+    6.82421875,
+    16.03125,
+    7.28125,
+    3.5390625,
+    8.828125,
+    9.046875,
+    16.078125
   ],
-  "extension_best_step": 4,
+  "extension_best_step": 2,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00193376030018689338172097158868438421564924003123947100315086"
+      "max_eps": "0.00193376030018689338049070822377058313146137315726909838047991"
     },
     "whitebox_extend": {
-      "max_eps": "0.00193376030018689338172097158868438421564924003123947100315086",
+      "max_eps": "0.00193376030018689338049070822377058313146137315726909838047991",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00966880150093446692046008240535334557157257801142807140451876",
-      "best_step": 4
+      "max_eps": "0.00580128090056068015254847758466788420237786551419116794595523",
+      "best_step": 2
     }
   }
 }
@@ -1517,50 +1517,50 @@
   "argmax_y0": 0,
   "argmax_y1": 2,
   "is_counter_example": true,
-  "max_eps": "0.0121940292558243151634239838436900429449586880606503505647868",
-  "dist": "0.0108087948959786769632373100097501833390766867933203503367821",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_y2vyo_bv.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_cc16ehzi.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_ly8f0sox.npy",
+  "max_eps": "0.00696801671761389438253263982768043453987146210422956003532953",
+  "dist": "0.00609980043515780597414005472744848394190477393763850622973262",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_hhj4dlre.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_mldd82bm.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_roff2m_0.npy",
   "y0": [
-    18.046875,
-    5.3515625,
-    18.046875,
-    10.5,
-    3.1171875,
-    6.2890625,
-    7.90625,
-    9.9375,
-    10.609375,
-    7.94921875
-  ],
-  "y1": [
-    18.0,
-    5.3828125,
-    18.109375,
-    10.53125,
+    18.03125,
+    5.3359375,
+    18.03125,
+    10.4609375,
     3.111328125,
-    6.296875,
-    7.9140625,
-    9.9453125,
-    10.640625,
+    6.2890625,
+    7.921875,
+    9.90625,
+    10.6171875,
     7.9609375
   ],
-  "extension_best_step": 2,
+  "y1": [
+    18.015625,
+    5.3515625,
+    18.078125,
+    10.484375,
+    3.125,
+    6.3046875,
+    7.92578125,
+    9.921875,
+    10.625,
+    7.97265625
+  ],
+  "extension_best_step": 3,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00696801671761389437483331640665153015690138562181956426892317"
+      "max_eps": "0.00348400835880694719113625725323024084444290176381994631316799"
     },
     "whitebox_extend": {
-      "max_eps": "0.00696801671761389437483331640665153015690138562181956426892317",
+      "max_eps": "0.00348400835880694719113625725323024084444290176381994631316799",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.0121940292558243151634239838436900429449586880606503505647868",
-      "best_step": 2
+      "max_eps": "0.00696801671761389438253263982768043453987146210422956003532953",
+      "best_step": 3
     }
   }
 }
@@ -1571,11 +1571,11 @@
   "argmax_y0": 1,
   "argmax_y1": 3,
   "is_counter_example": true,
-  "max_eps": "0.00505968138530522620842596565759260674271826434399584238584805",
-  "dist": "0.00392720858551374519891956479549371480059147086613543412493473",
-  "img_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_ljqck5ii.png",
-  "x0_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_rjlj92bt.npy",
-  "x1_file": "/Users/tobiasm1/git/python-certifier/tests/cex_mnist_float16_numpy/x_i8jylirg.npy",
+  "max_eps": "0.00505968138530522620927456486308944863534427629382219311027163",
+  "dist": "0.00501661576674624399514120374740192576936795677128469038997511",
+  "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_m9nejepx.png",
+  "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_fikbo4hx.npy",
+  "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/f16f64_suites_regen/cex_mnist_float16_numpy/x_htvq6y7y.npy",
   "y0": [
     10.4296875,
     20.0625,
@@ -1585,36 +1585,36 @@
     15.890625,
     12.8125,
     14.90625,
-    16.65625,
+    16.640625,
     13.9453125
   ],
   "y1": [
-    10.421875,
-    20.0,
-    14.65625,
-    20.046875,
+    10.4296875,
+    20.015625,
+    14.6640625,
+    20.0625,
     13.453125,
     15.890625,
-    12.8046875,
-    14.8984375,
+    12.796875,
+    14.890625,
     16.625,
-    13.9375
+    13.9453125
   ],
-  "extension_best_step": 2,
+  "extension_best_step": 3,
   "model_execution": "numpy_ieee754_compliant",
   "stages": {
     "deepfool_bisect": {
-      "max_eps": "0.00168656046176840873173475687637636731483871051780981308235002"
+      "max_eps": "0.00168656046176840873532025795681778986855892615538304021661598"
     },
     "whitebox_extend": {
-      "max_eps": "0.00168656046176840873173475687637636731483871051780981308235002",
+      "max_eps": "0.00168656046176840873532025795681778986855892615538304021661598",
       "multi_ray_eps": 0.0,
       "multi_ray_slack": 0.0,
       "multi_ray_class": -1
     },
     "blackbox_extend": {
-      "max_eps": "0.00505968138530522620842596565759260674271826434399584238584805",
-      "best_step": 2
+      "max_eps": "0.00505968138530522620927456486308944863534427629382219311027163",
+      "best_step": 3
     }
   }
 }
