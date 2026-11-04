@@ -36,8 +36,17 @@ def compute_stats(vals: List[float]) -> FloatStats:
 
 def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> None:
     """
-    Ensures nu = n*u < 1 for every layer (matvec length constraint needed for gamma_n).
-    Raises ValueError with an explanatory message if violated.
+    Refuses to run when nu = n*u >= 1 at any layer. Raises ValueError.
+
+    This is a practicality rule, not a soundness precondition: gamma_n is computed
+    in its exact form (1+u)^n - 1 (formats.gamma_n), defined for all n and u, and
+    neither the theory nor its Rocq mechanisation assumes n*u < 1. But once n*u >= 1
+    the per-layer rounding terms are of order 1 or more, the deviation bound is
+    orders of magnitude above any perturbation radius (and, for CIFAR-10 at float16,
+    above the format's largest finite value, so even the overflow conditions fail),
+    and the certifier is useless. The paper (§4, "Practical applicability") says so,
+    and the evaluation does not run such cases at all rather than report vacuous
+    numbers for them; this check enforces that policy (reaffirmed 2026-11-04).
     """
     u = float_to_q(fmt.u)
     for ell, W in enumerate(network):
@@ -45,9 +54,9 @@ def check_rounding_preconditions(network: List[Matrix], fmt: FloatFormat) -> Non
         nu = u * n
         if nu >= Q(1):
             raise ValueError(
-                f"[Precondition] Layer {ell}: n*u = {qstr(nu)} ≥ 1 (n={n}, u={qstr(u)}). "
-                "The rounding-error model with γ_n is invalid. "
-                "Consider a wider-precision format or reducing layer width."
+                f"[Precondition] Layer {ell}: n*u = {qstr(nu)} >= 1 (n={n}, u={qstr(u)}). "
+                "The bound stays sound (gamma_n is exact) but is useless here; by policy "
+                "such cases are not evaluated. Use a wider format."
             )
 
 @dataclass(frozen=True)

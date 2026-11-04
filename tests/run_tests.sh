@@ -207,7 +207,11 @@ declare -A CEX=(
   ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
   ["fashion_mnist:float16"]="$CEX_FASHION_MNIST_FLOAT16"
   ["fashion_mnist:float64"]="$CEX_FASHION_MNIST_FLOAT64"
-  # no cifar10:float16 -- float16 CIFAR is not certifiable (n*u >= 1)
+  # no cifar10:float16 -- by policy, not evaluated: its input layer has n*u = 1.5 >= 1
+  # (3072 * 2^-11), where the bound stays sound but is useless (the certifier refuses,
+  # see robust_certifier.check_rounding_preconditions; reaffirmed 2026-11-04). The
+  # float16 CIFAR-10 counterexample suite exists (verified-certified-robustness
+  # scripts/regen_cifar10_float16_suite.sh) and the paper reports its radii in §2.2 only.
   ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
   ["cifar10:float64"]="$CEX_CIFAR10_FLOAT64"
   ["z3:float32"]="$CEX_Z3_FLOAT32"
@@ -226,6 +230,10 @@ declare -A NATGRID=(
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
+# Per-test certifier log. Overridable so that two run_tests.sh invocations can share
+# tests/ at the same time (e.g. the float16 full-set runner and an RQ1 suite runner).
+RUNLOG="${RUNLOG:-.log}"
+
 # NUMPY_EXEC input remapping. "all"/"first100" files gain a _numpy suffix
 # (biased models map to the _numpy_biased_* variants, whose y1 is the biased
 # numpy execution's own); cex dirs gain a _numpy sibling. Prints the mapped
@@ -235,7 +243,9 @@ numpy_variant() {  # model kind file [format]
   # float64 "all" sets carry y1 from the compliant numpy execution AT FLOAT64 of the
   # same float32-weighted network (models/provision_numpy64_all_inputs.sh); their
   # files are the _numpy64 siblings of the float32 _numpy ones.
-  local sfx="_numpy"; [[ "$format" == "float64" ]] && sfx="_numpy64"
+  # Likewise the float16 "all" sets (models/provision_numpy16_all_inputs.sh): y1 from the
+  # compliant numpy execution AT FLOAT16 (weights cast down to float16), files _numpy16.
+  local sfx="_numpy"; [[ "$format" == "float64" ]] && sfx="_numpy64"; [[ "$format" == "float16" ]] && sfx="_numpy16"
   # natgrid sets are built from the numpy biased "all" sets: already the numpy variant.
   if [[ "$kind" == "natgrid" ]]; then echo "$file"; return 0; fi
   if [[ "$kind" == "cex" ]]; then
@@ -256,11 +266,11 @@ grabnum() {
   # $1: grep -E pattern
   local pat="$1" out=""
   # Extract the first integer from the first matching line
-  out=$(grep -E -- "$pat" .log | head -n1 | grep -Eo '[0-9]+' | head -n1 || true)
+  out=$(grep -E -- "$pat" "$RUNLOG" | head -n1 | grep -Eo '[0-9]+' | head -n1 || true)
   if [[ -z "$out" ]]; then
-    echo "ERROR: Could not parse '$pat' from .log" >&2
-    echo "------- .log tail -------" >&2
-    tail -n 40 .log | sed 's/^/| /' >&2 || true
+    echo "ERROR: Could not parse '$pat' from $RUNLOG" >&2
+    echo "------- $RUNLOG tail -------" >&2
+    tail -n 40 "$RUNLOG" | sed 's/^/| /' >&2 || true
     echo "-------------------------" >&2
     exit 1
   fi
@@ -304,10 +314,10 @@ run_test() {
   local cex_file=""
   case "$kind" in
     all)
-      # float32 always; float64 only under NUMPY_EXEC (its inputs are the _numpy64
-      # sets, whose y1 come from the float64 compliant execution).
-      [[ "$format" == "float32" || ( "$format" == "float64" && -n "$NUMPY_EXEC" ) ]] \
-        || die "Only float32 (or float64 under NUMPY_EXEC=1) supported when running kind 'all'"
+      # float32 always; float64/float16 only under NUMPY_EXEC (their inputs are the
+      # _numpy64/_numpy16 sets, whose y1 come from the compliant execution at that format).
+      [[ "$format" == "float32" || ( ( "$format" == "float64" || "$format" == "float16" ) && -n "$NUMPY_EXEC" ) ]] \
+        || die "Only float32 (or float64/float16 under NUMPY_EXEC=1) supported when running kind 'all'"
       [[ -n ${ALL_INPUTS[$model]+x} ]] || die "No ALL inputs configured for '$model'"
       cex_file="${ALL_INPUTS[$model]}"
       ;;
@@ -388,7 +398,7 @@ run_test() {
   # shellcheck disable=SC2086
   # ${ref_results_file:+...} passes the Dafny ref ONLY when one is configured;
   # omitting it makes the certifier use L_real as the real-arithmetic baseline.
-  python "$CERTIFIER" --mode "$mode" --json-output "$json_output" $bias_flag $numpy_flag "$format" "$nn_file" "$gram" "$cex_file" ${ref_results_file:+"$ref_results_file"} > .log 2>&1 || (cat .log; die "Couldn't run python certifier")
+  python "$CERTIFIER" --mode "$mode" --json-output "$json_output" $bias_flag $numpy_flag "$format" "$nn_file" "$gram" "$cex_file" ${ref_results_file:+"$ref_results_file"} > "$RUNLOG" 2>&1 || (cat "$RUNLOG"; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
@@ -416,10 +426,10 @@ run_test() {
   fi
   echo "OK"
 
-  (grep -i warn .log) || echo -n ""
+  (grep -i warn "$RUNLOG") || echo -n ""
 
   echo ""
-  awk '/CERTIFIER\ RESULTS/ {flag=1} flag' .log
+  awk '/CERTIFIER\ RESULTS/ {flag=1} flag' "$RUNLOG"
   echo ""
 }
 
@@ -498,14 +508,13 @@ run_test "float64" "fashion_mnist" "13" "cex" "hybrid-meas"
 
 # ===== CIFAR-10 natural — cex (gram 12) =====
 # float32 + float64 active (cexs regenerated vs gram-12 Dafny norms; FP rejects all
-# 30, real certifies all 30, all modes). float16 omitted (n*u >= 1, not certifiable).
+# 30, real certifies all 30, all modes). float16 not evaluated (n*u >= 1; see the CEX matrix note).
 run_test "float32" "cifar10"       "12" "cex" "standard"
 run_test "float32" "cifar10"       "12" "cex" "hybrid-only"
 run_test "float32" "cifar10"       "12" "cex" "hybrid-meas"
 run_test "float64" "cifar10"       "12" "cex" "standard"
 run_test "float64" "cifar10"       "12" "cex" "hybrid-only"
 run_test "float64" "cifar10"       "12" "cex" "hybrid-meas"
-# NOTE: we don't run float16 cifar10 tests since n*u>=1 for that instance
 
 # ===== MNIST adversarially-biased (1e6-end) — cex (gram 20) =====
 run_test "float32" "mnist_biased_1e6_end" "20" "cex" "standard"
@@ -625,6 +634,23 @@ if [[ -n "${FLOAT64_ALL:-}" ]]; then
     run_test "float64" "$m64" "12" "all" "standard"
     run_test "float64" "$m64" "12" "all" "hybrid-only"
     run_test "float64" "$m64" "12" "all" "hybrid-meas"
+  done
+fi
+
+# ===== float16 regime (2026-11-04): the full sets of the master-table models whose layers
+# all have n*u < 1 (every model but CIFAR-10, whose 3072-wide input layer has n*u = 1.5 and
+# is by policy not evaluated) with the deployment format float16 (float32 weights cast down
+# to float16; inputs *_numpy16.json from models/provision_numpy16_all_inputs.sh). Evidence
+# for the paper's claim that at float16 robustness certification is vacuous on every test
+# set while overflow certification succeeds (before this, only a Keras-era MNIST full-set
+# run existed). Opt-in: FLOAT16_ALL=1 NUMPY_EXEC=1. No cross-check: "all" runs assert
+# nothing about counts. NB the inputs are the float32 test points (not float16-representable;
+# the execution rounds them), which cannot turn a vacuous outcome into a non-vacuous one. =====
+if [[ -n "${FLOAT16_ALL:-}" ]]; then
+  for m16 in mnist fashion_mnist higgs_w1024_500k emnist_byclass_full emnist_balanced_full; do
+    run_test "float16" "$m16" "12" "all" "standard"
+    run_test "float16" "$m16" "12" "all" "hybrid-only"
+    run_test "float16" "$m16" "12" "all" "hybrid-meas"
   done
 fi
 
