@@ -245,3 +245,6 @@ tests/json_results/
 tests/json_results-old/
 tests/z3_certifier_inputs.txt
 /z3_input.txt
+
+# per-run count summaries written by tests/run_tests.sh (artifact run output, regenerated)
+tests/summary/

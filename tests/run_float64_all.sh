@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SUPERSEDED (2026-11-05) by `bash run_job.sh float64-all` (same commands; checked by DRY_RUN diff). Kept because
+# its log tests/log.run_tests.float64.txt references it; do not extend. NB MODEL_FILTER=$m below is ignored by
+# run_tests.sh (it reads $1 only), so every iteration ran the whole matrix under SKIP_EXISTING=1.
 # float64 regime of the ERAN comparison (2026-10-15): the six master-table models' full "all" sets certified with
 # deployment format float64 (float32 weights executed in float64; inputs *_numpy64.json from
 # models/provision_numpy64_all_inputs.sh), all three modes, gram 12, numpy execution. Exact invocation:

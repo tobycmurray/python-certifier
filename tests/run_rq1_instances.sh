@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SUPERSEDED (2026-11-05) by `bash run_job.sh rq1` (same commands; checked by DRY_RUN diff). Kept because its
+# log tests/log.run_rq1_instances.txt references it; do not extend.
 # RQ1 explicit re-run (float-conservatism OUTSTANDING-WORK item 6, 2026-10-17): certify, in all three
 # modes under the compliant numpy float32 execution, (a) the regenerated 30/30/30 continuous-search
 # instances on the natural models (tests/cex_{mnist,fashion_mnist,cifar10}_float32_numpy, replaced in
@@ -16,7 +18,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"; source ../venv/bin/activate
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
-python make_natgrid_inputs.py
+[[ -n "${DRY_RUN:-}" ]] || python make_natgrid_inputs.py   # DRY_RUN pass-through (2026-11-05)
 for m in mnist fashion_mnist cifar10; do
   echo "##### $m ($(date))"
   NUMPY_EXEC=1 SKIP_EXISTING=1 /opt/homebrew/bin/bash ./run_tests.sh "$m"

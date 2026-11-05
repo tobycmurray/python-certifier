@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SUPERSEDED (2026-11-05) by `bash run_job.sh rq1-f16f64` (same steps and commands). Kept because its log
+# tests/log.run_rq1_f16f64.txt references it; do not extend.
 # RQ1 float16/float64 instances (2026-11-04/05): verify, install and certify the regenerated
 # natural float16/float64 continuous-search suites (MNIST and Fashion MNIST at float16; MNIST,
 # Fashion MNIST and CIFAR-10 at float64), produced by verified-certified-robustness

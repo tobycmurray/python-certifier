@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SUPERSEDED (2026-11-05) by `bash run_job.sh float16-all` (same commands; checked by DRY_RUN diff). Kept because
+# its log tests/log.run_float16_all.txt references it; do not extend. NB MODEL_FILTER=$m below is ignored by
+# run_tests.sh (it reads $1 only), so every iteration ran the whole matrix under SKIP_EXISTING=1.
 # float16 regime (2026-11-04): the full "all" sets of the master-table models whose layers all have
 # n*u < 1 (every model but CIFAR-10, whose 3072-wide input layer has n*u = 1.5 at float16; by policy
 # the certifier refuses such cases rather than report vacuous numbers) certified with deployment

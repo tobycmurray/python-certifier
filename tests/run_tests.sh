@@ -29,6 +29,12 @@ CERTIFIER=../robust_certifier.py
 # Lets us run one model's suite at a time (single-threaded, low contention with
 # any concurrent norm computation). Empty -> run everything.
 MODEL_FILTER="${1:-}"
+# Optional env vars (additive, 2026-11-05): KIND_FILTER="all,cex" restricts to the listed
+# kinds (all/first100/cex/natgrid); MODEL_SKIP="higgs_w1024_500k ..." skips the listed model
+# keys exactly (MODEL_FILTER is a prefix match, so "higgs_w1024" also selects higgs_w1024_500k).
+# Both are used by tests/run_job.sh; empty = no restriction.
+KIND_FILTER="${KIND_FILTER:-}"
+MODEL_SKIP="${MODEL_SKIP:-}"
 
 # Optional env var SKIP_EXISTING=1: skip any test whose JSON output already
 # exists (and is non-empty) AND is newer than its input set. Lets us iterate on
@@ -51,140 +57,94 @@ SKIP_EXISTING="${SKIP_EXISTING:-}"
 # with a message -- rerun once generated (SKIP_EXISTING=1 avoids repeats).
 NUMPY_EXEC="${NUMPY_EXEC:-}"
 
+# Optional env var DRY_RUN=1: print, one per line, the exact certifier command line
+# (argv) of every test the invocation would run, and run nothing: no norm staging, no
+# output directory, no certifier. The skip messages (MODEL_FILTER, SKIP_EXISTING, missing
+# numpy variants) are printed exactly as in a real run, so two invocations are equivalent
+# iff their DRY_RUN=1 outputs are identical (used to check the registry refactor and the
+# job wrapper tests/run_job.sh against the superseded per-job wrappers).
+DRY_RUN="${DRY_RUN:-}"
+
+# Legacy per-instance Dafny/z3 results files (Tobler et al.'s pipeline). Only z3's and the
+# MNIST gram-11 one are still wired in (REF_RESULTS below); the others are kept for the record.
 MNIST_RESULTS_GRAM_11="results_epsilon_0.45_[128,128,128,128,128,128,128,128]_500_eval_0.3_gram_11.json"
 MNIST_RESULTS_GRAM_20="results_epsilon_0.45_[128,128,128,128,128,128,128,128]_500_eval_0.3_gram_20.json"
-# Verified Dafny reference for the CORRECTED MNIST model (computed over the sound
-# models/ .txt; contains the lipschitz_bounds the certifier cross-checks against).
-# Replaces Tobler's results_*.json for MNIST. Note: this was a norms-only Dafny
-# run (no per-instance test-set certification), so the "all" cross-check below is
-# disabled — see run_test().
-MNIST_DAFNY_REF="../models/precomputed/dafny_mnist_gram20.json"
-# Verified Dafny reference for the CORRECTED Fashion model (gram 13); same shape as
-# the MNIST one (norms-only run, so the per-instance "all" cross-check is disabled).
-FASHION_DAFNY_REF="../models/precomputed/dafny_fashion_gram13.json"
-# Gram-12 Dafny norms refs (corrected models). The RQ2/RQ3 "all" runs are evaluated
-# at a UNIFORM gram 12 across all three models (past the data-independent norm-
-# convergence point; cross-comparable). RQ1 "cex" runs stay at the per-model tightest
-# gram (20/13/12). All are norms-only runs, so the per-instance "all" cross-check is
-# disabled (see run_test()); the ref supplies the lipschitz_bounds the certifier
-# cross-checks its computed norms against.
-MNIST_DAFNY_REF_12="../models/precomputed/dafny_mnist_gram12.json"
-FASHION_DAFNY_REF_12="../models/precomputed/dafny_fashion_mnist_gram12.json"
-CIFAR_DAFNY_REF_12="../models/precomputed/dafny_cifar10_gram12.json"
 FASHION_MNIST_RESULTS_GRAM_12="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_12.json"
 FASHION_MNIST_RESULTS_GRAM_13="results_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500_eval_0.25_gram_13.json"
 CIFAR10_RESULTS_GRAM_12="results_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800_eval_0.141_gram_12.json"
 Z3_RESULTS_GRAM_10="z3_certifier_results_gram_10.json"
-
-# Sound-by-construction model weight files live in ../models/ (regenerated via
-# models/provision_image_model_weights.sh; gitignored). They replace the old 5-dp tests/*.txt.
-MNIST_NEURAL_NET="../models/neural_net_mnist_epsilon_0.45_[128,128,128,128,128,128,128,128]_500.txt"
-FASHION_MNIST_NEURAL_NET="../models/neural_net_fashion_mnist_epsilon_0.26_[256,128,128,128,128,128,128,128,128,128,128,128]_500.txt"
-CIFAR10_NEURAL_NET="../models/neural_net_cifar10_epsilon_0.1551_[512,256,128,128,128,128,128,128]_800.txt"
+# z3: synthetic soundness check, not a model of the paper; stays inline (not in the registry).
 Z3_NEURAL_NET="z3_neural_network.txt"
-
-ALL_MNIST_TEST_INPUTS="all_mnist_test_inputs/test_inputs_epsilon_0.3.json"
-ALL_FASHION_MNIST_TEST_INPUTS="all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25.json"
-ALL_CIFAR10_TEST_INPUTS="all_cifar10_test_inputs/all_test_inputs.json"
-
-CEX_MNIST_FLOAT32="cex_mnist_float32/counter_examples.json"   # regenerated against corrected norms
-CEX_MNIST_FLOAT16="cex_mnist_float16/counter_examples.json"   # regenerated against corrected norms (dafny_mnist_gram20)
-CEX_MNIST_FLOAT64="cex_mnist_float64/counter_examples.json"   # regenerated against corrected norms (dafny_mnist_gram20)
-CEX_FASHION_MNIST_FLOAT32="cex_fashion_mnist_float32/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
-CEX_FASHION_MNIST_FLOAT16="cex_fashion_mnist_float16/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
-CEX_FASHION_MNIST_FLOAT64="cex_fashion_mnist_float64/counter_examples.json"   # regenerated against corrected Dafny ref (gram 13)
-CEX_CIFAR10_FLOAT32="cex_cifar10_float32/counter_examples.json"   # regenerated vs gram-12 Dafny norms
-CEX_CIFAR10_FLOAT64="cex_cifar10_float64/counter_examples.json"   # regenerated vs gram-12 Dafny norms
 CEX_Z3_FLOAT32="z3_counter_examples.json"
 
-MNIST_BIASED_1E6_END_BIASES="cex_mnist_float32_biased_1e6_end/biases.txt"   # regenerated
-FASHION_MNIST_BIASED_3E6_END_BIASES="cex_fashion_mnist_float32_biased_3e6_end/biases.txt"   # regenerated (B=3e6)
-CIFAR10_BIASED_4E6_END_BIASES="cex_cifar10_float32_biased_4e6_end/biases.txt"
-CEX_MNIST_BIASED_1E6_END_FLOAT32="cex_mnist_float32_biased_1e6_end/counter_examples.json"   # regenerated against corrected norms
-CEX_FASHION_MNIST_BIASED_3E6_END_FLOAT32="cex_fashion_mnist_float32_biased_3e6_end/counter_examples.json"   # regenerated against corrected Dafny ref
-CEX_CIFAR10_BIASED_4E6_END_FLOAT32="cex_cifar10_float32_biased_4e6_end/counter_examples.json"   # regenerated vs gram-12 Dafny norms
-# RQ1 grid instances (kind "natgrid"): the certified biased-model test images that the
-# k/255-grid search (natural_grid_cexs.py in verified-certified-robustness) refutes at
-# the standard radii -- MNIST 24, Fashion 204, CIFAR 370. Subsets of the biased numpy
-# "all" sets (same x npy, same biased-execution y1, same eps), built and cross-checked
-# against the search's own artefacts by make_natgrid_inputs.py. Numpy execution only.
-NATGRID_MNIST_BIASED_1E6_END="all_mnist_test_inputs/natgrid_numpy_biased_1e6_end.json"
-NATGRID_FASHION_MNIST_BIASED_3E6_END="all_fashion_mnist_test_inputs/natgrid_numpy_biased_3e6_end.json"
-NATGRID_CIFAR10_BIASED_4E6_END="all_cifar10_test_inputs/natgrid_numpy_biased_4e6_end.json"
+# --- declarative tables, built from the model registry -----------------------
+# Every per-model path comes from ../models/registry.tsv (one row per model key;
+# loaders ../models/registry.sh and ../models/registry.py), so the table below is
+# the registry's and not a copy of it:
+#   NN_FILE[key]        = ../models/<net>          (sound-by-construction weights; gitignored,
+#                         regenerated by ../models/provision_*.sh or extracted from ../provisioned/)
+#   ALL_INPUTS[key]     = <inputs_all>              (full test set; the numpy variants are derived
+#                         by numpy_variant() below)
+#   REF_RESULTS[key:g]  = ../models/precomputed/<ref_rq1> at gram_rq1 (the per-model tightest
+#                         gram the RQ1 cex/natgrid runs use: MNIST 20, Fashion 13, CIFAR 12) and
+#                         <ref_all> at gram_all (uniform 12 for the RQ2/RQ3 full-set runs). The
+#                         Dafny refs are norms-only runs: they supply the lipschitz_bounds the
+#                         certifier cross-checks against, no per-instance verdicts (see run_test).
+#                         HIGGS/EMNIST have none -> the certifier's L_real baseline.
+#   BIASES_FILE[key]    = <biases_txt>              (biased models only; the established biases.txt:
+#                         the numpy cex generator exports a bit-identical one)
+#   CEX[key:format]     = cex_<dataset>_<format>[_biased_<bias>_<bias_pos>]/counter_examples.json
+#                         for each format in <cex_formats>. No cifar10:float16 -- by policy, not
+#                         evaluated: its input layer has n*u = 1.5 >= 1 (3072 * 2^-11), where the
+#                         bound stays sound but is useless (the certifier refuses, see
+#                         robust_certifier.check_rounding_preconditions; reaffirmed 2026-11-04).
+#                         The float16 CIFAR-10 suite exists (verified-certified-robustness
+#                         scripts/regen_cifar10_float16_suite.sh); the paper reports its radii in
+#                         §2.2 only.
+#   NATGRID[key]        = <inputs_dir>/natgrid_numpy_biased_<bias>_<bias_pos>.json (biased models:
+#                         the certified biased-model test images the k/255-grid search
+#                         (natural_grid_cexs.py in verified-certified-robustness) refutes at the
+#                         standard radii -- MNIST 24, Fashion 204, CIFAR 370; subsets of the biased
+#                         numpy "all" sets, built and cross-checked by make_natgrid_inputs.py;
+#                         numpy execution only)
+# shellcheck source=../models/registry.sh
+source ../models/registry.sh
 
-# --- declarative tables ----------------------------------------------------
-
-# HIGGS width sweep + EMNIST-byclass models. net.txt are generated by
-# ../models/provision_higgs_emnist_inputs.sh (gitignored, like the originals). No Dafny ref
-# (-> L_real baseline). The *_50k / *_full keys reuse the same net.txt but a
-# larger inputs set (the certifier resolves .npy relative to the inputs dir, so
-# each input size lives in its own directory).
-HIGGS_W128_NET="../models/neural_net_higgs_w128_d5_full.txt"
-HIGGS_W256_NET="../models/neural_net_higgs_w256_d5_full.txt"
-HIGGS_W512_NET="../models/neural_net_higgs_w512_d5_full.txt"
-HIGGS_W1024_NET="../models/neural_net_higgs_w1024_d5_full.txt"
-EMNIST_BYCLASS_NET="../models/neural_net_emnistbyc_cifar.txt"
-EMNIST_BALANCED_NET="../models/neural_net_emnistbal_w512_d8_ep500.txt"
-
-declare -A NN_FILE=(
-  [mnist]="$MNIST_NEURAL_NET"
-  [mnist_biased_1e6_end]="$MNIST_NEURAL_NET"
-  [fashion_mnist_biased_3e6_end]="$FASHION_MNIST_NEURAL_NET"
-  [cifar10_biased_4e6_end]="$CIFAR10_NEURAL_NET"
-  [fashion_mnist]="$FASHION_MNIST_NEURAL_NET"
-  [cifar10]="$CIFAR10_NEURAL_NET"
-  [z3]="$Z3_NEURAL_NET"
-  # --- HIGGS + EMNIST ---
-  [higgs_w128]="$HIGGS_W128_NET"
-  [higgs_w256]="$HIGGS_W256_NET"
-  [higgs_w512]="$HIGGS_W512_NET"
-  [higgs_w1024]="$HIGGS_W1024_NET"
-  [higgs_w1024_500k]="$HIGGS_W1024_NET"
-  [emnist_byclass_full]="$EMNIST_BYCLASS_NET"
-  [emnist_balanced_full]="$EMNIST_BALANCED_NET"
-)
-
-declare -A BIASES_FILE=(
-    [mnist_biased_1e6_end]="$MNIST_BIASED_1E6_END_BIASES"
-    [fashion_mnist_biased_3e6_end]="$FASHION_MNIST_BIASED_3E6_END_BIASES"
-    [cifar10_biased_4e6_end]="$CIFAR10_BIASED_4E6_END_BIASES"
-)
-
+declare -A NN_FILE=( [z3]="$Z3_NEURAL_NET" )
+declare -A BIASES_FILE=()
 declare -A REF_RESULTS=(
-  # RQ1 cex grams (per-model tightest): mnist 20, fashion 13, cifar 12
-  ["mnist:20"]="$MNIST_DAFNY_REF"
-  ["mnist_biased_1e6_end:20"]="$MNIST_DAFNY_REF"
-  ["fashion_mnist:13"]="$FASHION_DAFNY_REF"
-  ["fashion_mnist_biased_3e6_end:13"]="$FASHION_DAFNY_REF"
-  # RQ2/RQ3 "all" grams (uniform 12) -- corrected-model Dafny norms refs @ gram 12
-  ["mnist:12"]="$MNIST_DAFNY_REF_12"
-  ["mnist_biased_1e6_end:12"]="$MNIST_DAFNY_REF_12"
-  ["fashion_mnist:12"]="$FASHION_DAFNY_REF_12"
-  ["fashion_mnist_biased_3e6_end:12"]="$FASHION_DAFNY_REF_12"
-  ["cifar10:12"]="$CIFAR_DAFNY_REF_12"
-  ["cifar10_biased_4e6_end:12"]="$CIFAR_DAFNY_REF_12"
-  # legacy / misc
+  ["z3:10"]="$Z3_RESULTS_GRAM_10"
+  # legacy
   ["mnist:11"]="$MNIST_RESULTS_GRAM_11"
   ["mnist_biased_1e6_end:11"]="$MNIST_RESULTS_GRAM_11"
-  ["z3:10"]="$Z3_RESULTS_GRAM_10"
 )
+declare -A ALL_INPUTS=()
+declare -A CEX=( ["z3:float32"]="$CEX_Z3_FLOAT32" )
+declare -A NATGRID=()
 
-declare -A ALL_INPUTS=(
-  [mnist]="$ALL_MNIST_TEST_INPUTS"
-  [mnist_biased_1e6_end]="$ALL_MNIST_TEST_INPUTS"
-  [fashion_mnist_biased_3e6_end]="$ALL_FASHION_MNIST_TEST_INPUTS"
-  [cifar10_biased_4e6_end]="$ALL_CIFAR10_TEST_INPUTS"
-  [fashion_mnist]="$ALL_FASHION_MNIST_TEST_INPUTS"
-  [cifar10]="$ALL_CIFAR10_TEST_INPUTS"
-  # --- HIGGS + EMNIST (generated by ../models/provision_higgs_emnist_inputs.sh; paths relative to tests/) ---
-  [higgs_w128]="inputs_higgs_w128_n10000/inputs.json"
-  [higgs_w256]="inputs_higgs_w256_n10000/inputs.json"
-  [higgs_w512]="inputs_higgs_w512_n10000/inputs.json"
-  [higgs_w1024]="inputs_higgs_w1024_n10000/inputs.json"
-  [higgs_w1024_500k]="inputs_higgs_w1024_n500000/inputs.json"
-  [emnist_byclass_full]="inputs_emnist_byclass_full/inputs.json"
-  [emnist_balanced_full]="inputs_emnist_balanced_full/inputs.json"
-)
+for _key in $(registry_keys); do
+  NN_FILE[$_key]="../models/$(registry_get "$_key" net)"
+  ALL_INPUTS[$_key]="$(registry_get "$_key" inputs_all)"
+  _g="$(registry_get "$_key" gram_rq1)"; _r="$(registry_get "$_key" ref_rq1)"
+  if [[ "$_g" != "-" && "$_r" != "-" ]]; then REF_RESULTS["$_key:$_g"]="../models/precomputed/$_r"; fi
+  _g="$(registry_get "$_key" gram_all)"; _r="$(registry_get "$_key" ref_all)"
+  if [[ "$_g" != "-" && "$_r" != "-" ]]; then REF_RESULTS["$_key:$_g"]="../models/precomputed/$_r"; fi
+  _dataset="$(registry_get "$_key" dataset)"
+  _bias="$(registry_get "$_key" bias)"; _pos="$(registry_get "$_key" bias_pos)"
+  _sfx=""
+  if [[ "$_bias" != "-" ]]; then
+    _sfx="_biased_${_bias}_${_pos}"
+    BIASES_FILE[$_key]="$(registry_get "$_key" biases_txt)"
+    NATGRID[$_key]="$(registry_get "$_key" inputs_dir)/natgrid_numpy${_sfx}.json"
+  fi
+  _fmts="$(registry_get "$_key" cex_formats)"
+  if [[ "$_fmts" != "-" ]]; then
+    for _fmt in ${_fmts//,/ }; do
+      CEX["$_key:$_fmt"]="cex_${_dataset}_${_fmt}${_sfx}/counter_examples.json"
+    done
+  fi
+done
+unset _key _g _r _dataset _bias _pos _sfx _fmts _fmt
 
 # First 100 test points (= ERAN's 100; indices 0-99) for the same-100-point ERAN
 # comparison (RQ3 Table 3b). Kind "first100" runs these and writes to
@@ -200,32 +160,6 @@ declare -A ALL_INPUTS_100=(
   [emnist_balanced_full]="inputs_emnist_balanced_full/inputs_first100.json"
 )
 
-declare -A CEX=(
-  ["mnist:float32"]="$CEX_MNIST_FLOAT32"
-  ["mnist:float16"]="$CEX_MNIST_FLOAT16"
-  ["mnist:float64"]="$CEX_MNIST_FLOAT64"
-  ["fashion_mnist:float32"]="$CEX_FASHION_MNIST_FLOAT32"
-  ["fashion_mnist:float16"]="$CEX_FASHION_MNIST_FLOAT16"
-  ["fashion_mnist:float64"]="$CEX_FASHION_MNIST_FLOAT64"
-  # no cifar10:float16 -- by policy, not evaluated: its input layer has n*u = 1.5 >= 1
-  # (3072 * 2^-11), where the bound stays sound but is useless (the certifier refuses,
-  # see robust_certifier.check_rounding_preconditions; reaffirmed 2026-11-04). The
-  # float16 CIFAR-10 counterexample suite exists (verified-certified-robustness
-  # scripts/regen_cifar10_float16_suite.sh) and the paper reports its radii in §2.2 only.
-  ["cifar10:float32"]="$CEX_CIFAR10_FLOAT32"
-  ["cifar10:float64"]="$CEX_CIFAR10_FLOAT64"
-  ["z3:float32"]="$CEX_Z3_FLOAT32"
-  ["mnist_biased_1e6_end:float32"]="$CEX_MNIST_BIASED_1E6_END_FLOAT32"
-  ["fashion_mnist_biased_3e6_end:float32"]="$CEX_FASHION_MNIST_BIASED_3E6_END_FLOAT32"
-  ["cifar10_biased_4e6_end:float32"]="$CEX_CIFAR10_BIASED_4E6_END_FLOAT32"
-)
-
-declare -A NATGRID=(
-  [mnist_biased_1e6_end]="$NATGRID_MNIST_BIASED_1E6_END"
-  [fashion_mnist_biased_3e6_end]="$NATGRID_FASHION_MNIST_BIASED_3E6_END"
-  [cifar10_biased_4e6_end]="$NATGRID_CIFAR10_BIASED_4E6_END"
-)
-
 # --- helpers ---------------------------------------------------------------
 
 die() { echo "ERROR: $*" >&2; exit 1; }
@@ -233,6 +167,8 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 # Per-test certifier log. Overridable so that two run_tests.sh invocations can share
 # tests/ at the same time (e.g. the float16 full-set runner and an RQ1 suite runner).
 RUNLOG="${RUNLOG:-.log}"
+# Per-run count summaries (see run_test); one TSV per model, lines appended per run.
+SUMMARY_DIR="${SUMMARY_DIR:-summary}"
 
 # NUMPY_EXEC input remapping. "all"/"first100" files gain a _numpy suffix
 # (biased models map to the _numpy_biased_* variants, whose y1 is the biased
@@ -284,6 +220,8 @@ run_test() {
 
   # optional model filter (run one model's suite at a time)
   if [[ -n "$MODEL_FILTER" && "$model" != "$MODEL_FILTER"* ]]; then return 0; fi
+  if [[ -n "$MODEL_SKIP" && " $MODEL_SKIP " == *" $model "* ]]; then return 0; fi
+  if [[ -n "$KIND_FILTER" && ",$KIND_FILTER," != *",$kind,"* ]]; then return 0; fi
 
   # lookups (use presence check that works on bash >= 4.0)
   [[ -n ${NN_FILE[$model]+x} ]] || die "Unknown model '$model'. Known: ${!NN_FILE[*]}"
@@ -381,7 +319,7 @@ run_test() {
   if [[ "$kind" == "first100" ]]; then out_dir="json_results_first100"; out_kind="all"; fi
   if [[ -n "$NUMPY_EXEC" ]]; then out_dir="${out_dir}_numpy"; fi
   local json_output="$out_dir/${mode_tag}_${model}_${format}_gram${gram}_${out_kind}.json"
-  mkdir -p "$out_dir"
+  [[ -n "$DRY_RUN" ]] || mkdir -p "$out_dir"
 
   if [[ -n "$SKIP_EXISTING" && -s "$json_output" ]]; then
     # Never trust an output older than the input set it was produced from: a
@@ -394,11 +332,17 @@ run_test() {
     fi
   fi
 
-  echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
   # shellcheck disable=SC2086
   # ${ref_results_file:+...} passes the Dafny ref ONLY when one is configured;
   # omitting it makes the certifier use L_real as the real-arithmetic baseline.
-  python "$CERTIFIER" --mode "$mode" --json-output "$json_output" $bias_flag $numpy_flag "$format" "$nn_file" "$gram" "$cex_file" ${ref_results_file:+"$ref_results_file"} > "$RUNLOG" 2>&1 || (cat "$RUNLOG"; die "Couldn't run python certifier")
+  local -a cmd=(python "$CERTIFIER" --mode "$mode" --json-output "$json_output" $bias_flag $numpy_flag "$format" "$nn_file" "$gram" "$cex_file" ${ref_results_file:+"$ref_results_file"})
+  if [[ -n "$DRY_RUN" ]]; then
+    echo "${cmd[*]}"
+    return 0
+  fi
+
+  echo -n "Running test [$mode]: $format, $model, $gram, $kind ...  "
+  "${cmd[@]}" > "$RUNLOG" 2>&1 || (cat "$RUNLOG"; die "Couldn't run python certifier")
 
   local count count_ok count_failed count_ok_real
   count=$(       grabnum 'Got [0-9]+ instances to certify'                                )
@@ -407,6 +351,17 @@ run_test() {
   count_ok_real=$(grabnum '(Real|Dafny) certifier would have certified [0-9]+ instances as robust' )
 
   (( count_ok + count_failed == count )) || die "Internal error: counts don't add up (ok=$count_ok failed=$count_failed total=$count)"
+
+  # One summary line per run, appended to $SUMMARY_DIR/counts_<model>.tsv, in exactly the
+  # format of reverify_audit_fixes.sh's run_one (the September record):
+  #   name  got  certified  failed  real-certified  refused-overflow  refused-measuring
+  # with "-" when the log has no such line (standard mode has no measuring pass).
+  local count_ovf count_lg
+  count_ovf=$(grep -Eo 'Refused [0-9]+ instances: overflow' "$RUNLOG" | grep -Eo '[0-9]+' || echo "-")
+  count_lg=$(grep -Eo 'Refused [0-9]+ instances: measuring' "$RUNLOG" | grep -Eo '[0-9]+' || echo "-")
+  mkdir -p "$SUMMARY_DIR"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "${mode_tag}_${model}_${format}_gram${gram}_${kind}" \
+    "$count" "$count_ok" "$count_failed" "$count_ok_real" "$count_ovf" "$count_lg" >> "$SUMMARY_DIR/counts_${model}.tsv"
 
   if [[ "$kind" == "cex" || "$kind" == "natgrid" ]]; then
     (( count_ok == 0 )) || die "Certifier certified $count_ok counter-examples!"
@@ -446,7 +401,9 @@ run_test() {
 # figures. (Dafny reference files are dafny_*.json, not *.norms.json, so they are
 # neither staged by the copy nor removed here.)
 RECOMPUTE_NORMS="${RECOMPUTE_NORMS:-}"
-if [[ -n "$RECOMPUTE_NORMS" ]]; then
+if [[ -n "$DRY_RUN" ]]; then
+  :   # DRY_RUN: neither stage nor clear anything
+elif [[ -n "$RECOMPUTE_NORMS" ]]; then
   echo ">> RECOMPUTE_NORMS=1: not staging ../models/precomputed norms; clearing cached"
   echo ">> *.norms.json in $(pwd) to force fresh, timed recomputation."
   rm -f ./*.norms.json 2>/dev/null || true
