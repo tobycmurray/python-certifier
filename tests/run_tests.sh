@@ -35,6 +35,7 @@ MODEL_FILTER="${1:-}"
 # Both are used by tests/run_job.sh; empty = no restriction.
 KIND_FILTER="${KIND_FILTER:-}"
 MODEL_SKIP="${MODEL_SKIP:-}"
+KIND_SKIP="${KIND_SKIP:-}"       # "first100,..." skips the listed kinds (artifact run 1)
 
 # Optional env var SKIP_EXISTING=1: skip any test whose JSON output already
 # exists (and is non-empty) AND is newer than its input set. Lets us iterate on
@@ -222,6 +223,7 @@ run_test() {
   if [[ -n "$MODEL_FILTER" && "$model" != "$MODEL_FILTER"* ]]; then return 0; fi
   if [[ -n "$MODEL_SKIP" && " $MODEL_SKIP " == *" $model "* ]]; then return 0; fi
   if [[ -n "$KIND_FILTER" && ",$KIND_FILTER," != *",$kind,"* ]]; then return 0; fi
+  if [[ -n "$KIND_SKIP" && ",$KIND_SKIP," == *",$kind,"* ]]; then return 0; fi
 
   # lookups (use presence check that works on bash >= 4.0)
   [[ -n ${NN_FILE[$model]+x} ]] || die "Unknown model '$model'. Known: ${!NN_FILE[*]}"

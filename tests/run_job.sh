@@ -25,6 +25,8 @@
 #   higgs-500k   = Table 1's HIGGS row: the float32 "all" rows of higgs_w1024_500k (~3 h single-threaded).
 #   recompute-norms = artifact run 2: all-float32 with RECOMPUTE_NORMS=1 (fresh, timed float64 Gram bounds)
 #                  into json_results_numpy_run2/ (+ norms/ with the fresh caches); run 1's outputs are kept.
+#   artifact-run1 = artifact run 1: for the models in $MODELS, every matrix row except first100 (cex/natgrid at
+#                  every format, float32 "all" rows incl. the biased variant, float64 "all" for the image models).
 #   Both skip up-to-date outputs unless SKIP_EXISTING is set empty in the environment (SKIP_EXISTING= ...).
 # Logs: run_tests.sh writes each certifier's stdout to $RUNLOG (default .log) and per-run count lines to
 # summary/counts_<model>.tsv; redirect this script's stdout to keep the job log (e.g. > log.run_job.<job>.txt).
@@ -133,5 +135,22 @@ print('SUMMARY', json.dumps(s)); sys.exit(0 if s['n_verified_float32']==s['n_pai
     if [[ -z "$DRY" ]]; then mkdir -p json_results_numpy_run2/norms && cp -f ./*.norms.json json_results_numpy_run2/norms/; fi
     echo "##### recompute-norms done ($(date))"
     ;;
-  *) echo "run_job.sh: unknown job '$JOB' (rq1 | rq1-f16f64 | float16-all | float64-all | all-float32 | higgs-500k | recompute-norms)" >&2; exit 2 ;;
+  artifact-run1)
+    # Artifact run 1 (float-conservatism/artifact/DESIGN.md §3): for every model in $MODELS (default: every
+    # registry model except higgs_w1024_500k, which is run 3's higgs-500k job) every row the matrix has for
+    # it except first100: the cex/natgrid rows at every format (natural and biased), the float32 "all" rows
+    # of the model and of its biased variant, and for the three image models the float64 "all" rows
+    # (FLOAT64_ALL=1). The natgrid input sets are built first, as rq1 does. Up-to-date outputs are skipped.
+    export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
+    echo "##### artifact-run1 ($(date))"
+    if [[ -n "$DRY" ]]; then skip "python make_natgrid_inputs.py"; else python make_natgrid_inputs.py; fi
+    for m in ${MODELS:-mnist fashion_mnist cifar10 higgs_w128 higgs_w256 higgs_w512 higgs_w1024 emnist_byclass_full emnist_balanced_full}; do
+      f64=""; case "$m" in mnist|fashion_mnist|cifar10) f64=1 ;; esac
+      echo "##### $m ($(date))"
+      FLOAT64_ALL="$f64" NUMPY_EXEC=1 SKIP_EXISTING="${SKIP_EXISTING-1}" KIND_SKIP=first100 MODEL_SKIP=higgs_w1024_500k \
+        "$BASH" ./run_tests.sh "$m"
+    done
+    echo "##### artifact-run1 done ($(date))"
+    ;;
+  *) echo "run_job.sh: unknown job '$JOB' (rq1 | rq1-f16f64 | float16-all | float64-all | all-float32 | higgs-500k | recompute-norms | artifact-run1)" >&2; exit 2 ;;
 esac
