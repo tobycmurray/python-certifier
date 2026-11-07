@@ -1,0 +1,637 @@
+mnist: 24 grid instances (eps 0.3) -> all_mnist_test_inputs/natgrid_numpy_biased_1e6_end.json
+fashion: 204 grid instances (eps 0.25) -> all_fashion_mnist_test_inputs/natgrid_numpy_biased_3e6_end.json
+cifar: 370 grid instances (eps 0.141) -> all_cifar10_test_inputs/natgrid_numpy_biased_4e6_end.json
+json_results_numpy/standard_mnist_float32_gram20_cex.json -> json_results_numpy/stale_pre_e69a565f/standard_mnist_float32_gram20_cex.json
+json_results_numpy/standard_fashion_mnist_float32_gram13_cex.json -> json_results_numpy/stale_pre_e69a565f/standard_fashion_mnist_float32_gram13_cex.json
+json_results_numpy/standard_cifar10_float32_gram12_cex.json -> json_results_numpy/stale_pre_e69a565f/standard_cifar10_float32_gram12_cex.json
+json_results_numpy/hybrid_only_mnist_float32_gram20_cex.json -> json_results_numpy/stale_pre_e69a565f/hybrid_only_mnist_float32_gram20_cex.json
+json_results_numpy/hybrid_only_fashion_mnist_float32_gram13_cex.json -> json_results_numpy/stale_pre_e69a565f/hybrid_only_fashion_mnist_float32_gram13_cex.json
+json_results_numpy/hybrid_only_cifar10_float32_gram12_cex.json -> json_results_numpy/stale_pre_e69a565f/hybrid_only_cifar10_float32_gram12_cex.json
+json_results_numpy/hybrid_meas_mnist_float32_gram20_cex.json -> json_results_numpy/stale_pre_e69a565f/hybrid_meas_mnist_float32_gram20_cex.json
+json_results_numpy/hybrid_meas_fashion_mnist_float32_gram13_cex.json -> json_results_numpy/stale_pre_e69a565f/hybrid_meas_fashion_mnist_float32_gram13_cex.json
+json_results_numpy/hybrid_meas_cifar10_float32_gram12_cex.json -> json_results_numpy/stale_pre_e69a565f/hybrid_meas_cifar10_float32_gram12_cex.json
+##### mnist (Sat 17 Oct 2026 07:53:47 AEDT)
+Running test [standard]: float32, mnist, 20, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.20.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.1124706256193419
+  mean real RHS per pair:           7.6692169111014e-06
+  float_conservatism / real_RHS:    14665.203360793932
+
+D_(L-1) mean: 0.2134650250494189
+r0 (per example) mean: 8.487800975199193
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=784, nu=n*u=4.6730042e-05, kappa=4.6790739e-05, |W|/|W|=8.458, alpha=4.95835, r_in=8.48780, right_prod=7.92041, beta=0.016648, contrib=0.131862, share(D)=0.618
+  2.   Layer 1: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=7.020, alpha=2.70512, r_in=42.06886, right_prod=2.92793, beta=0.006142, contrib=0.017984, share(D)=0.084
+  3.   Layer 2: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=5.990, alpha=2.12285, r_in=113.79512, right_prod=1.37925, beta=0.011126, contrib=0.015345, share(D)=0.072
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.09881383333330736
+  Overflow check:    0.6890417333333213
+  Components:        1.1741734999999605
+  Certification:     0.10642506666666367
+  Overall:           2.068454133333253
+
+JSON results written to: json_results_numpy/standard_mnist_float32_gram20_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-only]: float32, mnist, 20, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.20.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.061453714424687673
+  mean real RHS per pair:           7.6692169111014e-06
+  float_conservatism / real_RHS:    8013.036420411027
+
+D_(L-1) mean: 0.2134650250494189
+D_hybrid mean: 2.0877003209449457e-05  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 8.487800975199193
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.09891246666671923
+  Overflow check:    0.6846000666666333
+  Components:        2.494897233333315
+  Certification:     0.11096390000001992
+  Overall:           3.3893736666666876
+
+JSON results written to: json_results_numpy/hybrid_only_mnist_float32_gram20_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-meas]: float32, mnist, 20, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.20.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.04531938024921488
+  mean real RHS per pair:           7.6692169111014e-06
+  float_conservatism / real_RHS:    5909.257851817159
+
+D_(L-1) mean: 0.17649880543974028
+D_hybrid mean: 2.0877003209506662e-05  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 8.487800975199193
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.10164723333329444
+  Overflow check:    0.694829333333343
+  Components:        4.465712466666656
+  Certification:     0.11166806666662588
+  Overall:           5.3738570999999205
+
+JSON results written to: json_results_numpy/hybrid_meas_mnist_float32_gram20_cex.json
+Total records (excluding header): 30
+
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Running test [standard]: float32, mnist_biased_1e6_end, 20, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.20.fp64.norms.json
+Of 24 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 24 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 24 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 356.19574619824954
+  mean real RHS per pair:           2.7746900575989475
+  float_conservatism / real_RHS:    128.3731655803316
+
+D_(L-1) mean: 0.9039756478281339
+r0 (per example) mean: 9.130396862264996
+
+Top contributing hidden layers:
+  1.   Layer 7: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=2.809, alpha=0.81579, r_in=439.26360, right_prod=1.00000, beta=0.682088, contrib=0.682088, share(D)=0.755
+  2.   Layer 0: n_in=784, nu=n*u=4.6730042e-05, kappa=4.6790739e-05, |W|/|W|=8.458, alpha=4.95835, r_in=9.13040, right_prod=7.92041, beta=0.017909, contrib=0.141845, share(D)=0.157
+  3.   Layer 1: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=7.020, alpha=2.70512, r_in=45.25382, right_prod=2.92793, beta=0.006607, contrib=0.019345, share(D)=0.021
+
+Average Times (ms, over 24 runs):
+  Radii computation: 0.07988704166670783
+  Overflow check:    0.6569912083333462
+  Components:        1.1436111666667064
+  Certification:     0.09523949999999208
+  Overall:           1.9757289166667524
+
+JSON results written to: json_results_numpy/standard_mnist_biased_1e6_end_float32_gram20_natgrid.json
+Total records (excluding header): 24
+
+Running test [hybrid-only]: float32, mnist_biased_1e6_end, 20, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.20.fp64.norms.json
+Of 24 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 24 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 24 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 356.0321942015312
+  mean real RHS per pair:           2.7746900575989475
+  float_conservatism / real_RHS:    128.31422134031806
+
+D_(L-1) mean: 0.9039756478281339
+D_hybrid mean: 0.20313251173010352  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 9.130396862264996
+
+Average Times (ms, over 24 runs):
+  Radii computation: 0.07961287500006058
+  Overflow check:    0.6616510416666369
+  Components:        2.328859458333332
+  Certification:     0.09740620833329865
+  Overall:           3.1675295833333283
+
+JSON results written to: json_results_numpy/hybrid_only_mnist_biased_1e6_end_float32_gram20_natgrid.json
+Total records (excluding header): 24
+
+Running test [hybrid-meas]: float32, mnist_biased_1e6_end, 20, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.20.fp64.norms.json
+Of 24 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 24 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 24 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 356.01317916369004
+  mean real RHS per pair:           2.7746900575989475
+  float_conservatism / real_RHS:    128.30736830900773
+
+D_(L-1) mean: 0.8656759683908892
+D_hybrid mean: 0.20313251173010358  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 9.130396862264996
+
+Average Times (ms, over 24 runs):
+  Radii computation: 0.08228475000001308
+  Overflow check:    0.6646284583333532
+  Components:        4.423354124999945
+  Certification:     0.0964497083333719
+  Overall:           5.266717041666683
+
+JSON results written to: json_results_numpy/hybrid_meas_mnist_biased_1e6_end_float32_gram20_natgrid.json
+Total records (excluding header): 24
+
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+##### fashion_mnist (Sat 17 Oct 2026 07:54:02 AEDT)
+Running test [standard]: float32, fashion_mnist, 13, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.3180016215254744
+  mean real RHS per pair:           5.290353638507804e-06
+  float_conservatism / real_RHS:    60109.70971974
+
+D_(L-1) mean: 0.2250673827843643
+r0 (per example) mean: 11.864366705867976
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=784, nu=n*u=4.6730042e-05, kappa=4.6790739e-05, |W|/|W|=10.992, alpha=4.91893, r_in=11.86437, right_prod=4.21521, beta=0.030000, contrib=0.126455, share(D)=0.562
+  2.   Layer 1: n_in=256, nu=n*u=1.5258789e-05, kappa=1.5318511e-05, |W|/|W|=7.623, alpha=2.77985, r_in=58.32998, right_prod=1.51634, beta=0.018932, contrib=0.028707, share(D)=0.128
+  3.   Layer 2: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=6.030, alpha=1.94948, r_in=162.12975, right_prod=0.77782, beta=0.014655, contrib=0.011399, share(D)=0.051
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.1005972333333401
+  Overflow check:    1.3401123666667718
+  Components:        2.3939139000000034
+  Certification:     0.11165550000000006
+  Overall:           3.9462790000001156
+
+JSON results written to: json_results_numpy/standard_fashion_mnist_float32_gram13_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-only]: float32, fashion_mnist, 13, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.16218194901430225
+  mean real RHS per pair:           5.290353638507804e-06
+  float_conservatism / real_RHS:    30656.164048051665
+
+D_(L-1) mean: 0.2250673827843643
+D_hybrid mean: 1.0925915123434451e-05  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 11.864366705867976
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.10268470000003305
+  Overflow check:    1.3617764333333504
+  Components:        4.231795799999934
+  Certification:     0.11739999999994903
+  Overall:           5.813656933333267
+
+JSON results written to: json_results_numpy/hybrid_only_fashion_mnist_float32_gram13_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-meas]: float32, fashion_mnist, 13, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.11265099530670125
+  mean real RHS per pair:           5.290353638507804e-06
+  float_conservatism / real_RHS:    21293.66068966149
+
+D_(L-1) mean: 0.16039822875683699
+D_hybrid mean: 1.0925915123493332e-05  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 11.864366705867976
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.1062001333333266
+  Overflow check:    1.3738915333333601
+  Components:        7.623366733333341
+  Certification:     0.11703333333331993
+  Overall:           9.220491733333347
+
+JSON results written to: json_results_numpy/hybrid_meas_fashion_mnist_float32_gram13_cex.json
+Total records (excluding header): 30
+
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Running test [standard]: float32, fashion_mnist_biased_3e6_end, 13, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 204 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 204 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 204 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 842.025889674281
+  mean real RHS per pair:           3.092754639497743
+  float_conservatism / real_RHS:    272.25757870369705
+
+D_(L-1) mean: 2.273266594548769
+r0 (per example) mean: 13.19016768295904
+
+Top contributing hidden layers:
+  1.   Layer 11: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=2.709, alpha=0.92407, r_in=295.69504, right_prod=1.00000, beta=2.028740, contrib=2.028740, share(D)=0.892
+  2.   Layer 0: n_in=784, nu=n*u=4.6730042e-05, kappa=4.6790739e-05, |W|/|W|=10.992, alpha=4.91893, r_in=13.19017, right_prod=4.21521, beta=0.033352, contrib=0.140586, share(D)=0.062
+  3.   Layer 1: n_in=256, nu=n*u=1.5258789e-05, kappa=1.5318511e-05, |W|/|W|=7.623, alpha=2.77985, r_in=64.84815, right_prod=1.51634, beta=0.021047, contrib=0.031915, share(D)=0.014
+
+Average Times (ms, over 204 runs):
+  Radii computation: 0.09329412254899903
+  Overflow check:    1.2831262352941188
+  Components:        2.3585927107842912
+  Certification:     0.0989971617647208
+  Overall:           3.8340102303921304
+
+JSON results written to: json_results_numpy/standard_fashion_mnist_biased_3e6_end_float32_gram13_natgrid.json
+Total records (excluding header): 204
+
+Running test [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 204 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 204 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 204 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 841.17218749386
+  mean real RHS per pair:           3.092754639497743
+  float_conservatism / real_RHS:    271.98154575574887
+
+D_(L-1) mean: 2.273266594548769
+D_hybrid mean: 0.8373767241511263  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 13.19016768295904
+
+Average Times (ms, over 204 runs):
+  Radii computation: 0.09378287254903933
+  Overflow check:    1.301245093137255
+  Components:        4.117710779411769
+  Certification:     0.10174652941175903
+  Overall:           5.614485274509822
+
+JSON results written to: json_results_numpy/hybrid_only_fashion_mnist_biased_3e6_end_float32_gram13_natgrid.json
+Total records (excluding header): 204
+
+Running test [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 204 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 204 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 204 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 841.1235786113747
+  mean real RHS per pair:           3.092754639497743
+  float_conservatism / real_RHS:    271.9658287370548
+
+D_(L-1) mean: 2.200950181215106
+D_hybrid mean: 0.8373767241511264  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 13.19016768295904
+
+Average Times (ms, over 204 runs):
+  Radii computation: 0.09682596078432111
+  Overflow check:    1.3203979068627454
+  Components:        7.631208955882401
+  Certification:     0.10814175000001366
+  Overall:           9.15657457352948
+
+JSON results written to: json_results_numpy/hybrid_meas_fashion_mnist_biased_3e6_end_float32_gram13_natgrid.json
+Total records (excluding header): 204
+
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+##### cifar10 (Sat 17 Oct 2026 07:54:32 AEDT)
+Running test [standard]: float32, cifar10, 12, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 2.240724128298638
+  mean real RHS per pair:           3.147460214090494e-06
+  float_conservatism / real_RHS:    711914.9968178801
+
+D_(L-1) mean: 2.993549531493207
+r0 (per example) mean: 28.21639150137161
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=3072, nu=n*u=1.8310547e-04, kappa=1.8318184e-04, |W|/|W|=10.708, alpha=5.62732, r_in=28.21639, right_prod=7.25995, beta=0.310834, contrib=2.256643, share(D)=0.754
+  2.   Layer 1: n_in=512, nu=n*u=3.0517578e-05, kappa=3.0577649e-05, |W|/|W|=10.489, alpha=1.90075, r_in=158.47175, right_prod=3.81952, beta=0.096580, contrib=0.368889, share(D)=0.123
+  3.   Layer 2: n_in=256, nu=n*u=1.5258789e-05, kappa=1.5318511e-05, |W|/|W|=8.180, alpha=1.49752, r_in=301.11887, right_prod=2.55056, beta=0.056499, contrib=0.144105, share(D)=0.048
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.25192080000001243
+  Overflow check:    2.2602278333336536
+  Components:        3.249176366666499
+  Certification:     0.11672086666649761
+  Overall:           5.878045866666663
+
+JSON results written to: json_results_numpy/standard_cifar10_float32_gram12_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-only]: float32, cifar10, 12, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 1.1298001608719561
+  mean real RHS per pair:           3.147460214090494e-06
+  float_conservatism / real_RHS:    358956.1373370462
+
+D_(L-1) mean: 2.993549531493207
+D_hybrid mean: 1.8810779539579332e-05  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 28.21639150137161
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.26001116666710306
+  Overflow check:    2.3113625666666118
+  Components:        7.570931833333461
+  Certification:     0.12166673333275924
+  Overall:           10.263972299999937
+
+JSON results written to: json_results_numpy/hybrid_only_cifar10_float32_gram12_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-meas]: float32, cifar10, 12, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 0.9075189091320882
+  mean real RHS per pair:           3.147460214090494e-06
+  float_conservatism / real_RHS:    288333.71906317474
+
+D_(L-1) mean: 2.4425777642834783
+D_hybrid mean: 1.8810779539623334e-05  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 28.21639150137161
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.2626611666669258
+  Overflow check:    2.3229695333332265
+  Components:        11.993886233333248
+  Certification:     0.1214179666668258
+  Overall:           14.700934900000224
+
+JSON results written to: json_results_numpy/hybrid_meas_cifar10_float32_gram12_cex.json
+Total records (excluding header): 30
+
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex
+Running test [standard]: float32, cifar10_biased_4e6_end, 12, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 370 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 370 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 370 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 751.1249055913081
+  mean real RHS per pair:           1.9502915478677723
+  float_conservatism / real_RHS:    385.1346771268649
+
+D_(L-1) mean: 5.680460002848887
+r0 (per example) mean: 28.117536009437146
+
+Top contributing hidden layers:
+  1.   Layer 7: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=3.944, alpha=1.12855, r_in=1015.25286, right_prod=1.00000, beta=2.732140, contrib=2.732140, share(D)=0.481
+  2.   Layer 0: n_in=3072, nu=n*u=1.8310547e-04, kappa=1.8318184e-04, |W|/|W|=10.708, alpha=5.62732, r_in=28.11754, right_prod=7.25995, beta=0.309745, contrib=2.248737, share(D)=0.396
+  3.   Layer 1: n_in=512, nu=n*u=3.0517578e-05, kappa=3.0577649e-05, |W|/|W|=10.489, alpha=1.90075, r_in=157.91655, right_prod=3.81952, beta=0.096242, contrib=0.367596, share(D)=0.065
+
+Average Times (ms, over 370 runs):
+  Radii computation: 0.2525440297297237
+  Overflow check:    2.205464532432444
+  Components:        3.265152962162096
+  Certification:     0.10263984864872984
+  Overall:           5.825801372972993
+
+JSON results written to: json_results_numpy/standard_cifar10_biased_4e6_end_float32_gram12_natgrid.json
+Total records (excluding header): 370
+
+Running test [hybrid-only]: float32, cifar10_biased_4e6_end, 12, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 370 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 370 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 370 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 749.4775216469662
+  mean real RHS per pair:           1.9502915478677723
+  float_conservatism / real_RHS:    384.2899911381762
+
+D_(L-1) mean: 5.680460002848887
+D_hybrid mean: 0.8149824880697515  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 28.117536009437146
+
+Average Times (ms, over 370 runs):
+  Radii computation: 0.25403260000007166
+  Overflow check:    2.2193553918920506
+  Components:        7.447739505405357
+  Certification:     0.10594981081076846
+  Overall:           10.027077308108248
+
+JSON results written to: json_results_numpy/hybrid_only_cifar10_biased_4e6_end_float32_gram12_natgrid.json
+Total records (excluding header): 370
+
+Running test [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, natgrid ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 370 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 370 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 370 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 749.272565470402
+  mean real RHS per pair:           1.9502915478677723
+  float_conservatism / real_RHS:    384.18490111879515
+
+D_(L-1) mean: 5.131356907542538
+D_hybrid mean: 0.8149824880697516  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 28.117536009437146
+
+Average Times (ms, over 370 runs):
+  Radii computation: 0.25619995945942803
+  Overflow check:    2.2254665621622087
+  Components:        11.966760910810757
+  Certification:     0.1058391999999851
+  Overall:           14.554266632432379
+
+JSON results written to: json_results_numpy/hybrid_meas_cifar10_biased_4e6_end_float32_gram12_natgrid.json
+Total records (excluding header): 370
+
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+##### RQ1 runs done (Sat 17 Oct 2026 07:56:45 AEDT)

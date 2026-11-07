@@ -1,0 +1,3 @@
+standard_emnist_byclass_full_float32_gram12_all	116323	98891	17432	100241	0	-
+hybrid_only_emnist_byclass_full_float32_gram12_all	116323	99564	16759	100241	0	0
+hybrid_meas_emnist_byclass_full_float32_gram12_all	116323	99637	16686	100241	0	0

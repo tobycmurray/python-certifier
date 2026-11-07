@@ -1,0 +1,12 @@
+standard_mnist_biased_1e6_end_float32_gram20_cex	30	0	30	30	0	-
+hybrid_only_mnist_biased_1e6_end_float32_gram20_cex	30	0	30	30	0	0
+hybrid_meas_mnist_biased_1e6_end_float32_gram20_cex	30	0	30	30	0	0
+standard_mnist_biased_1e6_end_float32_gram20_natgrid	24	0	24	24	0	-
+hybrid_only_mnist_biased_1e6_end_float32_gram20_natgrid	24	0	24	24	0	0
+hybrid_meas_mnist_biased_1e6_end_float32_gram20_natgrid	24	0	24	24	0	0
+standard_mnist_biased_1e6_end_float32_gram12_all	10000	0	10000	9549	0	-
+hybrid_only_mnist_biased_1e6_end_float32_gram12_all	10000	0	10000	9549	0	0
+hybrid_meas_mnist_biased_1e6_end_float32_gram12_all	10000	0	10000	9549	0	0
+standard_mnist_biased_1e6_end_float32_gram12_all	10000	0	10000	9549	0	-
+hybrid_only_mnist_biased_1e6_end_float32_gram12_all	10000	0	10000	9549	0	0
+hybrid_meas_mnist_biased_1e6_end_float32_gram12_all	10000	0	10000	9549	0	0

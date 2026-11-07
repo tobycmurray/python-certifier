@@ -1,0 +1,1391 @@
+##### mnist (Thu 15 Oct 2026 23:55:09 AEDT)
+Skipping (no numpy variant scheme) [standard]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-only]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-meas]: float32, z3, 10, cex
+Skipping (output exists) [standard]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist, 20, cex
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, cex
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Running test [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 872.8781828162215
+  mean real RHS per pair:           2.4303662759077436
+  float_conservatism / real_RHS:    359.15499300211485
+
+D_(L-1) mean: 2.251776384625764
+r0 (per example) mean: 12.057317031930248
+
+Top contributing hidden layers:
+  1.   Layer 11: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=2.709, alpha=0.92407, r_in=270.29898, right_prod=1.00000, beta=2.028251, contrib=2.028251, share(D)=0.901
+  2.   Layer 0: n_in=784, nu=n*u=4.6730042e-05, kappa=4.6790739e-05, |W|/|W|=10.992, alpha=4.91893, r_in=12.05732, right_prod=4.21521, beta=0.030488, contrib=0.128512, share(D)=0.057
+  3.   Layer 1: n_in=256, nu=n*u=1.5258789e-05, kappa=1.5318511e-05, |W|/|W|=7.623, alpha=2.77985, r_in=59.27860, right_prod=1.51634, beta=0.019240, contrib=0.029174, share(D)=0.013
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.11749440000000295
+  Overflow check:    1.4114374666666467
+  Components:        2.5412208666668152
+  Certification:     0.11747516666658815
+  Overall:           4.187627900000053
+
+JSON results written to: json_results_numpy/standard_fashion_mnist_biased_3e6_end_float32_gram13_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 871.9433478644041
+  mean real RHS per pair:           2.4303662759077436
+  float_conservatism / real_RHS:    358.77034523890137
+
+D_(L-1) mean: 2.251776384625764
+D_hybrid mean: 0.8342498870115692  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 12.057317031930248
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.11889583333338412
+  Overflow check:    1.4113555666665316
+  Components:        4.333976466666556
+  Certification:     0.12042356666661647
+  Overall:           5.984651433333088
+
+JSON results written to: json_results_numpy/hybrid_only_fashion_mnist_biased_3e6_end_float32_gram13_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.13.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 871.8960759732664
+  mean real RHS per pair:           2.4303662759077436
+  float_conservatism / real_RHS:    358.75089471755143
+
+D_(L-1) mean: 2.1871550131768114
+D_hybrid mean: 0.8342498870115692  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 12.057317031930248
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.11738756666659356
+  Overflow check:    1.414145900000019
+  Components:        7.826736133333335
+  Certification:     0.11984993333351568
+  Overall:           9.478119533333462
+
+JSON results written to: json_results_numpy/hybrid_meas_fashion_mnist_biased_3e6_end_float32_gram13_cex.json
+Total records (excluding header): 30
+
+Running test [standard]: float32, cifar10_biased_4e6_end, 12, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 753.4700047687494
+  mean real RHS per pair:           1.295573912083342
+  float_conservatism / real_RHS:    581.5723809667758
+
+D_(L-1) mean: 5.672553550971037
+r0 (per example) mean: 28.043011923824004
+
+Top contributing hidden layers:
+  1.   Layer 7: n_in=128, nu=n*u=7.6293945e-06, kappa=7.6890285e-06, |W|/|W|=3.944, alpha=1.12855, r_in=1012.56199, right_prod=1.00000, beta=2.732047, contrib=2.732047, share(D)=0.482
+  2.   Layer 0: n_in=3072, nu=n*u=1.8310547e-04, kappa=1.8318184e-04, |W|/|W|=10.708, alpha=5.62732, r_in=28.04301, right_prod=7.25995, beta=0.308924, contrib=2.242777, share(D)=0.395
+  3.   Layer 1: n_in=512, nu=n*u=3.0517578e-05, kappa=3.0577649e-05, |W|/|W|=10.489, alpha=1.90075, r_in=157.49800, right_prod=3.81952, beta=0.095987, contrib=0.366622, share(D)=0.065
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.3106362000000473
+  Overflow check:    2.3063778666665278
+  Components:        3.4183235333333784
+  Certification:     0.11802360000009078
+  Overall:           6.153361200000044
+
+JSON results written to: json_results_numpy/standard_cifar10_biased_4e6_end_float32_gram12_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 751.631416281666
+  mean real RHS per pair:           1.295573912083342
+  float_conservatism / real_RHS:    580.1532504409636
+
+D_(L-1) mean: 5.672553550971037
+D_hybrid mean: 0.815587353843392  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 28.043011923824004
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.31272509999951126
+  Overflow check:    2.3314679999997403
+  Components:        7.773243166667025
+  Certification:     0.12157633333309548
+  Overall:           10.539012599999372
+
+JSON results written to: json_results_numpy/hybrid_only_cifar10_biased_4e6_end_float32_gram12_cex.json
+Total records (excluding header): 30
+
+Running test [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 30 instances we attempted to certify:
+  Certified 0 instances as robust
+  Failed to certify 30 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 30 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 751.4043748635751
+  mean real RHS per pair:           1.295573912083342
+  float_conservatism / real_RHS:    579.9780065463672
+
+D_(L-1) mean: 5.124212211292122
+D_hybrid mean: 0.815587353843392  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 28.043011923824004
+
+Average Times (ms, over 30 runs):
+  Radii computation: 0.3115653333334005
+  Overflow check:    2.3155069000004858
+  Components:        12.21044723333288
+  Certification:     0.12160826666682094
+  Overall:           14.959127733333588
+
+JSON results written to: json_results_numpy/hybrid_meas_cifar10_biased_4e6_end_float32_gram12_cex.json
+Total records (excluding header): 30
+
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [standard]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w128, 12, all
+Skipping (output exists) [standard]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w256, 12, all
+Skipping (output exists) [standard]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w512, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024_500k, 12, all
+Running test [standard]: float64, mnist, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 9574 instances as robust
+  Failed to certify 426 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 9574 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 2.331184776655555e-10
+  mean real RHS per pair:           2.812692936801046
+  float_conservatism / real_RHS:    8.288088422858119e-11
+
+D_(L-1) mean: 4.4949895165e-10
+r0 (per example) mean: 9.595950068153842
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=784, nu=n*u=8.7041485e-14, kappa=8.7152507e-14, |W|/|W|=8.458, alpha=4.95646, r_in=9.59595, right_prod=7.91974, beta=0.000000, contrib=0.000000, share(D)=0.618
+  2.   Layer 1: n_in=128, nu=n*u=1.4210855e-14, kappa=1.4321877e-14, |W|/|W|=7.020, alpha=2.70501, r_in=47.56195, right_prod=2.92781, beta=0.000000, contrib=0.000000, share(D)=0.084
+  3.   Layer 2: n_in=128, nu=n*u=1.4210855e-14, kappa=1.4321877e-14, |W|/|W|=5.990, alpha=2.12278, r_in=128.65545, right_prod=1.37923, beta=0.000000, contrib=0.000000, share(D)=0.072
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.08538145190003013
+  Overflow check:    1.9864552381000027
+  Components:        2.9592840411000334
+  Certification:     0.18256866059998153
+  Overall:           5.213689391700048
+
+JSON results written to: json_results_numpy/standard_mnist_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [hybrid-only]: float64, mnist, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 9574 instances as robust
+  Failed to certify 426 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 9574 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 2.331184776655555e-10
+  mean real RHS per pair:           2.812692936801046
+  float_conservatism / real_RHS:    8.288088422858119e-11
+
+D_(L-1) mean: 4.4949895165e-10
+D_hybrid mean: 4.3544613249663557e-10  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 9.595950068153842
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.08569490550003196
+  Overflow check:    1.98235861509996
+  Components:        3.3257471978000366
+  Certification:     0.18021000689998298
+  Overall:           5.5740107253000115
+
+JSON results written to: json_results_numpy/hybrid_only_mnist_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [hybrid-meas]: float64, mnist, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 2a331148741da8b94faf01969cc1955803f2db48a07bbd34f08ec108bd1bbaa3.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 9574 instances as robust
+  Failed to certify 426 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 9574 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 2.0168474050999996e-10
+  mean real RHS per pair:           2.812692936801046
+  float_conservatism / real_RHS:    7.17052109994565e-11
+
+D_(L-1) mean: 3.77706619e-10
+D_hybrid mean: 4.3544618278e-10  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 9.595950068153842
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.08580008590001706
+  Overflow check:    1.9778715044000272
+  Components:        4.838533038200037
+  Certification:     0.18064559850000178
+  Overall:           7.082850227000082
+
+JSON results written to: json_results_numpy/hybrid_meas_mnist_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [standard]: float64, fashion_mnist, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 8365 instances as robust
+  Failed to certify 1635 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 8365 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 6.029556876077777e-10
+  mean real RHS per pair:           3.60836087784817
+  float_conservatism / real_RHS:    1.6709960783283618e-10
+
+D_(L-1) mean: 4.383838579299999e-10
+r0 (per example) mean: 12.410336942801806
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=784, nu=n*u=8.7041485e-14, kappa=8.7152507e-14, |W|/|W|=10.991, alpha=4.91657, r_in=12.41034, right_prod=4.21355, beta=0.000000, contrib=0.000000, share(D)=0.562
+  2.   Layer 1: n_in=256, nu=n*u=2.8421709e-14, kappa=2.8532732e-14, |W|/|W|=7.623, alpha=2.77953, r_in=61.01633, right_prod=1.51592, beta=0.000000, contrib=0.000000, share(D)=0.128
+  3.   Layer 2: n_in=128, nu=n*u=1.4210855e-14, kappa=1.4321877e-14, |W|/|W|=6.030, alpha=1.94939, r_in=169.59662, right_prod=0.77764, beta=0.000000, contrib=0.000000, share(D)=0.051
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.09528306470001269
+  Overflow check:    3.9192130397000104
+  Components:        6.4370623951
+  Certification:     0.18253693259999207
+  Overall:           10.634095432100015
+
+JSON results written to: json_results_numpy/standard_fashion_mnist_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [hybrid-only]: float64, fashion_mnist, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 8365 instances as robust
+  Failed to certify 1635 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 8365 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 6.029556876077777e-10
+  mean real RHS per pair:           3.60836087784817
+  float_conservatism / real_RHS:    1.6709960783283618e-10
+
+D_(L-1) mean: 4.383838579299999e-10
+D_hybrid mean: 4.2955278621846923e-10  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 12.410336942801806
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.09372072360000319
+  Overflow check:    3.883697961399977
+  Components:        6.232457847099994
+  Certification:     0.18254823370001505
+  Overall:           10.39242476579999
+
+JSON results written to: json_results_numpy/hybrid_only_fashion_mnist_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [hybrid-meas]: float64, fashion_mnist, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: d4b5f0471dd2ff0d256921ec6d78ea516e09b35530bf14e0405e024c1c9aeb6f.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 8365 instances as robust
+  Failed to certify 1635 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 8365 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 5.113854721866666e-10
+  mean real RHS per pair:           3.60836087784817
+  float_conservatism / real_RHS:    1.4172237464552856e-10
+
+D_(L-1) mean: 3.1659888305e-10
+D_hybrid mean: 4.295528361299999e-10  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 12.410336942801806
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.0940875820999442
+  Overflow check:    3.8665786846000074
+  Components:        8.113501661000033
+  Certification:     0.18318096559995983
+  Overall:           12.257348893299941
+
+JSON results written to: json_results_numpy/hybrid_meas_fashion_mnist_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [standard]: float64, cifar10, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 4612 instances as robust
+  Failed to certify 5388 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Dafny certifier would have certified 4612 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 4.252147274753333e-09
+  mean real RHS per pair:           2.098973640117939
+  float_conservatism / real_RHS:    2.0258221415845935e-09
+
+D_(L-1) mean: 5.77475152861e-09
+r0 (per example) mean: 29.240361084308383
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=3072, nu=n*u=3.4106051e-13, kappa=3.4117154e-13, |W|/|W|=10.708, alpha=5.61630, r_in=29.24036, right_prod=7.25530, beta=0.000000, contrib=0.000000, share(D)=0.754
+  2.   Layer 1: n_in=512, nu=n*u=5.6843419e-14, kappa=5.6954441e-14, |W|/|W|=10.489, alpha=1.90014, r_in=164.22267, right_prod=3.81829, beta=0.000000, contrib=0.000000, share(D)=0.123
+  3.   Layer 2: n_in=256, nu=n*u=2.8421709e-14, kappa=2.8532732e-14, |W|/|W|=8.180, alpha=1.49733, r_in=312.04644, right_prod=2.55006, beta=0.000000, contrib=0.000000, share(D)=0.048
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.2550514667999444
+  Overflow check:    6.618529360500124
+  Components:        8.096121771799986
+  Certification:     0.18525564899997385
+  Overall:           15.154958248100028
+
+JSON results written to: json_results_numpy/standard_cifar10_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [hybrid-only]: float64, cifar10, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 4612 instances as robust
+  Failed to certify 5388 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 4612 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 4.252147274753333e-09
+  mean real RHS per pair:           2.098973640117939
+  float_conservatism / real_RHS:    2.0258221415845935e-09
+
+D_(L-1) mean: 5.77475152861e-09
+D_hybrid mean: 5.746905038430166e-09  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 29.240361084308383
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.2577417392999585
+  Overflow check:    6.627137823700039
+  Components:        10.354257477500177
+  Certification:     0.1877405357999191
+  Overall:           17.426877576300093
+
+JSON results written to: json_results_numpy/hybrid_only_cifar10_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [hybrid-meas]: float64, cifar10, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: c4d0cf187329379135f1c023e2214e83c870d6b38b67f7063fc2b6c599c4eb8e.12.fp64.norms.json
+Of 10000 instances we attempted to certify:
+  Certified 4612 instances as robust
+  Failed to certify 5388 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Dafny certifier would have certified 4612 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 3.82736451109e-09
+  mean real RHS per pair:           2.098973640117939
+  float_conservatism / real_RHS:    1.8234457250615805e-09
+
+D_(L-1) mean: 4.7062645348399996e-09
+D_hybrid mean: 5.74690508838e-09  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 29.240361084308383
+
+Average Times (ms, over 10000 runs):
+  Radii computation: 0.25929237680002615
+  Overflow check:    6.607281294500052
+  Components:        13.128918139499856
+  Certification:     0.1860983220999909
+  Overall:           20.181590132899927
+
+JSON results written to: json_results_numpy/hybrid_meas_cifar10_float64_gram12_all.json
+Total records (excluding header): 10000
+
+Running test [standard]: float64, higgs_w1024_500k, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: e034904aa7126aaaad3d9c8927bebad5da314285c3603027bddbff3c31179a75.12.fp64.norms.json
+Of 500000 instances we attempted to certify:
+  Certified 414415 instances as robust
+  Failed to certify 85585 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Real certifier would have certified 414415 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 3.190033938142e-10
+  mean real RHS per pair:           0.46054763036586266
+  float_conservatism / real_RHS:    6.926610252250808e-10
+
+D_(L-1) mean: 1.2311987357849999e-09
+r0 (per example) mean: 5.1759035685437365
+
+Top contributing hidden layers:
+  1.   Layer 2: n_in=1024, nu=n*u=1.1368684e-13, kappa=1.1379786e-13, |W|/|W|=7.909, alpha=2.93327, r_in=96.41565, right_prod=1.33345, beta=0.000000, contrib=0.000000, share(D)=0.276
+  2.   Layer 1: n_in=1024, nu=n*u=1.1368684e-13, kappa=1.1379786e-13, |W|/|W|=7.680, alpha=5.97818, r_in=16.12793, right_prod=3.91137, beta=0.000000, contrib=0.000000, share(D)=0.268
+  3.   Layer 3: n_in=1024, nu=n*u=1.1368684e-13, kappa=1.1379786e-13, |W|/|W|=7.036, alpha=1.54591, r_in=282.81295, right_prod=0.86257, beta=0.000000, contrib=0.000000, share(D)=0.245
+
+Average Times (ms, over 500000 runs):
+  Radii computation: 0.03891088498431019
+  Overflow check:    4.2330213132721
+  Components:        7.114720370553675
+  Certification:     0.08164860179380343
+  Overall:           11.468301170603889
+
+JSON results written to: json_results_numpy/standard_higgs_w1024_500k_float64_gram12_all.json
+Total records (excluding header): 500000
+
+Running test [hybrid-only]: float64, higgs_w1024_500k, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: e034904aa7126aaaad3d9c8927bebad5da314285c3603027bddbff3c31179a75.12.fp64.norms.json
+Of 500000 instances we attempted to certify:
+  Certified 414415 instances as robust
+  Failed to certify 85585 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Real certifier would have certified 414415 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 3.190033938142e-10
+  mean real RHS per pair:           0.46054763036586266
+  float_conservatism / real_RHS:    6.926610252250808e-10
+
+D_(L-1) mean: 1.2311987357849999e-09
+D_hybrid mean: 1.2074115600904545e-09  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 5.1759035685437365
+
+Average Times (ms, over 500000 runs):
+  Radii computation: 0.03895046000990625
+  Overflow check:    4.246504149510344
+  Components:        10.728491651591769
+  Certification:     0.08173324438182217
+  Overall:           15.095679505493841
+
+JSON results written to: json_results_numpy/hybrid_only_higgs_w1024_500k_float64_gram12_all.json
+Total records (excluding header): 500000
+
+Running test [hybrid-meas]: float64, higgs_w1024_500k, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: e034904aa7126aaaad3d9c8927bebad5da314285c3603027bddbff3c31179a75.12.fp64.norms.json
+Of 500000 instances we attempted to certify:
+  Certified 414415 instances as robust
+  Failed to certify 85585 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Real certifier would have certified 414415 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 1.471395607384e-10
+  mean real RHS per pair:           0.46054763036586266
+  float_conservatism / real_RHS:    3.194882592740976e-10
+
+D_(L-1) mean: 5.843397068655999e-10
+D_hybrid mean: 1.2074116100679998e-09  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 5.1759035685437365
+
+Average Times (ms, over 500000 runs):
+  Radii computation: 0.03884939241245934
+  Overflow check:    4.240755421893296
+  Components:        14.063846651724232
+  Certification:     0.08119684330517303
+  Overall:           18.424648309335165
+
+JSON results written to: json_results_numpy/hybrid_meas_higgs_w1024_500k_float64_gram12_all.json
+Total records (excluding header): 500000
+
+Running test [standard]: float64, emnist_byclass_full, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 910912234a2d9f9dafeb56418b86f4ec6378641c300ed1657deabd1a50abd5d1.12.fp64.norms.json
+Of 116323 instances we attempted to certify:
+  Certified 100241 instances as robust
+  Failed to certify 16082 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Real certifier would have certified 100241 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 3.2288825360507616e-10
+  mean real RHS per pair:           2.2348224251968998
+  float_conservatism / real_RHS:    1.4448049651042317e-10
+
+D_(L-1) mean: 3.635891974175356e-10
+r0 (per example) mean: 10.635301623636396
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=784, nu=n*u=8.7041485e-14, kappa=8.7152507e-14, |W|/|W|=10.921, alpha=6.43118, r_in=10.63530, right_prod=2.62485, beta=0.000000, contrib=0.000000, share(D)=0.470
+  2.   Layer 1: n_in=512, nu=n*u=5.6843419e-14, kappa=5.6954441e-14, |W|/|W|=9.715, alpha=3.50430, r_in=68.39754, right_prod=0.74904, beta=0.000000, contrib=0.000000, share(D)=0.273
+  3.   Layer 2: n_in=256, nu=n*u=2.8421709e-14, kappa=2.8532732e-14, |W|/|W|=6.980, alpha=1.90356, r_in=239.68562, right_prod=0.39349, beta=0.000000, contrib=0.000000, share(D)=0.098
+
+Average Times (ms, over 116323 runs):
+  Radii computation: 0.09021443337959478
+  Overflow check:    2.8538167455705623
+  Components:        4.536368891568994
+  Certification:     1.1820467866028226
+  Overall:           8.662446857121974
+
+JSON results written to: json_results_numpy/standard_emnist_byclass_full_float64_gram12_all.json
+Total records (excluding header): 116323
+
+Running test [hybrid-only]: float64, emnist_byclass_full, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 910912234a2d9f9dafeb56418b86f4ec6378641c300ed1657deabd1a50abd5d1.12.fp64.norms.json
+Of 116323 instances we attempted to certify:
+  Certified 100241 instances as robust
+  Failed to certify 16082 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Real certifier would have certified 100241 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 3.2288825360507616e-10
+  mean real RHS per pair:           2.2348224251968998
+  float_conservatism / real_RHS:    1.4448049651042317e-10
+
+D_(L-1) mean: 3.635891974175356e-10
+D_hybrid mean: 3.533330448493467e-10  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 10.635301623636396
+
+Average Times (ms, over 116323 runs):
+  Radii computation: 0.09028826521833354
+  Overflow check:    2.8435255522553744
+  Components:        5.09862674774532
+  Certification:     1.187796427404801
+  Overall:           9.22023699262383
+
+JSON results written to: json_results_numpy/hybrid_only_emnist_byclass_full_float64_gram12_all.json
+Total records (excluding header): 116323
+
+Running test [hybrid-meas]: float64, emnist_byclass_full, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 910912234a2d9f9dafeb56418b86f4ec6378641c300ed1657deabd1a50abd5d1.12.fp64.norms.json
+Of 116323 instances we attempted to certify:
+  Certified 100241 instances as robust
+  Failed to certify 16082 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Real certifier would have certified 100241 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 3.0943413161626126e-10
+  mean real RHS per pair:           2.2348224251968998
+  float_conservatism / real_RHS:    1.3846027681103052e-10
+
+D_(L-1) mean: 3.3878070780413155e-10
+D_hybrid mean: 3.5333309478606984e-10  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 10.635301623636396
+
+Average Times (ms, over 116323 runs):
+  Radii computation: 0.08986229500603296
+  Overflow check:    2.8375317583968656
+  Components:        7.060243797503593
+  Certification:     1.1877751795255702
+  Overall:           11.175413030432061
+
+JSON results written to: json_results_numpy/hybrid_meas_emnist_byclass_full_float64_gram12_all.json
+Total records (excluding header): 116323
+
+Running test [standard]: float64, emnist_balanced_full, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 8bd9c64ec39b8bc12e6379c2f05d75976008c31c9797b67ce82eb2779e7931aa.12.fp64.norms.json
+Of 18800 instances we attempted to certify:
+  Certified 14617 instances as robust
+  Failed to certify 4183 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Real certifier would have certified 14617 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 6.83647928873381e-10
+  mean real RHS per pair:           2.3704803039818834
+  float_conservatism / real_RHS:    2.884005944807909e-10
+
+D_(L-1) mean: 1.4617992980265957e-09
+r0 (per example) mean: 10.716040252587584
+
+Top contributing hidden layers:
+  1.   Layer 0: n_in=784, nu=n*u=8.7041485e-14, kappa=8.7152507e-14, |W|/|W|=11.995, alpha=3.10400, r_in=10.71604, right_prod=11.32415, beta=0.000000, contrib=0.000000, share(D)=0.269
+  2.   Layer 1: n_in=512, nu=n*u=5.6843419e-14, kappa=5.6954441e-14, |W|/|W|=11.770, alpha=2.02919, r_in=33.26261, right_prod=5.58063, beta=0.000000, contrib=0.000000, share(D)=0.173
+  3.   Layer 2: n_in=512, nu=n*u=5.6843419e-14, kappa=5.6954441e-14, |W|/|W|=9.438, alpha=1.70708, r_in=67.49613, right_prod=3.26911, beta=0.000000, contrib=0.000000, share(D)=0.139
+
+Average Times (ms, over 18800 runs):
+  Radii computation: 0.09117705398936189
+  Overflow check:    6.451404577340219
+  Components:        12.429767414414835
+  Certification:     1.9881721418085592
+  Overall:           20.960521187552978
+
+JSON results written to: json_results_numpy/standard_emnist_balanced_full_float64_gram12_all.json
+Total records (excluding header): 18800
+
+Running test [hybrid-only]: float64, emnist_balanced_full, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 8bd9c64ec39b8bc12e6379c2f05d75976008c31c9797b67ce82eb2779e7931aa.12.fp64.norms.json
+Of 18800 instances we attempted to certify:
+  Certified 14617 instances as robust
+  Failed to certify 4183 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Real certifier would have certified 14617 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 6.83647928873381e-10
+  mean real RHS per pair:           2.3704803039818834
+  float_conservatism / real_RHS:    2.884005944807909e-10
+
+D_(L-1) mean: 1.4617992980265957e-09
+D_hybrid mean: 1.420875570422968e-09  (used for E_ctr; D_(L-1) above is D^std used for E_ball)
+r0 (per example) mean: 10.716040252587584
+
+Average Times (ms, over 18800 runs):
+  Radii computation: 0.09017206175509966
+  Overflow check:    6.463171781010412
+  Components:        12.566035561914825
+  Certification:     2.000422172446718
+  Overall:           21.119801577127056
+
+JSON results written to: json_results_numpy/hybrid_only_emnist_balanced_full_float64_gram12_all.json
+Total records (excluding header): 18800
+
+Running test [hybrid-meas]: float64, emnist_balanced_full, 12, all ...  OK
+
+CERTIFIER RESULTS
+Norms file: 8bd9c64ec39b8bc12e6379c2f05d75976008c31c9797b67ce82eb2779e7931aa.12.fp64.norms.json
+Of 18800 instances we attempted to certify:
+  Certified 14617 instances as robust
+  Failed to certify 4183 instances as robust
+  Refused 0 instances: overflow conditions not established (Theorem 4.2; counted among the failures)
+  Refused 0 instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)
+  Refused 0 instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)
+  Real certifier would have certified 14617 instances as robust
+
+Float conservatism:
+  mean float_conservatism per pair: 6.193213861763413e-10
+  mean real RHS per pair:           2.3704803039818834
+  float_conservatism / real_RHS:    2.612640928237278e-10
+
+D_(L-1) mean: 1.2401557642021277e-09
+D_hybrid mean: 1.4208756203457446e-09  (E_ctr deviation; D_(L-1) above is D^meas used for E_ball)
+r0 (per example) mean: 10.716040252587584
+
+Average Times (ms, over 18800 runs):
+  Radii computation: 0.09064348909599415
+  Overflow check:    6.443642574999903
+  Components:        15.242358687606469
+  Certification:     1.992043243138552
+  Overall:           23.768687994840917
+
+JSON results written to: json_results_numpy/hybrid_meas_emnist_balanced_full_float64_gram12_all.json
+Total records (excluding header): 18800
+
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, all
+##### fashion_mnist (Fri 16 Oct 2026 08:02:05 AEDT)
+Skipping (no numpy variant scheme) [standard]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-only]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-meas]: float32, z3, 10, cex
+Skipping (output exists) [standard]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist, 20, cex
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, cex
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [standard]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w128, 12, all
+Skipping (output exists) [standard]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w256, 12, all
+Skipping (output exists) [standard]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w512, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, mnist, 12, all
+Skipping (output exists) [standard]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, all
+Skipping (output exists) [standard]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, all
+##### cifar10 (Fri 16 Oct 2026 08:02:05 AEDT)
+Skipping (no numpy variant scheme) [standard]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-only]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-meas]: float32, z3, 10, cex
+Skipping (output exists) [standard]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist, 20, cex
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, cex
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [standard]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w128, 12, all
+Skipping (output exists) [standard]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w256, 12, all
+Skipping (output exists) [standard]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w512, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, mnist, 12, all
+Skipping (output exists) [standard]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, all
+Skipping (output exists) [standard]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, all
+##### emnist_balanced_full (Fri 16 Oct 2026 08:02:06 AEDT)
+Skipping (no numpy variant scheme) [standard]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-only]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-meas]: float32, z3, 10, cex
+Skipping (output exists) [standard]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist, 20, cex
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, cex
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [standard]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w128, 12, all
+Skipping (output exists) [standard]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w256, 12, all
+Skipping (output exists) [standard]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w512, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, mnist, 12, all
+Skipping (output exists) [standard]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, all
+Skipping (output exists) [standard]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, all
+##### emnist_byclass_full (Fri 16 Oct 2026 08:02:06 AEDT)
+Skipping (no numpy variant scheme) [standard]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-only]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-meas]: float32, z3, 10, cex
+Skipping (output exists) [standard]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist, 20, cex
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, cex
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [standard]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w128, 12, all
+Skipping (output exists) [standard]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w256, 12, all
+Skipping (output exists) [standard]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w512, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, mnist, 12, all
+Skipping (output exists) [standard]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, all
+Skipping (output exists) [standard]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, all
+##### higgs_w1024_500k (Fri 16 Oct 2026 08:02:07 AEDT)
+Skipping (no numpy variant scheme) [standard]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-only]: float32, z3, 10, cex
+Skipping (no numpy variant scheme) [hybrid-meas]: float32, z3, 10, cex
+Skipping (output exists) [standard]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist, 20, cex
+Skipping (output exists) [standard]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float16, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float16, mnist, 20, cex
+Skipping (output exists) [standard]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-only]: float64, mnist, 20, cex
+Skipping (output exists) [hybrid-meas]: float64, mnist, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float16, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 13, cex
+Skipping (output exists) [standard]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, cex
+Skipping (output exists) [standard]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, cex
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, cex
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 20, cex
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 13, cex
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, cex
+Skipping (output exists) [standard]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, all
+Skipping (output exists) [standard]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, mnist_biased_1e6_end, 12, all
+Skipping (output exists) [standard]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist_biased_3e6_end, 12, all
+Skipping (output exists) [standard]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-only]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [hybrid-meas]: float32, cifar10_biased_4e6_end, 12, all
+Skipping (output exists) [standard]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, mnist, 12, first100
+Skipping (output exists) [standard]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-only]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, fashion_mnist, 12, first100
+Skipping (output exists) [standard]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-only]: float32, cifar10, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, cifar10, 12, first100
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, first100
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, first100
+Skipping (output exists) [standard]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w128, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w128, 12, all
+Skipping (output exists) [standard]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w256, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w256, 12, all
+Skipping (output exists) [standard]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w512, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w512, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024, 12, all
+Skipping (output exists) [standard]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float32, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, mnist, 12, all
+Skipping (output exists) [standard]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-only]: float64, fashion_mnist, 12, all
+Skipping (output exists) [hybrid-meas]: float64, fashion_mnist, 12, all
+Skipping (output exists) [standard]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-only]: float64, cifar10, 12, all
+Skipping (output exists) [hybrid-meas]: float64, cifar10, 12, all
+Skipping (output exists) [standard]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-only]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [hybrid-meas]: float64, higgs_w1024_500k, 12, all
+Skipping (output exists) [standard]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float64, emnist_balanced_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_byclass_full, 12, all
+Skipping (output exists) [standard]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-only]: float32, emnist_balanced_full, 12, all
+Skipping (output exists) [hybrid-meas]: float32, emnist_balanced_full, 12, all
+##### float64 runs done (Fri 16 Oct 2026 08:02:07 AEDT)

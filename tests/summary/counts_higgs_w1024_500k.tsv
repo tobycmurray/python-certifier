@@ -1,0 +1,3 @@
+standard_higgs_w1024_500k_float32_gram12_all	500000	383806	116194	414415	0	-
+hybrid_only_higgs_w1024_500k_float32_gram12_all	500000	391070	108930	414415	0	0
+hybrid_meas_higgs_w1024_500k_float32_gram12_all	500000	408092	91908	414415	0	0
