@@ -318,6 +318,9 @@ run_test() {
   local out_dir="json_results" out_kind="$kind"
   if [[ "$kind" == "first100" ]]; then out_dir="json_results_first100"; out_kind="all"; fi
   if [[ -n "$NUMPY_EXEC" ]]; then out_dir="${out_dir}_numpy"; fi
+  # JSON_OUT_DIR overrides the output directory (artifact run 2 re-certifies with fresh norms into
+  # its own directory so run 1's outputs are kept for the count comparison).
+  out_dir="${JSON_OUT_DIR:-$out_dir}"
   local json_output="$out_dir/${mode_tag}_${model}_${format}_gram${gram}_${out_kind}.json"
   [[ -n "$DRY_RUN" ]] || mkdir -p "$out_dir"
 

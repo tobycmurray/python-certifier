@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The one job wrapper around run_tests.sh (artifact DESIGN §7.1, 2026-11-05). Usage, from tests/:
-#   bash run_job.sh <job>          jobs: rq1 | rq1-f16f64 | float16-all | float64-all | all-float32 | higgs-500k
+#   bash run_job.sh <job>          jobs: rq1 | rq1-f16f64 | float16-all | float64-all | all-float32 | higgs-500k | recompute-norms
 #   DRY_RUN=1 bash run_job.sh <job>   prints every certifier command line the job would run (run_tests.sh's
 #                                     DRY_RUN) and skips the job's non-certifier steps, printing them to stderr.
 # The first four jobs reproduce the superseded per-job wrappers EXACTLY (same environment, same model
@@ -23,6 +23,8 @@
 #   all-float32  = Table 1's full sets: the float32 "all" rows (three modes) of every registry model
 #                  except higgs_w1024_500k, under NUMPY_EXEC=1 (KIND_FILTER=all MODEL_SKIP=higgs_w1024_500k).
 #   higgs-500k   = Table 1's HIGGS row: the float32 "all" rows of higgs_w1024_500k (~3 h single-threaded).
+#   recompute-norms = artifact run 2: all-float32 with RECOMPUTE_NORMS=1 (fresh, timed float64 Gram bounds)
+#                  into json_results_numpy_run2/ (+ norms/ with the fresh caches); run 1's outputs are kept.
 #   Both skip up-to-date outputs unless SKIP_EXISTING is set empty in the environment (SKIP_EXISTING= ...).
 # Logs: run_tests.sh writes each certifier's stdout to $RUNLOG (default .log) and per-run count lines to
 # summary/counts_<model>.tsv; redirect this script's stdout to keep the job log (e.g. > log.run_job.<job>.txt).
@@ -119,5 +121,17 @@ print('SUMMARY', json.dumps(s)); sys.exit(0 if s['n_verified_float32']==s['n_pai
     NUMPY_EXEC=1 SKIP_EXISTING="${SKIP_EXISTING-1}" KIND_FILTER=all "$BASH" ./run_tests.sh higgs_w1024_500k
     echo "##### higgs-500k done ($(date))"
     ;;
-  *) echo "run_job.sh: unknown job '$JOB' (rq1 | rq1-f16f64 | float16-all | float64-all | all-float32 | higgs-500k)" >&2; exit 2 ;;
+  recompute-norms)
+    # Artifact run 2 (DESIGN §3): the same certifier runs as all-float32, but with every *.norms.json
+    # cleared first so the float64 Gram bounds are recomputed and timed (RECOMPUTE_NORMS=1; the shipped
+    # caches in ../models/precomputed are not touched), and the outputs written to json_results_numpy_run2/
+    # so run 1's outputs survive for the count comparison. The fresh caches are copied into that
+    # directory's norms/ at the end (bin/norm_check.py compares them with the shipped ones).
+    echo "##### recompute-norms ($(date))"
+    RECOMPUTE_NORMS=1 NUMPY_EXEC=1 SKIP_EXISTING="${SKIP_EXISTING-}" KIND_FILTER=all MODEL_SKIP=higgs_w1024_500k \
+      JSON_OUT_DIR=json_results_numpy_run2 "$BASH" ./run_tests.sh
+    if [[ -z "$DRY" ]]; then mkdir -p json_results_numpy_run2/norms && cp -f ./*.norms.json json_results_numpy_run2/norms/; fi
+    echo "##### recompute-norms done ($(date))"
+    ;;
+  *) echo "run_job.sh: unknown job '$JOB' (rq1 | rq1-f16f64 | float16-all | float64-all | all-float32 | higgs-500k | recompute-norms)" >&2; exit 2 ;;
 esac
