@@ -20,9 +20,17 @@ tar czf "$STAGE/certifier-inputs-higgs-sweep-10k.tar.gz"  tests/inputs_higgs_w12
                                                           tests/inputs_higgs_w256_n10000 \
                                                           tests/inputs_higgs_w512_n10000 \
                                                           tests/inputs_higgs_w1024_n10000
-tar czf "$STAGE/certifier-inputs-higgs-1024-500k.tar.gz"  tests/inputs_higgs_w1024_n500000
-tar czf "$STAGE/certifier-inputs-emnist-balanced.tar.gz"  tests/inputs_emnist_balanced_full
-tar czf "$STAGE/certifier-inputs-emnist-byclass.tar.gz"   tests/inputs_emnist_byclass_full
+tar czf "$STAGE/certifier-inputs-higgs-1024-500k.tar.gz"  --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_higgs_w1024_n500000
+tar czf "$STAGE/certifier-inputs-emnist-balanced.tar.gz"  --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_emnist_balanced_full
+tar czf "$STAGE/certifier-inputs-emnist-byclass.tar.gz"   --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_emnist_byclass_full
+# the float16/float64 y1 variants of the HIGGS-500k and EMNIST inputs (the float16 full-set runs and the
+# float64 identity's long part; provision_numpy16/64_all_inputs.sh); the image models' variants are in git
+tar czf "$STAGE/certifier-inputs-float16-float64.tar.gz" tests/inputs_higgs_w1024_n500000/inputs_numpy16.json \
+                                                          tests/inputs_higgs_w1024_n500000/inputs_numpy64.json \
+                                                          tests/inputs_emnist_byclass_full/inputs_numpy16.json \
+                                                          tests/inputs_emnist_byclass_full/inputs_numpy64.json \
+                                                          tests/inputs_emnist_balanced_full/inputs_numpy16.json \
+                                                          tests/inputs_emnist_balanced_full/inputs_numpy64.json
 
 for f in "$STAGE"/*.tar.gz; do
   split -b 45m "$f" "$HERE/$(basename "$f").part-"

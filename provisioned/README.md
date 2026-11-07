@@ -16,6 +16,7 @@ Reassemble with `cat certifier-<what>.tar.gz.part-* > certifier-<what>.tar.gz`.
 | `certifier-inputs-higgs-1024-500k.tar.gz` | `tests/inputs_higgs_w1024_n500000/` (the RQ3 500k row) |
 | `certifier-inputs-emnist-balanced.tar.gz` | `tests/inputs_emnist_balanced_full/` |
 | `certifier-inputs-emnist-byclass.tar.gz` | `tests/inputs_emnist_byclass_full/` |
+| `certifier-inputs-float16-float64.tar.gz` | the `inputs_numpy16.json` / `inputs_numpy64.json` variants of `tests/inputs_higgs_w1024_n500000/`, `tests/inputs_emnist_byclass_full/`, `tests/inputs_emnist_balanced_full/` (added 2026-11-07; the float16 full-set runs and the float64 identity's long part) |
 
 Each `tests/inputs_*` bundle carries BOTH `y1` variants of its certification
 inputs: `inputs.json` (Keras/TF execution) and `inputs_numpy.json` (the
