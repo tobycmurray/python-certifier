@@ -21,8 +21,10 @@ The extra "natgrid" field records the refuting grid point's distance and label.
 import json, os, sys
 import numpy as np
 
-VCR = os.path.expanduser("~/git/verified-certified-robustness/scripts/results/natural_grid_cex")
 HERE = os.path.dirname(os.path.abspath(__file__))
+# the grid search's records: the sibling checkout of verified-certified-robustness (VCR_NATGRID_DIR overrides)
+VCR = os.environ.get("VCR_NATGRID_DIR") or os.path.normpath(os.path.join(
+    HERE, "..", "..", "verified-certified-robustness", "scripts", "results", "natural_grid_cex"))
 SETS = [  # natgrid tag, biased numpy all-set, output, eps, expected count
     ("mnist",   "all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy_biased_1e6_end.json",
                 "all_mnist_test_inputs/natgrid_numpy_biased_1e6_end.json", "0.3", 24),
