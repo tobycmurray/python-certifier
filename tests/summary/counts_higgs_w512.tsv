@@ -1,3 +1,6 @@
 standard_higgs_w512_float32_gram12_all	10000	7941	2059	8252	0	-
 hybrid_only_higgs_w512_float32_gram12_all	10000	8016	1984	8252	0	0
 hybrid_meas_higgs_w512_float32_gram12_all	10000	8194	1806	8252	0	0
+standard_higgs_w512_float32_gram12_all	10000	7941	2059	8252	0	-
+hybrid_only_higgs_w512_float32_gram12_all	10000	8016	1984	8252	0	0
+hybrid_meas_higgs_w512_float32_gram12_all	10000	8194	1806	8252	0	0
