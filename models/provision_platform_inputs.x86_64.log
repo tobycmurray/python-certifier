@@ -1,0 +1,99 @@
+this platform: {"platform": "x86_64", "machine": "x86_64", "os": "Linux", "numpy": "1.24.3", "python": "3.11.2"}; mode relabel; jobs 6
+-- all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy.json: 10000 instances at float32; logits differ on 10000; max 7.0 ulps of the largest logit; argmax changed on 0
+   -> all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy_x86_64.json
+-- all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy64.json: 10000 instances at float64; logits differ on 10000; max 7.0 ulps of the largest logit; argmax changed on 0
+   -> all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy64_x86_64.json
+-- all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy16.json: 10000 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- all_mnist_test_inputs/test_inputs_epsilon_0.3_first100_numpy.json: 100 instances at float32; logits differ on 100; max 4.0 ulps of the largest logit; argmax changed on 0
+   -> all_mnist_test_inputs/test_inputs_epsilon_0.3_first100_numpy_x86_64.json
+-- cex_mnist_float32_numpy/counter_examples.json: 30 instances at float32; logits differ on 30; max 6.0 ulps of the largest logit; argmax changed on 9 [5, 8, 9, 12, 13, 17, 18, 22, 23]
+   -> cex_mnist_float32_numpy/counter_examples_x86_64.json
+-- cex_mnist_float16_numpy/counter_examples.json: 30 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- cex_mnist_float64_numpy/counter_examples.json: 30 instances at float64; logits differ on 30; max 6.0 ulps of the largest logit; argmax changed on 2 [19, 29]
+   -> cex_mnist_float64_numpy/counter_examples_x86_64.json
+-- all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy_biased_1e6_end.json: 10000 instances at float32; logits differ on 8576; max 2097152.0 ulps of the largest logit; argmax changed on 23 [33, 582, 1581, 1952, 2016, 2043, 2896, 2939, 3776, 3926, 3985, 4075, 4271, 4306, 4601, 4860, 4890, 5749, 6598, 6755]
+   -> all_mnist_test_inputs/test_inputs_epsilon_0.3_numpy_biased_1e6_end_x86_64.json
+-- all_mnist_test_inputs/natgrid_numpy_biased_1e6_end.json: 24 instances at float32; logits differ on 19; max 2097152.0 ulps of the largest logit; argmax changed on 0
+   -> all_mnist_test_inputs/natgrid_numpy_biased_1e6_end_x86_64.json
+-- cex_mnist_float32_biased_1e6_end_numpy/counter_examples.json: 30 instances at float32; logits differ on 28; max 2097152.0 ulps of the largest logit; argmax changed on 8 [7, 22, 35, 45, 47, 49, 54, 59]
+   -> cex_mnist_float32_biased_1e6_end_numpy/counter_examples_x86_64.json
+-- all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy.json: 10000 instances at float32; logits differ on 10000; max 10.5 ulps of the largest logit; argmax changed on 0
+   -> all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy_x86_64.json
+-- all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy64.json: 10000 instances at float64; logits differ on 10000; max 11.0 ulps of the largest logit; argmax changed on 0
+   -> all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy64_x86_64.json
+-- all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy16.json: 10000 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_first100_numpy.json: 100 instances at float32; logits differ on 100; max 6.0 ulps of the largest logit; argmax changed on 0
+   -> all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_first100_numpy_x86_64.json
+-- cex_fashion_mnist_float32_numpy/counter_examples.json: 30 instances at float32; logits differ on 30; max 13.0 ulps of the largest logit; argmax changed on 10 [2, 3, 4, 5, 6, 13, 18, 30, 31, 32]
+   -> cex_fashion_mnist_float32_numpy/counter_examples_x86_64.json
+-- cex_fashion_mnist_float16_numpy/counter_examples.json: 30 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- cex_fashion_mnist_float64_numpy/counter_examples.json: 30 instances at float64; logits differ on 30; max 10.0 ulps of the largest logit; argmax changed on 6 [0, 4, 20, 26, 50, 54]
+   -> cex_fashion_mnist_float64_numpy/counter_examples_x86_64.json
+-- all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy_biased_3e6_end.json: 10000 instances at float32; logits differ on 9606; max 8388608.0 ulps of the largest logit; argmax changed on 308 [42, 43, 49, 66, 98, 127, 163, 193, 312, 315, 354, 359, 361, 413, 419, 476, 490, 527, 548, 569]
+   -> all_fashion_mnist_test_inputs/test_inputs_epsilon_0.25_numpy_biased_3e6_end_x86_64.json
+-- all_fashion_mnist_test_inputs/natgrid_numpy_biased_3e6_end.json: 204 instances at float32; logits differ on 200; max 2097152.0 ulps of the largest logit; argmax changed on 17 [127, 1483, 2020, 2332, 3129, 3370, 3471, 3987, 4131, 6223, 6248, 6676, 6876, 7791, 8153, 8334, 8470]
+   -> all_fashion_mnist_test_inputs/natgrid_numpy_biased_3e6_end_x86_64.json
+-- cex_fashion_mnist_float32_biased_3e6_end_numpy/counter_examples.json: 30 instances at float32; logits differ on 29; max 4194304.0 ulps of the largest logit; argmax changed on 10 [2, 4, 6, 8, 9, 10, 15, 16, 28, 34]
+   -> cex_fashion_mnist_float32_biased_3e6_end_numpy/counter_examples_x86_64.json
+-- all_cifar10_test_inputs/all_test_inputs_numpy.json: 10000 instances at float32; logits differ on 10000; max 11.0 ulps of the largest logit; argmax changed on 0
+   -> all_cifar10_test_inputs/all_test_inputs_numpy_x86_64.json
+-- all_cifar10_test_inputs/all_test_inputs_numpy64.json: 10000 instances at float64; logits differ on 10000; max 13.0 ulps of the largest logit; argmax changed on 0
+   -> all_cifar10_test_inputs/all_test_inputs_numpy64_x86_64.json
+-- all_cifar10_test_inputs/all_test_inputs_numpy16.json: 10000 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- all_cifar10_test_inputs/all_test_inputs_first100_numpy.json: 100 instances at float32; logits differ on 100; max 5.0 ulps of the largest logit; argmax changed on 0
+   -> all_cifar10_test_inputs/all_test_inputs_first100_numpy_x86_64.json
+-- cex_cifar10_float32_numpy/counter_examples.json: 30 instances at float32; logits differ on 30; max 6.0 ulps of the largest logit; argmax changed on 16 [0, 3, 5, 6, 7, 9, 10, 12, 13, 19, 23, 26, 30, 33, 37, 41]
+   -> cex_cifar10_float32_numpy/counter_examples_x86_64.json
+-- cex_cifar10_float64_numpy/counter_examples.json: 30 instances at float64; logits differ on 30; max 6.8 ulps of the largest logit; argmax changed on 11 [0, 3, 32, 40, 44, 53, 61, 70, 71, 107, 109]
+   -> cex_cifar10_float64_numpy/counter_examples_x86_64.json
+-- all_cifar10_test_inputs/all_test_inputs_numpy_biased_4e6_end.json: 10000 instances at float32; logits differ on 9483; max 4194304.0 ulps of the largest logit; argmax changed on 1156 [16, 17, 20, 21, 25, 27, 39, 45, 49, 62, 65, 68, 70, 71, 75, 86, 98, 110, 123, 124]
+   -> all_cifar10_test_inputs/all_test_inputs_numpy_biased_4e6_end_x86_64.json
+-- all_cifar10_test_inputs/natgrid_numpy_biased_4e6_end.json: 370 instances at float32; logits differ on 353; max 4194304.0 ulps of the largest logit; argmax changed on 67 [216, 320, 325, 389, 593, 599, 777, 1039, 1163, 1338, 1362, 1425, 1438, 1526, 1678, 1731, 1738, 1766, 1933, 2001]
+   -> all_cifar10_test_inputs/natgrid_numpy_biased_4e6_end_x86_64.json
+-- cex_cifar10_float32_biased_4e6_end_numpy/counter_examples.json: 30 instances at float32; logits differ on 30; max 2097152.0 ulps of the largest logit; argmax changed on 14 [7, 10, 18, 19, 29, 30, 37, 40, 41, 45, 54, 55, 56, 60]
+   -> cex_cifar10_float32_biased_4e6_end_numpy/counter_examples_x86_64.json
+-- inputs_higgs_w128_n10000/inputs_numpy.json: 10000 instances at float32; logits differ on 9725; max 512.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_higgs_w128_n10000/inputs_numpy_x86_64.json
+-- inputs_higgs_w128_n10000/inputs_numpy64.json: absent (not provisioned here), skipped
+-- inputs_higgs_w128_n10000/inputs_numpy16.json: absent (not provisioned here), skipped
+-- inputs_higgs_w256_n10000/inputs_numpy.json: 10000 instances at float32; logits differ on 9717; max 512.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_higgs_w256_n10000/inputs_numpy_x86_64.json
+-- inputs_higgs_w256_n10000/inputs_numpy64.json: absent (not provisioned here), skipped
+-- inputs_higgs_w256_n10000/inputs_numpy16.json: absent (not provisioned here), skipped
+-- inputs_higgs_w512_n10000/inputs_numpy.json: 10000 instances at float32; logits differ on 9798; max 264.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_higgs_w512_n10000/inputs_numpy_x86_64.json
+-- inputs_higgs_w512_n10000/inputs_numpy64.json: absent (not provisioned here), skipped
+-- inputs_higgs_w512_n10000/inputs_numpy16.json: absent (not provisioned here), skipped
+-- inputs_higgs_w1024_n10000/inputs_numpy.json: 10000 instances at float32; logits differ on 9857; max 3072.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_higgs_w1024_n10000/inputs_numpy_x86_64.json
+-- inputs_higgs_w1024_n10000/inputs_numpy64.json: absent (not provisioned here), skipped
+-- inputs_higgs_w1024_n10000/inputs_numpy16.json: absent (not provisioned here), skipped
+-- inputs_higgs_w1024_n500000/inputs_numpy.json: 500000 instances at float32; logits differ on 492756; max 4096.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_higgs_w1024_n500000/inputs_numpy_x86_64.json
+-- inputs_higgs_w1024_n500000/inputs_numpy64.json: 500000 instances at float64; logits differ on 496417; max 14336.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_higgs_w1024_n500000/inputs_numpy64_x86_64.json
+-- inputs_higgs_w1024_n500000/inputs_numpy16.json: 500000 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- inputs_emnist_byclass_full/inputs_numpy.json: 116323 instances at float32; logits differ on 116323; max 8.0 ulps of the largest logit; argmax changed on 1 [46386]
+   -> inputs_emnist_byclass_full/inputs_numpy_x86_64.json
+-- inputs_emnist_byclass_full/inputs_numpy64.json: 116323 instances at float64; logits differ on 116323; max 10.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_emnist_byclass_full/inputs_numpy64_x86_64.json
+-- inputs_emnist_byclass_full/inputs_numpy16.json: 116323 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- inputs_emnist_byclass_full/inputs_first100_numpy.json: 100 instances at float32; logits differ on 100; max 5.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_emnist_byclass_full/inputs_first100_numpy_x86_64.json
+-- inputs_emnist_balanced_full/inputs_numpy.json: 18800 instances at float32; logits differ on 18800; max 9.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_emnist_balanced_full/inputs_numpy_x86_64.json
+-- inputs_emnist_balanced_full/inputs_numpy64.json: 18800 instances at float64; logits differ on 18800; max 8.0 ulps of the largest logit; argmax changed on 0
+   -> inputs_emnist_balanced_full/inputs_numpy64_x86_64.json
+-- inputs_emnist_balanced_full/inputs_numpy16.json: 18800 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   identical to the source: no x86_64 variant needed
+-- inputs_emnist_balanced_full/inputs_first100_numpy.json: 100 instances at float32; logits differ on 100; max 5.5 ulps of the largest logit; argmax changed on 0
+   -> inputs_emnist_balanced_full/inputs_first100_numpy_x86_64.json
+done: 36 files written
+relabel exit 0

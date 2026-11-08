@@ -16,13 +16,15 @@ STAGE="$(mktemp -d)"; trap 'rm -rf "$STAGE"' EXIT
 rm -f "$HERE"/*.tar.gz.part-*
 
 tar czf "$STAGE/certifier-nets.tar.gz"                    models/neural_net_*.txt
-tar czf "$STAGE/certifier-inputs-higgs-sweep-10k.tar.gz"  tests/inputs_higgs_w128_n10000 \
+# the x86_64 y1 siblings of the gitignored sets go in their own bundle (below), not the per-directory ones
+X='--exclude=*_x86_64.json'
+tar czf "$STAGE/certifier-inputs-higgs-sweep-10k.tar.gz"  $X tests/inputs_higgs_w128_n10000 \
                                                           tests/inputs_higgs_w256_n10000 \
                                                           tests/inputs_higgs_w512_n10000 \
                                                           tests/inputs_higgs_w1024_n10000
-tar czf "$STAGE/certifier-inputs-higgs-1024-500k.tar.gz"  --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_higgs_w1024_n500000
-tar czf "$STAGE/certifier-inputs-emnist-balanced.tar.gz"  --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_emnist_balanced_full
-tar czf "$STAGE/certifier-inputs-emnist-byclass.tar.gz"   --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_emnist_byclass_full
+tar czf "$STAGE/certifier-inputs-higgs-1024-500k.tar.gz"  $X --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_higgs_w1024_n500000
+tar czf "$STAGE/certifier-inputs-emnist-balanced.tar.gz"  $X --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_emnist_balanced_full
+tar czf "$STAGE/certifier-inputs-emnist-byclass.tar.gz"   $X --exclude='inputs_numpy16.json' --exclude='inputs_numpy64.json' --exclude='*.provision.log' tests/inputs_emnist_byclass_full
 # the float16/float64 y1 variants of the HIGGS-500k and EMNIST inputs (the float16 full-set runs and the
 # float64 identity's long part; provision_numpy16/64_all_inputs.sh); the image models' variants are in git
 tar czf "$STAGE/certifier-inputs-float16-float64.tar.gz" tests/inputs_higgs_w1024_n500000/inputs_numpy16.json \
@@ -31,6 +33,10 @@ tar czf "$STAGE/certifier-inputs-float16-float64.tar.gz" tests/inputs_higgs_w102
                                                           tests/inputs_emnist_byclass_full/inputs_numpy64.json \
                                                           tests/inputs_emnist_balanced_full/inputs_numpy16.json \
                                                           tests/inputs_emnist_balanced_full/inputs_numpy64.json
+# the x86_64 y1 siblings (<set>_x86_64.json) of the gitignored numpy-execution sets: produced in the
+# artifact's amd64 image by models/provision_platform_inputs.py and certified by the hybrid modes on
+# x86_64 hosts (tests/run_tests.sh INPUT_PLATFORM); the image models' siblings are tracked in git
+tar czf "$STAGE/certifier-inputs-x86_64.tar.gz" $(find tests/inputs_* -name '*_x86_64.json' | sort)
 
 for f in "$STAGE"/*.tar.gz; do
   split -b 45m "$f" "$HERE/$(basename "$f").part-"
