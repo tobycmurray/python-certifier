@@ -82,3 +82,21 @@ this platform: {"platform": "arm64", "machine": "arm64", "os": "Darwin", "numpy"
    annotated in place
 -- inputs_emnist_byclass_full/inputs_numpy64.json: 116323 instances at float64; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
    annotated in place
+===== restart Sun  8 Nov 2026 18:05:24 AEDT --sets emnist
+this platform: {"platform": "arm64", "machine": "arm64", "os": "Darwin", "numpy": "1.24.3", "python": "3.9.6"}; mode annotate; jobs 6
+-- inputs_emnist_byclass_full/inputs_numpy.json: already carries a provenance record, skipped
+-- inputs_emnist_byclass_full/inputs_numpy64.json: already carries a provenance record, skipped
+-- inputs_emnist_byclass_full/inputs_numpy16.json: 116323 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   annotated in place
+-- inputs_emnist_byclass_full/inputs_first100_numpy.json: 100 instances at float32; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   annotated in place
+-- inputs_emnist_balanced_full/inputs_numpy.json: 18800 instances at float32; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   annotated in place
+-- inputs_emnist_balanced_full/inputs_numpy64.json: 18800 instances at float64; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   annotated in place
+-- inputs_emnist_balanced_full/inputs_numpy16.json: 18800 instances at float16; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   annotated in place
+-- inputs_emnist_balanced_full/inputs_first100_numpy.json: 100 instances at float32; logits differ on 0; max 0.0 ulps of the largest logit; argmax changed on 0
+   annotated in place
+done: 6 files written
+annotate exit 0
