@@ -1,0 +1,1608 @@
+[
+  {
+    "_metadata": {
+      "provenance": {
+        "platform": "x86_64",
+        "machine": "x86_64",
+        "os": "Linux",
+        "numpy": "1.24.3",
+        "python": "3.11.2",
+        "execution": "compliant_forward float32",
+        "generator": "models/provision_platform_inputs.py",
+        "date": "2026-11-07",
+        "derived_from": "counter_examples.json",
+        "note": "y1 of every instance recomputed on this platform; x1_file, label and every other field as in derived_from"
+      }
+    }
+  },
+  {
+    "index": 0,
+    "true_label": 9,
+    "argmax_y0": 9,
+    "argmax_y1": 7,
+    "is_counter_example": true,
+    "max_eps": "0.000000853295647373132725508338012932232480096935095653069731401343",
+    "dist": "0.000000841701834588956939185881357312566240666965332309190672146542",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_ryhfdeqs.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_aygh7w0m.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_43t8z_y4.npy",
+    "y0": [
+      -8.762029647827148,
+      -12.054500579833984,
+      -9.491817474365234,
+      -3.1787095069885254,
+      -3.222245454788208,
+      3.985111951828003,
+      -7.350752353668213,
+      9.972282409667969,
+      2.996644973754883,
+      9.972283363342285
+    ],
+    "y1": [
+      -8.762027740478516,
+      -12.054494857788086,
+      -9.491815567016602,
+      -3.178705930709839,
+      -3.2222447395324707,
+      3.9851107597351074,
+      -7.35075044631958,
+      9.972282409667969,
+      2.9966440200805664,
+      9.972278594970703
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000853295647373132725508338012932232480096935095653069731401343"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000853295647373132725508338012932232480096935095653069731401343",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000853295647373132725508338012932232480096935095653069731401343",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 1,
+    "true_label": 2,
+    "argmax_y0": 2,
+    "argmax_y1": 4,
+    "is_counter_example": true,
+    "max_eps": "0.000000849848345524697838535222400230479272446328187642824891914797",
+    "dist": "0.000000815831445897578753453018423819413978447601738111749599470682",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_cz5momap.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_b3hb2ou5.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_rtep_rvf.npy",
+    "y0": [
+      -6.152497291564941,
+      -11.260668754577637,
+      3.71694016456604,
+      -4.9458746910095215,
+      3.716939687728882,
+      -34.09739685058594,
+      0.3140239715576172,
+      -41.29088592529297,
+      -8.58864974975586,
+      -37.23898696899414
+    ],
+    "y1": [
+      -6.152500629425049,
+      -11.26067066192627,
+      3.71693754196167,
+      -4.945876121520996,
+      3.7169387340545654,
+      -34.09739685058594,
+      0.31402158737182617,
+      -41.29087829589844,
+      -8.58864974975586,
+      -37.23897933959961
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.00000022364430145386350597639854199824867722453774112259174771873"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.00000022364430145386350597639854199824867722453774112259174771873",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000849848345524697838535222400230479272446328187642824891914797",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 2,
+    "true_label": 1,
+    "argmax_y0": 1,
+    "argmax_y1": 3,
+    "is_counter_example": true,
+    "max_eps": "0.000000271326972508432034710098879202480379892936238913544885661209",
+    "dist": "0.000000229289097233448183722366599402298777284388983787712547165517",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_q2av5dwe.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_eiqv5xql.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_p855c5rj.npy",
+    "y0": [
+      2.3150956630706787,
+      4.904723644256592,
+      -0.5474948287010193,
+      4.904719352722168,
+      0.2600524425506592,
+      -15.578628540039062,
+      1.8512330055236816,
+      -11.98019027709961,
+      -7.32435941696167,
+      -24.134376525878906
+    ],
+    "y1": [
+      2.3150994777679443,
+      4.904725074768066,
+      -0.5474904775619507,
+      4.904720783233643,
+      0.2600533962249756,
+      -15.578625679016113,
+      1.8512372970581055,
+      -11.980192184448242,
+      -7.324357986450195,
+      -24.13437843322754
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000045221162084731245437938080263202917756626760578394746991859"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000045221162084731245437938080263202917756626760578394746991859",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000271326972508432034710098879202480379892936238913544885661209",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 3,
+    "true_label": 1,
+    "argmax_y0": 1,
+    "argmax_y1": 3,
+    "is_counter_example": true,
+    "max_eps": "0.00000022610581042369347537959669796679150202765971340427332913049",
+    "dist": "0.000000199250129286161597756081710812824815752855501622581076023106",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_n6no8dnr.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_5h4zy3eg.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_dsd7uddn.npy",
+    "y0": [
+      -1.6402721405029297,
+      4.571441173553467,
+      -2.776181936264038,
+      4.571439743041992,
+      -0.5636143684387207,
+      -15.586498260498047,
+      -1.3351142406463623,
+      -7.52040433883667,
+      -8.881251335144043,
+      -18.639373779296875
+    ],
+    "y1": [
+      -1.6402724981307983,
+      4.571439743041992,
+      -2.776182174682617,
+      4.571439743041992,
+      -0.5636141300201416,
+      -15.586498260498047,
+      -1.335114598274231,
+      -7.5204057693481445,
+      -8.88125228881836,
+      -18.639375686645508
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.00000022610581042369347537959669796679150202765971340427332913049"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.00000022610581042369347537959669796679150202765971340427332913049",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.00000022610581042369347537959669796679150202765971340427332913049",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 4,
+    "true_label": 6,
+    "argmax_y0": 6,
+    "argmax_y1": 0,
+    "is_counter_example": true,
+    "max_eps": "0.000000117910324095261543921921629706132124020953775933156827686576",
+    "dist": "0.0000000863806247674671570500965977720993866880337601915453885248451",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_izyb1ibk.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_4x1nr2ts.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_mv5pzp8q.npy",
+    "y0": [
+      6.9274702072143555,
+      -0.3762158155441284,
+      3.7990434169769287,
+      2.0831761360168457,
+      1.4731576442718506,
+      -9.720087051391602,
+      6.927471160888672,
+      -17.738706588745117,
+      -0.08547011017799377,
+      -22.935550689697266
+    ],
+    "y1": [
+      6.927468776702881,
+      -0.3762167692184448,
+      3.7990429401397705,
+      2.083174467086792,
+      1.4731566905975342,
+      -9.720088958740234,
+      6.9274702072143555,
+      -17.73870849609375,
+      -0.08547157049179077,
+      -22.93555450439453
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000117910324095261543921921629706132124020953775933156827686576"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000117910324095261543921921629706132124020953775933156827686576",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000117910324095261543921921629706132124020953775933156827686576",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 5,
+    "true_label": 1,
+    "argmax_y0": 1,
+    "argmax_y1": 0,
+    "is_counter_example": true,
+    "max_eps": "0.000000335833744731328987305692637549772384626190816923053937126134",
+    "dist": "0.00000033154486868054733270511472064754274772595341817252030416212",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_yxg1br9f.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_r0frk79x.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_dxor52pq.npy",
+    "y0": [
+      5.946579933166504,
+      5.946581840515137,
+      1.987318992614746,
+      4.434851169586182,
+      1.207857608795166,
+      -12.00789737701416,
+      4.781437397003174,
+      -13.555168151855469,
+      -5.197660446166992,
+      -24.649337768554688
+    ],
+    "y1": [
+      5.94658088684082,
+      5.9465837478637695,
+      1.9873199462890625,
+      4.434854507446289,
+      1.2078585624694824,
+      -12.00789737701416,
+      4.781437873840332,
+      -13.55516529083252,
+      -5.197659015655518,
+      -24.649335861206055
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.00000016791687236566088674783459050793855332653703123189263034513"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.00000016791687236566088674783459050793855332653703123189263034513",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000335833744731328987305692637549772384626190816923053937126134",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 6,
+    "true_label": 4,
+    "argmax_y0": 4,
+    "argmax_y1": 6,
+    "is_counter_example": true,
+    "max_eps": "0.00000027479107596798960429193817066021751990927136357779604165698",
+    "dist": "0.000000267101981546506981701488872353982440272149533495398083842628",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_ea3rg541.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_hjqnozrm.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_1br465ej.npy",
+    "y0": [
+      -1.1617624759674072,
+      -3.9131033420562744,
+      0.19732022285461426,
+      -1.866836428642273,
+      1.1522852182388306,
+      -11.811583518981934,
+      1.1522842645645142,
+      -16.747650146484375,
+      -3.999525785446167,
+      -17.659690856933594
+    ],
+    "y1": [
+      -1.1617629528045654,
+      -3.913105010986328,
+      0.19731974601745605,
+      -1.8668359518051147,
+      1.1522853374481201,
+      -11.811580657958984,
+      1.152283787727356,
+      -16.74764633178711,
+      -3.9995226860046387,
+      -17.659683227539062
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.0000000634133252233782391150997251882990986469510305102665442340856"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.0000000634133252233782391150997251882990986469510305102665442340856",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.00000027479107596798960429193817066021751990927136357779604165698",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 7,
+    "true_label": 6,
+    "argmax_y0": 6,
+    "argmax_y1": 4,
+    "is_counter_example": true,
+    "max_eps": "0.000000422755501489210101403101608773732630578741515008021366907681",
+    "dist": "0.000000378059070601257541411982528411514124356543172030826713707288",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_uywv_3rx.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_z5o33sn3.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_yoedwe_k.npy",
+    "y0": [
+      -4.809529781341553,
+      -5.334152698516846,
+      -1.8957371711730957,
+      -4.897621154785156,
+      0.15875744819641113,
+      -12.08225154876709,
+      0.15875816345214844,
+      -21.274887084960938,
+      -7.208159446716309,
+      -20.688533782958984
+    ],
+    "y1": [
+      -4.809530735015869,
+      -5.334151744842529,
+      -1.8957377672195435,
+      -4.897620677947998,
+      0.15875780582427979,
+      -12.082252502441406,
+      0.15875768661499023,
+      -21.274887084960938,
+      -7.2081618309021,
+      -20.688535690307617
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000137395537983994873002430597235603400533303443168656457922576"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000137395537983994873002430597235603400533303443168656457922576",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000422755501489210101403101608773732630578741515008021366907681",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 8,
+    "true_label": 5,
+    "argmax_y0": 5,
+    "argmax_y1": 7,
+    "is_counter_example": true,
+    "max_eps": "0.000000272828765893133434877298153992052941826659664930052582290032",
+    "dist": "0.000000270936686524687234037692270719570749711019404949534976615742",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_3x3ktros.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_5rt_a0cn.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_ep8gaca0.npy",
+    "y0": [
+      -3.0958094596862793,
+      -2.1391828060150146,
+      -6.276689529418945,
+      -1.2968674898147583,
+      -2.644656181335449,
+      5.9755859375,
+      -2.309622287750244,
+      5.975584983825684,
+      -0.49833256006240845,
+      1.407961368560791
+    ],
+    "y1": [
+      -3.095808982849121,
+      -2.1391828060150146,
+      -6.276689529418945,
+      -1.2968668937683105,
+      -2.644655704498291,
+      5.975584506988525,
+      -2.3096225261688232,
+      5.9755859375,
+      -0.4983323812484741,
+      1.4079616069793701
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.0000000682071914732827731608178888145222245201145145177369015219059"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.0000000682071914732827731608178888145222245201145145177369015219059",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000272828765893133434877298153992052941826659664930052582290032",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 9,
+    "true_label": 7,
+    "argmax_y0": 7,
+    "argmax_y1": 9,
+    "is_counter_example": true,
+    "max_eps": "0.00000024379875639232026559817419725295773469863317365299116307956",
+    "dist": "0.000000145994527585928846103353626996221042928448395290613003037556",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_sesv9re3.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_yqwpn5t1.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_sidyw3og.npy",
+    "y0": [
+      -7.450477600097656,
+      -11.597524642944336,
+      -8.496134757995605,
+      -3.000537395477295,
+      -3.0389835834503174,
+      4.148706912994385,
+      -6.182071685791016,
+      8.31679916381836,
+      3.516719341278076,
+      8.31679916381836
+    ],
+    "y1": [
+      -7.450478553771973,
+      -11.597525596618652,
+      -8.496134757995605,
+      -3.0005381107330322,
+      -3.0389840602874756,
+      4.148707389831543,
+      -6.182071685791016,
+      8.316800117492676,
+      3.5167195796966553,
+      8.316801071166992
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.00000024379875639232026559817419725295773469863317365299116307956"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.00000024379875639232026559817419725295773469863317365299116307956",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.00000024379875639232026559817419725295773469863317365299116307956",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 10,
+    "true_label": 4,
+    "argmax_y0": 4,
+    "argmax_y1": 2,
+    "is_counter_example": true,
+    "max_eps": "0.000000715661764652380202496109519131398068725635838668045980137833",
+    "dist": "0.000000706571667985183965806821808959903965092048188677449572850495",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_u8tuhuhu.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_sj7bdd3f.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_x2qy4k1h.npy",
+    "y0": [
+      -3.934342384338379,
+      -6.132053852081299,
+      2.6078171730041504,
+      -3.0257060527801514,
+      2.6078176498413086,
+      -22.28948402404785,
+      0.27362632751464844,
+      -26.769248962402344,
+      -6.358185768127441,
+      -24.28880500793457
+    ],
+    "y1": [
+      -3.9343385696411133,
+      -6.132051467895508,
+      2.6078202724456787,
+      -3.0257043838500977,
+      2.607818365097046,
+      -22.28948402404785,
+      0.27362871170043945,
+      -26.769250869750977,
+      -6.358185291290283,
+      -24.288806915283203
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000357830882326186145633660950239279967538961785213537602386581"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000357830882326186145633660950239279967538961785213537602386581",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000715661764652380202496109519131398068725635838668045980137833",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 11,
+    "true_label": 5,
+    "argmax_y0": 5,
+    "argmax_y1": 7,
+    "is_counter_example": true,
+    "max_eps": "0.000000170517978683204682731138929716759432434966103283424057709347",
+    "dist": "0.000000154502355270354473835059006757044100590091249347978534176227",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_rgzv8vej.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_zh7xx9h6.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_d8amp1dy.npy",
+    "y0": [
+      -5.221555709838867,
+      -5.619085311889648,
+      -7.5266571044921875,
+      -2.760470151901245,
+      -3.0466766357421875,
+      5.7320942878723145,
+      -3.890758752822876,
+      5.7320942878723145,
+      0.08879470825195312,
+      3.211846351623535
+    ],
+    "y1": [
+      -5.2215576171875,
+      -5.619085311889648,
+      -7.526658058166504,
+      -2.760470390319824,
+      -3.0466771125793457,
+      5.732093811035156,
+      -3.8907597064971924,
+      5.732095718383789,
+      0.08879387378692627,
+      3.211846113204956
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.0000000341035957366370086311460235335142746702168841208027560129066"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.0000000341035957366370086311460235335142746702168841208027560129066",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000170517978683204682731138929716759432434966103283424057709347",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 13,
+    "true_label": 3,
+    "argmax_y0": 3,
+    "argmax_y1": 1,
+    "is_counter_example": true,
+    "max_eps": "0.000000090442324169474592382534899731526965992812816503859386853406",
+    "dist": "0.0000000872719027965599877876745744361649351956288664222778778029401",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_6zxjz6k9.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_2h8kitw8.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_md3b_jzp.npy",
+    "y0": [
+      -0.13576579093933105,
+      6.150434494018555,
+      -1.6005895137786865,
+      6.1504364013671875,
+      -0.27063798904418945,
+      -17.97772979736328,
+      -0.48803913593292236,
+      -7.743425369262695,
+      -9.301191329956055,
+      -19.92888069152832
+    ],
+    "y1": [
+      -0.13576364517211914,
+      6.1504364013671875,
+      -1.6005878448486328,
+      6.150437355041504,
+      -0.27063775062561035,
+      -17.977731704711914,
+      -0.48803722858428955,
+      -7.743427276611328,
+      -9.301193237304688,
+      -19.92888641357422
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000090442324169474592382534899731526965992812816503859386853406"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000090442324169474592382534899731526965992812816503859386853406",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000090442324169474592382534899731526965992812816503859386853406",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 14,
+    "true_label": 4,
+    "argmax_y0": 4,
+    "argmax_y1": 6,
+    "is_counter_example": true,
+    "max_eps": "0.000000612995477159359530790001876087265797589486140735514243487092",
+    "dist": "0.000000527485876617832791076004276086726916637338908919881895507895",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_b61mqjhi.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_9lr1n0ir.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_0zg110bl.npy",
+    "y0": [
+      -5.402989864349365,
+      -10.784664154052734,
+      -0.442962646484375,
+      -6.228013515472412,
+      1.0554585456848145,
+      -21.4388484954834,
+      1.0554580688476562,
+      -33.65723419189453,
+      -7.28139591217041,
+      -31.632705688476562
+    ],
+    "y1": [
+      -5.402988433837891,
+      -10.784662246704102,
+      -0.4429645538330078,
+      -6.228013038635254,
+      1.0554579496383667,
+      -21.438840866088867,
+      1.0554587841033936,
+      -33.6572265625,
+      -7.281389236450195,
+      -31.6326961517334
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000169102200595682392549725076863692499426506931000997876613435"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000169102200595682392549725076863692499426506931000997876613435",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000612995477159359530790001876087265797589486140735514243487092",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 15,
+    "true_label": 1,
+    "argmax_y0": 1,
+    "argmax_y1": 3,
+    "is_counter_example": true,
+    "max_eps": "0.000000384379877720280023591775395758494924717955511436485865668019",
+    "dist": "0.000000326494369411483255295784845624588105226830630173008034013476",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_oobxwjzk.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_7eedvau3.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_ws992y7h.npy",
+    "y0": [
+      -1.5751458406448364,
+      3.5719356536865234,
+      -2.5545291900634766,
+      3.5719351768493652,
+      -0.49694132804870605,
+      -13.392698287963867,
+      -0.9053390026092529,
+      -7.737778663635254,
+      -7.769769668579102,
+      -17.273822784423828
+    ],
+    "y1": [
+      -1.5751469135284424,
+      3.571934461593628,
+      -2.5545294284820557,
+      3.571934700012207,
+      -0.4969416856765747,
+      -13.39269733428955,
+      -0.9053387641906738,
+      -7.737778186798096,
+      -7.769767761230469,
+      -17.273820877075195
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000113052905211843681396413149986653484360806049733188703384441"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000113052905211843681396413149986653484360806049733188703384441",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000384379877720280023591775395758494924717955511436485865668019",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 16,
+    "true_label": 2,
+    "argmax_y0": 2,
+    "argmax_y1": 1,
+    "is_counter_example": true,
+    "max_eps": "0.0000000794173015850138126011369853195592877339427043566737237117662",
+    "dist": "0.0000000768085908980111785847107570649753510401387379450647957707628",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_b8szsdrw.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_2kff8ga6.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_a8kd8enr.npy",
+    "y0": [
+      1.2375550270080566,
+      3.7547202110290527,
+      3.7547214031219482,
+      1.4256033897399902,
+      2.5652170181274414,
+      -14.423949241638184,
+      2.8499417304992676,
+      -16.721431732177734,
+      -6.086851596832275,
+      -19.53750991821289
+    ],
+    "y1": [
+      1.2375550270080566,
+      3.75472092628479,
+      3.7547199726104736,
+      1.4256036281585693,
+      2.565216064453125,
+      -14.423946380615234,
+      2.8499412536621094,
+      -16.721424102783203,
+      -6.086850166320801,
+      -19.537506103515625
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.0000000794173015850138126011369853195592877339427043566737237117662"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.0000000794173015850138126011369853195592877339427043566737237117662",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.0000000794173015850138126011369853195592877339427043566737237117662",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 18,
+    "true_label": 8,
+    "argmax_y0": 8,
+    "argmax_y1": 5,
+    "is_counter_example": true,
+    "max_eps": "0.000000236577726147724833933848796220510220638422167298532732716193",
+    "dist": "0.000000192509419943107754007983197628622437214524035716972370241687",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_fqn9gjeo.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_tnbrzwq8.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_egf5ueme.npy",
+    "y0": [
+      -3.934607744216919,
+      -14.95274543762207,
+      -6.623567581176758,
+      -4.9107561111450195,
+      -2.8258614540100098,
+      7.990386486053467,
+      -2.106135845184326,
+      0.42501306533813477,
+      7.990389823913574,
+      1.433760643005371
+    ],
+    "y1": [
+      -3.9346072673797607,
+      -14.952743530273438,
+      -6.623567581176758,
+      -4.910755157470703,
+      -2.8258609771728516,
+      7.990386962890625,
+      -2.106135845184326,
+      0.4250149726867676,
+      7.990387439727783,
+      1.4337635040283203
+    ],
+    "extension_best_step": 6,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.0000000262864140164112403535344502242421496313044446689739742279138"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.0000000262864140164112403535344502242421496313044446689739742279138",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000236577726147724833933848796220510220638422167298532732716193",
+        "best_step": 6
+      }
+    }
+  },
+  {
+    "index": 19,
+    "true_label": 0,
+    "argmax_y0": 0,
+    "argmax_y1": 6,
+    "is_counter_example": true,
+    "max_eps": "0.00000094328259276210015216137097815502595052681003948371614601843",
+    "dist": "0.000000778008529423993564341383910067459202336328212545569852965905",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_kml8zcw9.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_3fnx1loa.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_wqaq0yma.npy",
+    "y0": [
+      9.011384963989258,
+      -1.4502778053283691,
+      3.8988099098205566,
+      2.660090446472168,
+      1.3663291931152344,
+      -13.747894287109375,
+      9.011384010314941,
+      -24.36499786376953,
+      -0.6540882587432861,
+      -32.719120025634766
+    ],
+    "y1": [
+      9.011382102966309,
+      -1.4502779245376587,
+      3.898808002471924,
+      2.6600868701934814,
+      1.3663287162780762,
+      -13.74789047241211,
+      9.011383056640625,
+      -24.365001678466797,
+      -0.6540920734405518,
+      -32.7191162109375
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000235820648190524308427570938557506891925881713586840487934936"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000235820648190524308427570938557506891925881713586840487934936",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.00000094328259276210015216137097815502595052681003948371614601843",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 20,
+    "true_label": 2,
+    "argmax_y0": 2,
+    "argmax_y1": 0,
+    "is_counter_example": true,
+    "max_eps": "0.000000655489214395938270154910819105221641306215106060303826199702",
+    "dist": "0.000000560995936766070176594509497915362173897774307318020402438259",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_7cpd759t.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_uwxcrx85.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_3664ymui.npy",
+    "y0": [
+      10.428800582885742,
+      -0.1180834174156189,
+      10.428802490234375,
+      6.0128092765808105,
+      4.801327228546143,
+      -21.522855758666992,
+      8.338672637939453,
+      -23.171985626220703,
+      2.4875245094299316,
+      -27.34302520751953
+    ],
+    "y1": [
+      10.428802490234375,
+      -0.11808282136917114,
+      10.428802490234375,
+      6.0128092765808105,
+      4.801327705383301,
+      -21.52285385131836,
+      8.33867359161377,
+      -23.171985626220703,
+      2.4875242710113525,
+      -27.34302520751953
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000163872303598983365285057436569713016551703043019120766516439"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000163872303598983365285057436569713016551703043019120766516439",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000655489214395938270154910819105221641306215106060303826199702",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 21,
+    "true_label": 5,
+    "argmax_y0": 5,
+    "argmax_y1": 7,
+    "is_counter_example": true,
+    "max_eps": "0.00000013641438294656318170081591503636960387770389274641849689224",
+    "dist": "0.0000000998085551186547508137798490593071640391652250983428503537696",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_nhgoxvax.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_fhwamqqp.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_3y_aa5lu.npy",
+    "y0": [
+      -6.40806245803833,
+      -6.7652668952941895,
+      -11.042304039001465,
+      -3.24885630607605,
+      -4.609066486358643,
+      10.19678783416748,
+      -4.888922691345215,
+      10.19678783416748,
+      0.569016695022583,
+      4.652202606201172
+    ],
+    "y1": [
+      -6.408060550689697,
+      -6.765263557434082,
+      -11.042301177978516,
+      -3.2488555908203125,
+      -4.609066009521484,
+      10.196788787841797,
+      -4.888922214508057,
+      10.196789741516113,
+      0.5690164566040039,
+      4.652202606201172
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.00000013641438294656318170081591503636960387770389274641849689224"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.00000013641438294656318170081591503636960387770389274641849689224",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.00000013641438294656318170081591503636960387770389274641849689224",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 22,
+    "true_label": 7,
+    "argmax_y0": 7,
+    "argmax_y1": 5,
+    "is_counter_example": true,
+    "max_eps": "0.000000341035957366417852697406776120478859558461686538895158755322",
+    "dist": "0.000000294024033250539729649772645588119844626848878949758436975486",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_knb0bn1q.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_z4lrg5zi.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_qinti44v.npy",
+    "y0": [
+      -8.262404441833496,
+      -9.582738876342773,
+      -14.027602195739746,
+      -4.303153991699219,
+      -5.820845603942871,
+      12.380762100219727,
+      -6.303346157073975,
+      12.380765914916992,
+      1.1169627904891968,
+      5.667616367340088
+    ],
+    "y1": [
+      -8.262404441833496,
+      -9.582742691040039,
+      -14.027602195739746,
+      -4.30315637588501,
+      -5.820844650268555,
+      12.380769729614258,
+      -6.3033447265625,
+      12.380764961242676,
+      1.116966724395752,
+      5.6676201820373535
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000136414382946563452117025571272062154769276575870612118219606"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000136414382946563452117025571272062154769276575870612118219606",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000341035957366417852697406776120478859558461686538895158755322",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 24,
+    "true_label": 1,
+    "argmax_y0": 1,
+    "argmax_y1": 5,
+    "is_counter_example": true,
+    "max_eps": "0.000000112264133233692968082754255885092705496932809819272689984737",
+    "dist": "0.0000000917658316581839222706339394280979584482551643174662443439786",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_8q2y7vnj.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_4fifjowi.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_rogl_g9b.npy",
+    "y0": [
+      -1.2231640815734863,
+      6.036749362945557,
+      -4.952240943908691,
+      -0.5832297205924988,
+      -1.3267035484313965,
+      6.036748886108398,
+      0.577717661857605,
+      -0.39648836851119995,
+      -5.769989013671875,
+      -7.907530784606934
+    ],
+    "y1": [
+      -1.223163366317749,
+      6.036748886108398,
+      -4.95224142074585,
+      -0.5832303166389465,
+      -1.3267041444778442,
+      6.036751747131348,
+      0.5777171850204468,
+      -0.3964874744415283,
+      -5.769989967346191,
+      -7.907529830932617
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000112264133233692968082754255885092705496932809819272689984737"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000112264133233692968082754255885092705496932809819272689984737",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000112264133233692968082754255885092705496932809819272689984737",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 26,
+    "true_label": 6,
+    "argmax_y0": 6,
+    "argmax_y1": 4,
+    "is_counter_example": true,
+    "max_eps": "0.000000591857702084899713669566298687081097392241446245189416371399",
+    "dist": "0.000000551772424742295753401693903529418469440363176422452930702411",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_vp7z3w8n.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_8h9wu1d9.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_81ds6avn.npy",
+    "y0": [
+      -6.551715850830078,
+      -10.46994400024414,
+      -3.0662217140197754,
+      -7.412313461303711,
+      -0.29673677682876587,
+      -13.16555404663086,
+      -0.2967360019683838,
+      -26.182140350341797,
+      -6.41346549987793,
+      -23.978185653686523
+    ],
+    "y1": [
+      -6.551717758178711,
+      -10.469945907592773,
+      -3.0662217140197754,
+      -7.412314414978027,
+      -0.2967362403869629,
+      -13.165557861328125,
+      -0.2967367172241211,
+      -26.18214225769043,
+      -6.41346549987793,
+      -23.97818946838379
+    ],
+    "extension_best_step": 3,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000137395537983990731344569272758158042076184881105194163253214"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000137395537983990731344569272758158042076184881105194163253214",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000591857702084899713669566298687081097392241446245189416371399",
+        "best_step": 3
+      }
+    }
+  },
+  {
+    "index": 27,
+    "true_label": 0,
+    "argmax_y0": 0,
+    "argmax_y1": 6,
+    "is_counter_example": true,
+    "max_eps": "0.000000825372268666839168043851199680643036443419488164071686681248",
+    "dist": "0.000000759342263456370149660224282890454348098539255899286403217642",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_mauizu_e.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_449j2ado.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_25alnh5a.npy",
+    "y0": [
+      6.536981582641602,
+      1.8188285827636719,
+      0.1323736011981964,
+      2.944958209991455,
+      0.01777172088623047,
+      -11.503056526184082,
+      6.536981582641602,
+      -18.36265754699707,
+      -4.608343124389648,
+      -30.274045944213867
+    ],
+    "y1": [
+      6.536980152130127,
+      1.818831443786621,
+      0.1323748528957367,
+      2.944960117340088,
+      0.017773151397705078,
+      -11.503061294555664,
+      6.536981105804443,
+      -18.362659454345703,
+      -4.608346939086914,
+      -30.274051666259766
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000471641296381046962454453092661063334878548649289765201063081"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000471641296381046962454453092661063334878548649289765201063081",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000825372268666839168043851199680643036443419488164071686681248",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 28,
+    "true_label": 9,
+    "argmax_y0": 9,
+    "argmax_y1": 7,
+    "is_counter_example": true,
+    "max_eps": "0.00000036569813458848139946739941659048490200698619346220699425597",
+    "dist": "0.000000323950992655442292523386287454192733833257689212878006835936",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_n22dp21v.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_4w2sberd.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_85ww28s6.npy",
+    "y0": [
+      -10.834823608398438,
+      -14.479533195495605,
+      -11.289029121398926,
+      -3.6703712940216064,
+      -3.6103105545043945,
+      3.922725200653076,
+      -9.062701225280762,
+      12.428548812866211,
+      3.426147937774658,
+      12.428549766540527
+    ],
+    "y1": [
+      -10.834826469421387,
+      -14.479536056518555,
+      -11.289030075073242,
+      -3.670372486114502,
+      -3.6103110313415527,
+      3.922727346420288,
+      -9.062702178955078,
+      12.428552627563477,
+      3.4261488914489746,
+      12.42855167388916
+    ],
+    "extension_best_step": 8,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000121899378196158053163291430314312267064704750871447256049287"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000121899378196158053163291430314312267064704750871447256049287",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.00000036569813458848139946739941659048490200698619346220699425597",
+        "best_step": 8
+      }
+    }
+  },
+  {
+    "index": 30,
+    "true_label": 8,
+    "argmax_y0": 5,
+    "argmax_y1": 8,
+    "is_counter_example": true,
+    "max_eps": "0.000000315436968196966597420803264852721981026472726140093745452639",
+    "dist": "0.000000256392811499541639911502565298078319080550100685552747767702",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_o4v7hk2c.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_r_f7yz01.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_8zefw8oo.npy",
+    "y0": [
+      -3.4311728477478027,
+      -19.038330078125,
+      -8.153079986572266,
+      -6.377182483673096,
+      -4.077339172363281,
+      10.253480911254883,
+      -1.1926655769348145,
+      -3.3584671020507812,
+      10.253480911254883,
+      -3.1333274841308594
+    ],
+    "y1": [
+      -3.4311747550964355,
+      -19.038328170776367,
+      -8.153083801269531,
+      -6.377184867858887,
+      -4.077341079711914,
+      10.253482818603516,
+      -1.1926679611206055,
+      -3.358463764190674,
+      10.25347900390625,
+      -3.13332462310791
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000210291312131309562174322889569963446199096779309911653399467"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000210291312131309562174322889569963446199096779309911653399467",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000315436968196966597420803264852721981026472726140093745452639",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 31,
+    "true_label": 8,
+    "argmax_y0": 8,
+    "argmax_y1": 5,
+    "is_counter_example": true,
+    "max_eps": "0.000000315436968196970684458944817223239942679951500147115208868341",
+    "dist": "0.000000290770643678629429932667581061192511609795230618022962556691",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_lczlfzui.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_dthi19np.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_hcofvxv5.npy",
+    "y0": [
+      -2.178462028503418,
+      -11.597037315368652,
+      -6.0477142333984375,
+      -3.298436164855957,
+      -3.1036534309387207,
+      5.7041449546813965,
+      -1.3829925060272217,
+      -1.0511560440063477,
+      5.7041473388671875,
+      -2.3705248832702637
+    ],
+    "y1": [
+      -2.1784603595733643,
+      -11.597036361694336,
+      -6.047712802886963,
+      -3.2984354496002197,
+      -3.1036529541015625,
+      5.704145908355713,
+      -1.3829901218414307,
+      -1.0511565208435059,
+      5.704147815704346,
+      -2.3705248832702637
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000315436968196970684458944817223239942679951500147115208868341"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000315436968196970684458944817223239942679951500147115208868341",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000315436968196970684458944817223239942679951500147115208868341",
+        "best_step": 0
+      }
+    }
+  },
+  {
+    "index": 32,
+    "true_label": 3,
+    "argmax_y0": 3,
+    "argmax_y1": 7,
+    "is_counter_example": true,
+    "max_eps": "0.000000141409952476729142508994361548479795252069970577334819769443",
+    "dist": "0.000000138760132937128504213703856779934085356785654374671500182805",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_7ulaals0.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_te38yafj.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_htm469jg.npy",
+    "y0": [
+      -4.0116353034973145,
+      -4.265225410461426,
+      -5.228930950164795,
+      1.9077614545822144,
+      -2.134706735610962,
+      -7.187893390655518,
+      -4.125923156738281,
+      1.9077613353729248,
+      -1.6763036251068115,
+      -3.2880775928497314
+    ],
+    "y1": [
+      -4.011634349822998,
+      -4.265227794647217,
+      -5.228930950164795,
+      1.9077627658843994,
+      -2.134706974029541,
+      -7.187895774841309,
+      -4.125923156738281,
+      1.9077619314193726,
+      -1.6763029098510742,
+      -3.288078784942627
+    ],
+    "extension_best_step": 7,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.0000000134676145215885749526121476548135987308731704033549454948814"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.0000000134676145215885749526121476548135987308731704033549454948814",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000141409952476729142508994361548479795252069970577334819769443",
+        "best_step": 7
+      }
+    }
+  },
+  {
+    "index": 33,
+    "true_label": 3,
+    "argmax_y0": 3,
+    "argmax_y1": 8,
+    "is_counter_example": true,
+    "max_eps": "0.000000394388149658715537958691671835046325060252190862523453012561",
+    "dist": "0.000000329825618317056246912013876173825729173385115920451018192063",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_5t885gst.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_r_lt2km8.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_ggjwvzbd.npy",
+    "y0": [
+      -0.3942289352416992,
+      -8.640379905700684,
+      -0.5666337013244629,
+      2.5012831687927246,
+      -0.27981019020080566,
+      -14.07551383972168,
+      -0.932949423789978,
+      -8.080324172973633,
+      2.5012831687927246,
+      -11.195194244384766
+    ],
+    "y1": [
+      -0.39423084259033203,
+      -8.640380859375,
+      -0.566633939743042,
+      2.50128173828125,
+      -0.2798105478286743,
+      -14.075512886047363,
+      -0.9329499006271362,
+      -8.080322265625,
+      2.501283884048462,
+      -11.195191383361816
+    ],
+    "extension_best_step": 2,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000109552263794087318189258964563545383351660216839763436401366"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000109552263794087318189258964563545383351660216839763436401366",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000394388149658715537958691671835046325060252190862523453012561",
+        "best_step": 2
+      }
+    }
+  },
+  {
+    "index": 34,
+    "true_label": 8,
+    "argmax_y0": 8,
+    "argmax_y1": 5,
+    "is_counter_example": true,
+    "max_eps": "0.000000157718484098482254501230090403074324500458765440997972027523",
+    "dist": "0.000000150344291985261998882413040222279680862335750983492153467743",
+    "img_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_y1h6v1pf.png",
+    "x0_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_bidtic60.npy",
+    "x1_file": "/Users/tobiasm1/git/verified-certified-robustness/scripts/results/natural_grid_cex/float32_suites_regen/cex_fashion_mnist_float32_numpy/x_zog01k9p.npy",
+    "y0": [
+      -2.3480076789855957,
+      -14.950803756713867,
+      -6.938595294952393,
+      -4.603948593139648,
+      -3.6864571571350098,
+      7.829967498779297,
+      -1.0679421424865723,
+      -2.629385471343994,
+      7.8299689292907715,
+      -3.2846946716308594
+    ],
+    "y1": [
+      -2.348008155822754,
+      -14.9508056640625,
+      -6.938595771789551,
+      -4.603949546813965,
+      -3.686457872390747,
+      7.829968452453613,
+      -1.0679428577423096,
+      -2.6293869018554688,
+      7.829968452453613,
+      -3.284696578979492
+    ],
+    "extension_best_step": 0,
+    "model_execution": "numpy_ieee754_compliant",
+    "stages": {
+      "deepfool_bisect": {
+        "max_eps": "0.000000157718484098482254501230090403074324500458765440997972027523"
+      },
+      "whitebox_extend": {
+        "max_eps": "0.000000157718484098482254501230090403074324500458765440997972027523",
+        "multi_ray_eps": 0.0,
+        "multi_ray_slack": 0.0,
+        "multi_ray_class": -1
+      },
+      "blackbox_extend": {
+        "max_eps": "0.000000157718484098482254501230090403074324500458765440997972027523",
+        "best_step": 0
+      }
+    }
+  }
+]

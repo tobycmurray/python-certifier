@@ -47,11 +47,13 @@ def main():
         recs = ({int(k): v for k, v in recs.items()} if isinstance(recs, dict)
                 else {r["index"]: r for r in recs})
         with open(allf) as f:
-            alls = {r["index"]: r for r in json.load(f)}
+            all_recs = json.load(f)
+        meta = [r for r in all_recs if "x1_file" not in r]     # the set's provenance record (platform of y1)
+        alls = {r["index"]: r for r in all_recs if "x1_file" in r}
         with open(f"{VCR}/natgrid_{tag}_biased.certifier_input.txt") as f:
             certin = [line.split() for line in f if line.strip()]
         assert len(certin) == len(found), (tag, len(certin), len(found))
-        out = []
+        out = list(meta)
         for k, idx in enumerate(found):
             r, rec = alls[idx], recs[idx]
             assert rec["found"] and rec["certified_at_eps"] and rec["x_on_grid"] and rec["xadv_on_grid"] \
@@ -70,7 +72,7 @@ def main():
                                         "R": rec["R"], "pixels_changed": rec["pixels_changed"]}))
         with open(outf, "w") as f:
             json.dump(out, f, indent=1)
-        print(f"{tag}: {len(out)} grid instances (eps {eps}) -> {os.path.relpath(outf, HERE)}")
+        print(f"{tag}: {len(out) - len(meta)} grid instances (eps {eps}) -> {os.path.relpath(outf, HERE)}")
 
 if __name__ == "__main__":
     main()

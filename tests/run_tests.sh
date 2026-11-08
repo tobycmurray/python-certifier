@@ -175,6 +175,15 @@ SUMMARY_DIR="${SUMMARY_DIR:-summary}"
 # (biased models map to the _numpy_biased_* variants, whose y1 is the biased
 # numpy execution's own); cex dirs gain a _numpy sibling. Prints the mapped
 # path; returns 1 if no numpy variant scheme exists (z3's bare cex file).
+# INPUT_PLATFORM=<x86_64|arm64|...> (applied in run_test, hybrid modes only): the hybrid modes
+# certify the execution they measure and refuse every instance whose recorded y1 this host's
+# compliant forward pass does not reproduce, and einsum's summation order differs between numpy's
+# x86_64 and arm64 builds, so each set is provisioned per platform
+# (../models/provision_platform_inputs.py): in the hybrid modes the mapped file's
+# <file>_<INPUT_PLATFORM>.json sibling is used when it exists (sets this platform reproduces exactly
+# have none). Standard mode always certifies the original set: its verdict is a function of the
+# recorded logits, which are part of the paper's inputs like the weights, and holds for every
+# conformant execution (mode_B_robust_execution_independent). The authors' sets are arm64's.
 numpy_variant() {  # model kind file [format]
   local model="$1" kind="$2" file="$3" format="${4:-float32}"
   # float64 "all" sets carry y1 from the compliant numpy execution AT FLOAT64 of the
@@ -183,20 +192,22 @@ numpy_variant() {  # model kind file [format]
   # Likewise the float16 "all" sets (models/provision_numpy16_all_inputs.sh): y1 from the
   # compliant numpy execution AT FLOAT16 (weights cast down to float16), files _numpy16.
   local sfx="_numpy"; [[ "$format" == "float64" ]] && sfx="_numpy64"; [[ "$format" == "float16" ]] && sfx="_numpy16"
+  local mapped
   # natgrid sets are built from the numpy biased "all" sets: already the numpy variant.
-  if [[ "$kind" == "natgrid" ]]; then echo "$file"; return 0; fi
-  if [[ "$kind" == "cex" ]]; then
+  if [[ "$kind" == "natgrid" ]]; then mapped="$file"
+  elif [[ "$kind" == "cex" ]]; then
     [[ "$file" == */counter_examples.json ]] || return 1
-    echo "${file%/counter_examples.json}_numpy/counter_examples.json"
-    return 0
+    mapped="${file%/counter_examples.json}_numpy/counter_examples.json"
+  else
+    local base="${file%.json}"
+    case "$model" in
+      mnist_biased_1e6_end)         mapped="${base}_numpy_biased_1e6_end.json" ;;
+      fashion_mnist_biased_3e6_end) mapped="${base}_numpy_biased_3e6_end.json" ;;
+      cifar10_biased_4e6_end)       mapped="${base}_numpy_biased_4e6_end.json" ;;
+      *)                            mapped="${base}${sfx}.json" ;;
+    esac
   fi
-  local base="${file%.json}"
-  case "$model" in
-    mnist_biased_1e6_end)         echo "${base}_numpy_biased_1e6_end.json" ;;
-    fashion_mnist_biased_3e6_end) echo "${base}_numpy_biased_3e6_end.json" ;;
-    cifar10_biased_4e6_end)       echo "${base}_numpy_biased_4e6_end.json" ;;
-    *)                            echo "${base}${sfx}.json" ;;
-  esac
+  echo "$mapped"
 }
 
 grabnum() {
@@ -312,7 +323,13 @@ run_test() {
       return 0
     fi
     cex_file="$mapped"
-    if [[ "$mode" == hybrid-* ]]; then numpy_flag="--numpy-exec"; fi
+    if [[ "$mode" == hybrid-* ]]; then
+      numpy_flag="--numpy-exec"
+      # this host's platform's y1 (see INPUT_PLATFORM above); the original when it has no sibling
+      if [[ -n "${INPUT_PLATFORM:-}" && -s "${mapped%.json}_${INPUT_PLATFORM}.json" ]]; then
+        cex_file="${mapped%.json}_${INPUT_PLATFORM}.json"
+      fi
+    fi
   fi
 
   # first100 results go in their own dir, named *_all.json so compute_vra (pointed

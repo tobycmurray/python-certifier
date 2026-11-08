@@ -522,10 +522,14 @@ def main():
     # inputs to certify (from the cex/test JSON; logits come from the deployed
     # Keras model as the 'y1' field -- the certifier never re-simulates them).
     to_certify = []
+    y1_provenance = None   # the input set's {"_metadata": {"provenance": ...}} record, if it carries one
     with open(cex_file, "r") as f:
         cexs = json.load(f)
     for cex in cexs:
         if "x1_file" not in cex:
+            md = cex.get("_metadata") if isinstance(cex, dict) else None
+            if isinstance(md, dict) and isinstance(md.get("provenance"), dict):
+                y1_provenance = md["provenance"]
             continue
         d = os.path.dirname(cex_file)
         x1_file = os.path.join(d, os.path.basename(cex["x1_file"]))
@@ -560,7 +564,27 @@ def main():
     keras_model_hi = None
     keras_model_fp = None
     keras_fp_policy = None
+    # The hybrid modes certify the execution they measure, so the recorded y1 must come from an
+    # execution this host reproduces. The input set's provenance record names the platform that
+    # produced its y1 (compliant_forward.execution_platform: numpy's einsum summation order differs
+    # between x86_64 and arm64 builds); a mismatch is reported here and in each refusal below.
+    y1_platform_note = ""
     if hybrid_only_mode or hybrid_meas_mode:
+        from compliant_forward import execution_platform
+        _here = execution_platform()
+        _desc = lambda p: f"{p.get('platform', '?')} ({p.get('os', '?')}, numpy {p.get('numpy', '?')})"
+        if y1_provenance is None:
+            print("Recorded logits y1: the input set carries no provenance record (platform that produced them unknown); "
+                  f"this host is {_desc(_here)}")
+            y1_platform_note = f" (y1 platform unrecorded; this host is {_desc(_here)})"
+        else:
+            print(f"Recorded logits y1: produced on {_desc(y1_provenance)}; this host is {_desc(_here)}")
+            y1_platform_note = f" (y1 recorded on {_desc(y1_provenance)}; this host is {_desc(_here)})"
+            if y1_provenance.get("platform") != _here["platform"]:
+                print(f"WARNING: the recorded logits were produced on {y1_provenance.get('platform')} and this host is "
+                      f"{_here['platform']}: every instance whose logits this host's execution does not reproduce is "
+                      f"refused. Use the input set provisioned for this platform (tests/run_tests.sh INPUT_PLATFORM, "
+                      f"models/provision_platform_inputs.py).")
         if fmt.name not in ("float16", "float32", "float64"):
             sys.exit(f"hybrid-mode forward pass not supported for {fmt.name} "
                      f"(only float16/float32/float64)")
@@ -767,7 +791,7 @@ def main():
             if not logits_ok:
                 print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
                       f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation / "
-                      f"activation norms would not be those of the certified execution.")
+                      f"activation norms would not be those of the certified execution{y1_platform_note}.")
             exec_finite_ok = center_exec_finite(pre_fp, pre_hi)
             if not exec_finite_ok:
                 print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy}/float64 execution at x is not "
@@ -805,7 +829,7 @@ def main():
                 if not logits_ok:
                     print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy} measuring forward pass does not "
                           f"reproduce the record's y1 logits bit-for-bit; the measured centre deviation "
-                          f"would not be that of the certified execution.")
+                          f"would not be that of the certified execution{y1_platform_note}.")
                 exec_finite_ok = center_exec_finite(pre_fp, pre_hi)
                 if not exec_finite_ok:
                     print(f"REFUSED instance {idx}: the {backend} {keras_fp_policy}/float64 execution at x is not "
@@ -908,7 +932,7 @@ def main():
     print(f"  Failed to certify {n_fail} instances as robust")
     print(f"  Refused {n_refused_overflow} instances: overflow conditions not established (Theorem 4.2; counted among the failures)")
     if hybrid_only_mode or hybrid_meas_mode:
-        print(f"  Refused {n_refused_logits} instances: measuring forward pass did not reproduce the recorded logits (counted among the failures)")
+        print(f"  Refused {n_refused_logits} instances: measuring forward pass did not reproduce the recorded logits (counted among the failures){y1_platform_note}")
         print(f"  Refused {n_refused_nonfinite} instances: execution at x not observed overflow-free (Theorems 8.2/8.4; counted among the failures)")
     # "Dafny certifier ..." when an exact Dafny reference was supplied (run_tests.sh
     # greps this exact wording); "Real certifier ..." otherwise, since the baseline

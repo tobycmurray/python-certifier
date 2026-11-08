@@ -60,8 +60,10 @@ first100 () {  # dir full_json out_json
 import json, sys
 with open(sys.argv[1]) as f:
     data = json.load(f)
+meta = [r for r in data if "x1_file" not in r]      # provenance record(s) stay in front of the slice
+recs = [r for r in data if "x1_file" in r]
 with open(sys.argv[2], "w") as f:
-    json.dump(data[:100], f, indent=2)
+    json.dump(meta + recs[:100], f, indent=2)
 PYEOF
 }
 

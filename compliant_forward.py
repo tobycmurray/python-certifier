@@ -21,12 +21,24 @@ Interface mirrors keras_forward: prepare() builds the per-format arrays once,
 forward_activations()/forward_logits() run an instance.
 """
 from typing import List, Optional, Tuple
+import platform
 import numpy as np
 
 from linear_algebra import Matrix
 from arithmetic import Q  # noqa: F401  (documents the exact-rational input type)
 
 _DT = {"float16": np.float16, "float32": np.float32, "float64": np.float64}
+
+
+def execution_platform() -> dict:
+    """What determines this execution's results beyond the IEEE-754 operations: the architecture
+    numpy was built for (einsum's summation order is the kernel's: x86_64 and arm64 differ), the
+    numpy build and the OS. Recorded as the provenance of every y1 an input set carries, and
+    printed beside it by the certifier's hybrid modes. `platform` is the normalised architecture
+    (x86_64 | arm64 | other uname -m values)."""
+    m = platform.machine().lower()
+    return {"platform": {"amd64": "x86_64", "aarch64": "arm64"}.get(m, m), "machine": platform.machine(),
+            "os": platform.system(), "numpy": np.__version__, "python": platform.python_version()}
 
 
 def _matvec(W: np.ndarray, x: np.ndarray, dt) -> np.ndarray:
